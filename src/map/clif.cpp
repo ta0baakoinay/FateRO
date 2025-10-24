@@ -36,6 +36,7 @@
 #include "clan.hpp"
 #include "clif.hpp"
 #include "elemental.hpp"
+#include "emote.hpp"
 #include "guild.hpp"
 #include "homunculus.hpp"
 #include "instance.hpp"
@@ -25449,6 +25450,274 @@ void clif_parse_partybooking_reply( int32 fd, map_session_data* sd ){
 	clif_partybooking_reply( tsd, sd, p->accept );
 #endif
 }
+
+void clif_parse_receive_emote( int fd, map_session_data* sd ){
+#if PACKETVER >= 20230802
+	struct PACKET_CZ_SEND_EMOTE* p = (struct PACKET_CZ_SEND_EMOTE*)RFIFOP( fd, 0 );
+
+	//ShowError("clif_parse_receive_emote packId %d emotionId %d \n",p->packId, p->emotionId);
+
+	clif_receive_emote(sd, p->packId, p->emotionId);
+#endif
+}
+
+void clif_receive_emote (map_session_data* sd, uint16 packId, uint16 emotionId ){
+#if PACKETVER >= 20230802
+	struct PACKET_ZC_RECEIVE_EMOTE p = {};
+
+	p.packetType = HEADER_ZC_RECEIVE_EMOTE;
+	p.AID = sd->id;
+
+	if(p.packId > 0){
+		auto it_emote_data = std::find_if(sd->emotes.begin(), sd->emotes.end(), [p](const s_emote_data& emote) {
+			return emote.id == p.packId;
+		});
+
+		if (it_emote_data == sd->emotes.end()) {
+			clif_addtobuylist_emote(sd, 0, ZC_EMOTE_BUYLIST_CANTUSENOTPURCHASED);
+			return;
+		}
+
+		if(it_emote_data->expire_time && it_emote_data->expire_time < time(NULL)){
+			clif_addtobuylist_emote(sd, p.packId, ZC_EMOTE_BUYLIST_SALESENDED);
+			sd->emotes.erase(std::remove_if(sd->emotes.begin(), sd->emotes.end(),
+				[p](const s_emote_data& emote) {
+					return emote.id == p.packId;
+				}),
+            sd->emotes.end());
+		}
+	}
+
+	if (battle_config.basic_skill_check == 0 || pc_checkskill(sd, NV_BASIC) >= 2 || pc_checkskill(sd, SU_BASIC_SKILL) >= 1) {
+		if (p.emotionId == 1000) {// prevent use of the mute emote [Valaris]
+			clif_addtobuylist_emote(sd, 0, ZC_EMOTE_BUYLIST_UNKNOWNERROR);
+			return;
+		}
+		// fix flood of emotion icon (ro-proxy): flood only the hacker player
+		if (sd->emotionlasttime + 1 >= time(NULL)) { // not more than 1 per second
+			sd->emotionlasttime = time(NULL);
+			clif_addtobuylist_emote(sd, 0, ZC_EMOTE_BUYLIST_UNKNOWNERROR);
+			return;
+		}
+		sd->emotionlasttime = time(NULL);
+
+		if (battle_config.idletime_option&IDLE_EMOTION)
+			sd->idletime = last_tick;
+		if (battle_config.hom_idle_no_share && sd->hd && battle_config.idletime_hom_option&IDLE_EMOTION)
+			sd->idletime_hom = last_tick;
+		if (battle_config.mer_idle_no_share && sd->md && battle_config.idletime_mer_option&IDLE_EMOTION)
+			sd->idletime_mer = last_tick;
+
+		if (sd->state.block_action & PCBLOCK_EMOTION) {
+			clif_addtobuylist_emote(sd, 0, ZC_EMOTE_BUYLIST_UNKNOWNERROR);
+			return;
+		}
+
+		if(battle_config.client_reshuffle_dice && p.emotionId>=57 && p.emotionId<=62) {// re-roll dice
+			p.emotionId = rnd()%6+57;
+		}
+
+		p.packId = packId;
+		p.emotionId = emotionId;
+
+		clif_send( &p, sizeof( p ), sd, AREA );
+	} else
+		clif_addtobuylist_emote(sd, 0, ZC_EMOTE_BUYLIST_CANTUSENOBASIC);
+
+#endif
+}
+
+int clif_addtobuylist_emote_sub(map_session_data *sd,va_list ap)
+{
+	//ShowError("clif_addtobuylist_emote_sub \n");
+	uint16 packId;
+	packId = static_cast<uint16>(va_arg(ap, int));
+
+	clif_addtobuylist_emote(sd, packId, ZC_EMOTE_BUYLIST_SALESENDED); // TODO no choice of it
+	return 0;
+}
+
+void clif_addtobuylist_emote (map_session_data* sd, uint16 packId, enum e_emoteaddtobuylist_result result ){
+#if PACKETVER >= 20230802
+
+	auto it_emote_data = std::find_if(sd->emotes.begin(), sd->emotes.end(), [packId](const s_emote_data& emote) {
+		return emote.id == packId;
+	});
+
+	if (it_emote_data != sd->emotes.end()) { //found already have it
+		return;
+	}
+
+	struct PACKET_ZC_ADDTOBUYLIST_EMOTE p = {};
+
+	p.packetType = HEADER_ZC_ADDTOBUYLIST_EMOTE;
+	p.packId = packId;
+	p.result = result;
+	p.unknown = 0;
+
+	clif_send( &p, sizeof( p ), sd, AREA );
+#endif
+}
+
+void clif_parse_buypack_emote( int fd, map_session_data* sd ){
+#if PACKETVER >= 20230802
+	struct PACKET_CZ_BUY_PACK_EMOTE* p = (struct PACKET_CZ_BUY_PACK_EMOTE*)RFIFOP( fd, 0 );
+
+	auto it_emote_data = std::find_if(sd->emotes.begin(), sd->emotes.end(), [p](const s_emote_data& emote) {
+		return emote.id == p->packId;
+	});
+
+	if (it_emote_data != sd->emotes.end()) { //found, already bought
+		clif_message_emote(sd, p->packId, ZC_EMOTE_ALRDYPURCHASE);
+		return;
+	}
+
+	// Check if emote exist in db
+	std::shared_ptr<s_emote_db> emote_data = emote_db.find(p->packId);
+
+	if( emote_data == nullptr ){
+		clif_message_emote(sd, p->packId, ZC_EMOTE_PURCHASEFAILED);
+		return;
+	}
+
+	if(emote_data->startTime && emote_data->startTime > time(NULL)){
+		clif_message_emote(sd, p->packId, ZC_EMOTE_CANTPURCHASEYET);
+		return;
+	}
+
+	if(emote_data->endTime && emote_data->endTime < time(NULL) && !emote_data->keepinshop){
+		clif_message_emote(sd, p->packId, ZC_EMOTE_SALESENDED);
+		return;
+	}
+
+	if(emote_data->materials.size() > 0){
+		// Check material to buy the emote pack
+		std::unordered_map<t_itemid, uint16> materials;
+
+		for( const auto& entry : emote_data->materials ){
+			int16 idx = pc_search_inventory( sd, entry.first );
+
+			if( idx < 0 ){
+				clif_message_emote(sd, p->packId, ZC_EMOTE_NOMONEY);
+				return;
+			}
+
+			if( sd->inventory.u.items_inventory[idx].amount < entry.second ){
+				clif_message_emote(sd, p->packId, ZC_EMOTE_NOMONEY);
+				return;
+			}
+
+			materials[idx] = entry.second;
+		}
+
+		// Delete items
+		for( const auto& entry : materials ){
+			if( pc_delitem( sd, entry.first, entry.second, 0, 0, LOG_TYPE_ENCHANT )  != 0 ){
+				clif_message_emote(sd, p->packId, ZC_EMOTE_PURCHASEFAILED);
+				return;
+			}
+		}
+	}
+
+	struct s_emote_data emote;
+	emote.id = p->packId;
+	if(emote_data->rentalHours){
+				emote.expire_time = static_cast<uint32>(time(NULL) + (emote_data->rentalHours * 3600));
+	} else
+		emote.expire_time = 0;
+	emote.type = emote_data->type;
+
+	sd->emotes.push_back(emote);
+
+	clif_displaymessage(sd->fd, "Thank you for your purchase, close and open the emote UI to see it in you buy tab.");
+	clif_list_emote(sd);
+#endif
+}
+
+void clif_list_emote (map_session_data* sd){
+#if PACKETVER >= 20230802
+	struct PACKET_ZC_LIST_EMOTE* p = (struct PACKET_ZC_LIST_EMOTE*)packet_buffer;
+
+	p->packetType = HEADER_ZC_LIST_EMOTE;
+	int pack_amount = 0;
+	p->synchroTime = static_cast<uint32>(time(NULL));
+#if PACKETVER >= 20230920
+	p->unknown = 540;
+#endif
+
+	struct PACKET_ZC_LIST_EMOTE_sub* sublist_emote_basic = &p->sublist_emote[pack_amount];
+	sublist_emote_basic->packId = 0;
+	sublist_emote_basic->type = 0;
+	sublist_emote_basic->endTime = 0;
+	pack_amount++;
+
+	for (const auto &it : emote_db) {
+		std::shared_ptr<s_emote_db> it_data = it.second;
+
+		time_t currentTime = time(NULL);
+		//ShowError("Emote list pack %d, startTime %ld, endTime %ld , rentalHours %u type %d current time %ld \n",it_data->id, it_data->startTime, it_data->endTime, it_data->rentalHours, it_data->type, currentTime);
+
+		bool isEmoteExist = false;
+		auto it_emote_data = std::find_if(sd->emotes.begin(), sd->emotes.end(), [it_data](const s_emote_data& emote) {
+			return emote.id == it_data->id;
+		});
+
+		if (it_emote_data != sd->emotes.end()) { //found so in buy list
+			//ShowError("Pack bought \n");
+			isEmoteExist = true;
+		} else { // not found so check if available in other list
+			// Sell didn't start
+			if(it_data->startTime && it_data->startTime > time(NULL))
+				continue;
+
+			// Sell finished and no keep in shop
+			if(it_data->endTime && it_data->endTime < time(NULL) && !it_data->keepinshop)
+				continue;
+		}
+
+		struct PACKET_ZC_LIST_EMOTE_sub* sublist_emote = &p->sublist_emote[pack_amount];
+		sublist_emote->packId = it_data->id;
+		if(isEmoteExist){  // If bought the pack
+			if(it_emote_data->expire_time == 0){ // Doesn't have expire time
+				sublist_emote->type = 0;
+				sublist_emote->endTime = static_cast<uint32>(time(NULL) - 60); // even if type is 0, official send endTime on it
+			} else { // Have expire time
+				sublist_emote->type = 1;
+				sublist_emote->endTime = it_emote_data->expire_time;
+			}
+		} else if(!isEmoteExist){ // If not bought the pack
+			sublist_emote->type = 1; // in bought list in any case
+			if(it_data->endTime && it_data->endTime < time(NULL) && it_data->keepinshop) // End time sale gone but keep in shop - OK
+				sublist_emote->endTime = static_cast<uint32>(it_data->endTime); // Show the date on client
+			else if(!it_data->endTime) // No endtime so we put an arbitrary one
+				sublist_emote->endTime = static_cast<uint32>(time(NULL) - 60); // Show the date on client
+			else if(it_data->endTime && it_data->endTime > time(NULL)) // End Time not expired but we must show it in bought list so we put that start time
+				sublist_emote->endTime = static_cast<uint32>(it_data->startTime); // Show the date on client
+		}
+
+		//ShowError("Pack showed %d type %d endTime %ld \n",it_data->id, sublist_emote->type, sublist_emote->endTime);
+		pack_amount++;
+	}
+
+	p->packetLength = static_cast<int16>(sizeof( struct PACKET_ZC_LIST_EMOTE ) + ( sizeof( struct PACKET_ZC_LIST_EMOTE_sub ) * pack_amount ));
+	//ShowError("p->packetType %d synchroTime %ld p->packetLength %d \n",p->packetType,p->synchroTime,p->packetLength);
+
+	clif_send( p, p->packetLength, sd, SELF );
+#endif
+}
+
+void clif_message_emote (map_session_data* sd, uint16 packId, enum e_emotemessage_result eresult ){
+#if PACKETVER >= 20230802
+	struct PACKET_ZC_MESSAGE_EMOTE p = {};
+
+	p.packetType = HEADER_ZC_MESSAGE_EMOTE;
+	p.packId = packId;
+	p.result = eresult;
+
+	clif_send( &p, sizeof( p ), sd, SELF );
+#endif
+}
+
 
 /// /resetskill.
 /// Request to skills.

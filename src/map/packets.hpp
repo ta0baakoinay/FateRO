@@ -2022,11 +2022,13 @@ struct PACKET_ZC_SKILLMSG {
 } __attribute__((packed));
 DEFINE_PACKET_HEADER(ZC_SKILLMSG, 0x215);
 
-struct PACKET_CZ_REQ_EMOTION_EXPANSION{
+/*
++struct PACKET_CZ_REQ_EMOTION_EXPANSION {
 	int16 packetType;
 	uint8 unknown[4];
 } __attribute__((packed));
 DEFINE_PACKET_HEADER(CZ_REQ_EMOTION_EXPANSION, 0xbe9);
+*/
 
 struct PACKET_ZC_DISAPPEAR_ENTRY{
 	int16 packetType;

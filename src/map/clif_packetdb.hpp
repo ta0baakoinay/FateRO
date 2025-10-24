@@ -2026,11 +2026,11 @@
 #if PACKETVER_MAIN_NUM >= 20230607
 	parseable_packet( HEADER_CZ_ALLY_CHAT, -1, clif_parse_dull, 0 );
 #endif
-
+/*
 #if PACKETVER_MAIN_NUM >= 20230705
 	parseable_packet( HEADER_CZ_REQ_EMOTION_EXPANSION, sizeof( struct PACKET_CZ_REQ_EMOTION_EXPANSION ), clif_parse_dull, 0 );
 #endif
-
+*/
 #if PACKETVER_MAIN_NUM >= 20230802
 	parseable_packet( HEADER_CZ_QUEST_STATUS_REQ, -1, clif_parse_dull, 0 );
 #endif
@@ -2046,5 +2046,17 @@
 #if PACKETVER_MAIN_NUM >= 20250122
 	parseable_packet( HEADER_CZ_MOVE_ITEM_TO_PERSONAL, sizeof( PACKET_CZ_MOVE_ITEM_TO_PERSONAL ), clif_parse_MoveFromKafraFav, 0 );
 #endif
+
+
+#if PACKETVER_RE_NUM >= 20230802 || PACKETVER_MAIN_NUM >= 20230802
+	parseable_packet( HEADER_CZ_SEND_EMOTE, sizeof( PACKET_CZ_SEND_EMOTE ), clif_parse_receive_emote, 0 );
+	packet( HEADER_ZC_RECEIVE_EMOTE, sizeof( PACKET_ZC_RECEIVE_EMOTE ) );
+	packet( HEADER_ZC_ADDTOBUYLIST_EMOTE, sizeof( PACKET_ZC_ADDTOBUYLIST_EMOTE ) );
+	parseable_packet( HEADER_CZ_BUY_PACK_EMOTE, sizeof( PACKET_CZ_BUY_PACK_EMOTE ), clif_parse_buypack_emote, 0 );
+	packet( HEADER_ZC_BUY_RESULT_EMOTE, sizeof( PACKET_ZC_BUY_RESULT_EMOTE ) );
+	packet( HEADER_ZC_MESSAGE_EMOTE, sizeof( PACKET_ZC_MESSAGE_EMOTE ) );
+	packet( HEADER_ZC_LIST_EMOTE, -1);
+#endif
+
 
 #endif /* CLIF_PACKETDB_HPP */

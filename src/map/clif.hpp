@@ -54,6 +54,8 @@ enum e_macro_report_status : uint8;
 enum e_hom_state2 : uint8;
 enum _sp;
 enum e_searchstore_failure : uint16;
+enum e_emotemessage_result : uint8;
+enum e_emoteaddtobuylist_result : int8;
 
 #define DMGVAL_IGNORE -30000
 
@@ -1508,5 +1510,14 @@ void clif_set_npc_window_pos_percent(map_session_data& sd, int32 x, int32 y);
 void clif_noask_sub( map_session_data& sd, map_session_data& tsd, int32 type );
 
 void clif_specialpopup(map_session_data& sd, int32 id);
+
+//Emote
+void clif_parse_receive_emote(int fd, map_session_data * sd);
+void clif_receive_emote(map_session_data * sd, uint16 packId, uint16 emotionId);
+void clif_list_emote(map_session_data * sd);
+void clif_message_emote(map_session_data * sd, uint16 packId, enum e_emotemessage_result eresult);
+void clif_addtobuylist_emote(map_session_data * sd, uint16 packId, enum e_emoteaddtobuylist_result);
+int clif_addtobuylist_emote_sub(map_session_data * sd, va_list ap);
+
 
 #endif /* CLIF_HPP */

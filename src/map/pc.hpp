@@ -378,6 +378,19 @@ struct s_qi_display {
 	e_questinfo_markcolor color;
 };
 
+
+/***********************************/
+/***********    Shakto      ********/
+/**    https://ronovelty.com/     **/
+/***********************************/
+
+struct s_emote_data {
+	uint32 id;
+	uint32 expire_time;
+	uint8 type;
+};
+
+
 class map_session_data : public block_list {
 public:
 	struct unit_data ud;
@@ -835,6 +848,14 @@ public:
 	// Battlegrounds queue system [MasterOfMuppets]
 	int32 bg_id, bg_queue_id;
 	int32 tid_queue_active; ///< Timer ID associated with players joining an active BG
+
+	/***********************************/
+	/***********    Shakto      ********/
+	/**    https://ronovelty.com/     **/
+	/***********************************/
+
+	std::vector<s_emote_data> emotes;
+
 
 #ifdef SECURE_NPCTIMEOUT
 	/**

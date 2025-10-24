@@ -1,0 +1,23 @@
+Header:
+  Type: EMOTE_DB
+  Version: 1
+
+Body:
+  - Id: 1
+    Name: EPT_21ST_ANNIVERSARY
+    Starttime: 2023-08-02
+    Endtime: 2023-08-30
+    KeepInShop: true
+    Type: 1
+  - Id: 2
+    Name: EPT_2023CHUSEOK
+    Starttime: 2023-09-06
+    Type: 1
+  - Id: 3
+    Name: EPT_2023THXGIVING
+    Starttime: 2023-11-01
+    Type: 1
+  - Id: 4
+    Name: EPT_CUSTOM01
+    Starttime: 2024-05-20
+    Type: 1

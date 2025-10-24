@@ -5636,6 +5636,78 @@ struct PACKET_ZC_DISAPPEAR_BUYING_STORE_ENTRY {
 DEFINE_PACKET_HEADER(ZC_DISAPPEAR_BUYING_STORE_ENTRY, 0x0816);
 #endif
 
+#if PACKETVER >= 20230802
+struct PACKET_CZ_SEND_EMOTE {
+	int16 packetType;
+	uint16 packId;
+	uint16 emotionId;
+} __attribute__((packed));
+DEFINE_PACKET_HEADER(CZ_SEND_EMOTE, 0x0be9);
+
+struct PACKET_ZC_RECEIVE_EMOTE {
+	int16 packetType;
+	uint32 AID;
+	uint16 packId;
+	uint16 emotionId;
+} __attribute__((packed));
+DEFINE_PACKET_HEADER(ZC_RECEIVE_EMOTE, 0x0bea);
+
+struct PACKET_ZC_ADDTOBUYLIST_EMOTE {
+	int16 packetType;
+	uint16 packId;
+	uint16 unknown;
+	uint8 result;
+} __attribute__((packed));
+DEFINE_PACKET_HEADER(ZC_ADDTOBUYLIST_EMOTE, 0x0beb);
+
+struct PACKET_CZ_BUY_PACK_EMOTE {
+	int16 packetType;
+	uint16 packId;
+	uint16 itemId;
+	uint8 amount;
+} __attribute__((packed));
+DEFINE_PACKET_HEADER(CZ_BUY_PACK_EMOTE, 0x0bec);
+
+struct PACKET_ZC_BUY_RESULT_EMOTE {
+	int16 packetType;
+	uint16 packId;
+	uint16 itemId;
+	uint8 amount;
+} __attribute__((packed));
+DEFINE_PACKET_HEADER(ZC_BUY_RESULT_EMOTE, 0x0bed);
+
+struct PACKET_ZC_LIST_EMOTE_sub {
+	uint16 packId;
+	uint8 type;
+	uint32 endTime;
+} __attribute__((packed));
+
+struct PACKET_ZC_MESSAGE_EMOTE {
+	int16 packetType;
+	uint16 packId;
+	uint8 result;
+} __attribute__((packed));
+DEFINE_PACKET_HEADER(ZC_MESSAGE_EMOTE, 0x0bee);
+
+struct PACKET_ZC_LIST_EMOTE {
+	int16 packetType;
+	int16 packetLength;
+	uint32 synchroTime;
+#if PACKETVER >= 20230920
+	uint16 unknown;
+#endif
+	struct PACKET_ZC_LIST_EMOTE_sub sublist_emote[];
+} __attribute__((packed));
+#if PACKETVER >= 20230920
+DEFINE_PACKET_HEADER(ZC_LIST_EMOTE, 0x0bf6);
+#else
+DEFINE_PACKET_HEADER(ZC_LIST_EMOTE, 0x0bef);
+#endif
+
+#endif
+
+
+
 #if PACKETVER_MAIN_NUM >= 20201118 || PACKETVER_RE_NUM >= 20211103 || PACKETVER_ZERO_NUM >= 20221024
 struct PACKET_ZC_OPEN_REFORM_UI {
 	int16 PacketType;
