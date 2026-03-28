@@ -80,9 +80,9 @@ int32 inventory_tosql(uint32 char_id, struct s_storage* p)
  * @param p: Storage entries
  * @return 0 if success, or error count
  */
-int32 storage_tosql(uint32 account_id, struct s_storage* p)
+int32 storage_tosql(uint32 account_id, struct s_storage* p, uint8 mode = 0)
 {
-	return char_memitemdata_to_sql(p->u.items_storage, MAX_STORAGE, account_id, TABLE_STORAGE, p->stor_id);
+	return char_memitemdata_to_sql(p->u.items_storage, MAX_STORAGE, account_id, TABLE_STORAGE, p->stor_id, mode);
 }
 
 /**
@@ -537,14 +537,17 @@ bool mapif_parse_StorageLoad(int32 fd) {
  */
 bool mapif_parse_StorageSave(int32 fd) {
 	int32 aid, cid, type;
+	uint8 stor_id, mode;
 	struct s_storage stor;
 
 	type = RFIFOB(fd, 4);
 	aid = RFIFOL(fd, 5);
 	cid = RFIFOL(fd, 9);
 	
+	mode = RFIFOB(fd, 13);
+
 	memset(&stor, 0, sizeof(struct s_storage));
-	memcpy(&stor, RFIFOP(fd, 13), sizeof(struct s_storage));
+	memcpy(&stor, RFIFOP(fd, 14), sizeof(struct s_storage));
 
 	//ShowInfo("Saving storage data for AID=%d.\n", aid);
 	switch(type){

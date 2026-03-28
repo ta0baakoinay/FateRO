@@ -530,7 +530,7 @@ int32 char_mmo_char_tosql(uint32 char_id, struct mmo_charstatus* p){
 }
 
 /// Saves an array of 'item' entries into the specified table.
-int32 char_memitemdata_to_sql(const struct item items[], int32 max, int32 id, enum storage_type tableswitch, uint8 stor_id) {
+int32 char_memitemdata_to_sql(const struct item items[], int32 max, int32 id, enum storage_type tableswitch, uint8 stor_id, uint8 mode) {
 	StringBuf buf;
 	SqlStmt stmt{ *sql_handle };
 	int32 i, j, offset = 0, errors = 0;
@@ -741,7 +741,7 @@ int32 char_memitemdata_to_sql(const struct item items[], int32 max, int32 id, en
 	return errors;
 }
 
-bool char_memitemdata_from_sql(struct s_storage* p, int32 max, int32 id, enum storage_type tableswitch, uint8 stor_id) {
+bool char_memitemdata_from_sql(struct s_storage* p, int32 max, int32 id, enum storage_type tableswitch, uint8 stor_id, uint8 mode) {
 	StringBuf buf;
 	SqlStmt stmt{ *sql_handle };
 	int32 i,j, offset = 0, max2;

@@ -378,6 +378,28 @@ struct s_qi_display {
 	e_questinfo_markcolor color;
 };
 
+struct s_deposit_bonus
+{
+	int type;
+	int val1;
+	int val2;
+
+	// Add constructor for proper initialization
+	s_deposit_bonus() : type(0), val1(0), val2(0) {}
+	s_deposit_bonus(int t, int v1, int v2) : type(t), val1(v1), val2(v2) {}
+};
+
+struct s_deposit_items
+{
+	t_itemid nameid;
+	uint16 amount;
+	char refine;
+
+	// Add constructor for proper initialization
+	s_deposit_items() : nameid(0), amount(0), refine(0) {}
+	s_deposit_items(t_itemid id, uint16 amt, char ref) : nameid(id), amount(amt), refine(ref) {}
+};
+
 
 /***********************************/
 /***********    Shakto      ********/
@@ -965,6 +987,12 @@ public:
 	s_macro_detect macro_detect;
 
 	std::vector<uint32> party_booking_requests;
+
+	struct {
+		bool calc;
+		std::unordered_map<uint8, std::vector<s_deposit_items>> items;
+		std::vector<s_deposit_bonus> bonus;
+	} deposit;
 
 	void update_look( _look look );
 };

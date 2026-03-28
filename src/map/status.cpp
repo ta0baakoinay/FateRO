@@ -22,6 +22,7 @@
 #include "battle.hpp"
 #include "battleground.hpp"
 #include "clif.hpp"
+#include "deposit.hpp"
 #include "elemental.hpp"
 #include "guild.hpp"
 #include "homunculus.hpp"
@@ -3888,6 +3889,71 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 		pet_delautobonus(*sd, sd->pd->autobonus2, true);
 		pet_delautobonus(*sd, sd->pd->autobonus3, true);
 	}
+// Deposit bonus calculation with safety checks
+sd->deposit.calc = false;
+if (!sd->deposit.items.empty())
+{
+	try {
+		sd->deposit.calc = true;
+		sd->deposit.bonus.clear();
+		sd->deposit.bonus.reserve(100); // Pre-allocate space
+
+		for (const auto& pair : sd->deposit.items)
+		{
+			uint8 stor_id = pair.first;
+			const std::vector<s_deposit_items>& ditems = pair.second;
+
+			if (ditems.empty())
+				continue;
+
+			// Check if storage still exists in database
+			std::shared_ptr<s_deposit_stor> deposit = deposit_db.find(stor_id);
+			if (deposit == nullptr) {
+				ShowWarning("status_calc_pc_sub: Deposit storage %d not found, skipping\n", stor_id);
+				continue;
+			}
+
+			for (const s_deposit_items& it : ditems)
+			{
+				// Validate item data
+				if (it.nameid <= 0) {
+					ShowWarning("status_calc_pc_sub: Invalid nameid %d in deposit, skipping\n", it.nameid);
+					continue;
+				}
+
+				std::shared_ptr<s_deposit_item> entry = deposit_db.findItemInStor(stor_id, it.nameid);
+				if (entry != nullptr && entry->script &&
+				    it.amount >= entry->amount &&
+				    it.refine >= entry->refine)
+				{
+					// Additional safety check before running script
+					if (sd->id <= 0) {
+						ShowError("status_calc_pc_sub: Invalid player ID\n");
+						continue;
+					}
+
+					run_script(entry->script, 0, sd->id, 0);
+					if (!calculating) {
+						sd->deposit.calc = false;
+						return 1;
+					}
+				}
+			}
+		}
+		sd->deposit.calc = false;
+	}
+	catch (const std::exception& e) {
+		ShowError("status_calc_pc_sub: Exception in deposit calculation - %s\n", e.what());
+		sd->deposit.calc = false;
+		sd->deposit.bonus.clear();
+	}
+	catch (...) {
+		ShowError("status_calc_pc_sub: Unknown exception in deposit calculation\n");
+		sd->deposit.calc = false;
+		sd->deposit.bonus.clear();
+	}
+}
+
 
 	// Parse equipment
 	for (i = 0; i < EQI_MAX; i++) {

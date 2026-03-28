@@ -40,6 +40,7 @@
 #include "clan.hpp"
 #include "clif.hpp"
 #include "date.hpp" // is_day_of_*()
+#include "deposit.hpp"
 #include "duel.hpp"
 #include "elemental.hpp"
 #include "emote.hpp"
@@ -2437,6 +2438,26 @@ void pc_reg_received(map_session_data *sd)
 	sd->state.active = 1;
 	sd->state.pc_loaded = false; // Ensure inventory data and status data is loaded before we calculate player stats
 
+
+	// CRITICAL: Properly initialize deposit structure first
+	sd->deposit.calc = false;
+	sd->deposit.items.clear();
+	sd->deposit.bonus.clear();
+	sd->deposit.bonus.reserve(100); // Pre-allocate space to prevent reallocation issues
+	for (const auto& pair : deposit_db)
+	{
+		std::shared_ptr<s_deposit_stor> stor = pair.second;
+
+		if (stor->items.empty())
+			continue;
+
+		uint8 mode = STOR_MODE_ALL;
+		if (!stor->bound)
+			mode |= STOR_MODE_CHAR;
+
+		intif_storage_request(sd, TABLE_STORAGE, stor->stor_id, mode);
+	}
+
 	intif_storage_request(sd,TABLE_STORAGE, 0, STOR_MODE_ALL); // Request storage data
 	intif_storage_request(sd,TABLE_CART, 0, STOR_MODE_ALL); // Request cart data
 	intif_storage_request(sd,TABLE_INVENTORY, 0, STOR_MODE_ALL); // Request inventory data
@@ -4477,8 +4498,10 @@ void pc_bonus(map_session_data *sd,int32 type,int32 val)
 			else {
 				ShowWarning("pc_bonus: unknown bonus type %d %d in unknown usage. Report this!\n", type, val);
 			}
-			break;
+			return;
 	}
+
+	deposit_counter(sd, type, val, 0);
 }
 
 /*==========================================
@@ -5119,8 +5142,10 @@ void pc_bonus2(map_session_data *sd,int32 type,int32 type2,int32 val)
 		else {
 			ShowWarning("pc_bonus2: unknown bonus type %d %d %d in unknown usage. Report this!\n", type, type2, val);
 		}
-		break;
+		return;
 	}
+
+	deposit_counter(sd, type, type2, val);
 }
 
 /**

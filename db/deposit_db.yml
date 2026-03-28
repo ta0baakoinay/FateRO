@@ -1,0 +1,145 @@
+  ###########################################################################
+# Deposit Database
+###########################################################################
+#
+# Settings
+#
+###########################################################################
+# - StorageId               Storage Id.
+#   Bound                   if storage shared by account or not. (Default: true)
+#   Withdraw                If item in this storage can be withdrawed after deposited. (Default: true)
+#   WithdrawFee             Price to withdraw any item from this storage. (Default: 0)
+#   Items:                  List of possible items.
+#     - Item                Item name.
+#       Amount              Item amount. (Default: 1)
+#       Refine              Item refine. (Default: 0)
+#       Withdraw            If this item can be withdrawed after deposited. (Default: true)
+#       WithdrawFee         Price to withdraw this item from this storage. (Default: 0)
+#       Script              Script to execute when the item successfully deposited. (Default: null)
+###########################################################################
+
+Header:
+  Type: DEPOSIT_DB
+  Version: 1
+
+Body:
+  - StorageId: 10
+    Bound: false
+    Withdraw: true
+    Items:
+    - Item: Phreeoni_Card3
+      Description: "[Base Atk +2]"
+      Script: |
+        bonus bInt,0;
+    - Item: Eddga_Card3
+      Description: "[HP +5%]"
+      Script: |
+        bonus bInt,0;
+    - Item: Golden_Bug_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Moonlight_Flower_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Mistress_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Dracula_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Orc_Load_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Drake_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Doppelganger_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Orc_Hero_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Osiris_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Maya_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Baphomet_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Pharaoh_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Dark_Lord_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Amon_Ra_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Incant_Samurai_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Lord_Of_Death_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Tao_Gunka_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Turtle_General_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Knight_Windstorm_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Garm_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Dark_Snake_Lord_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: B_Ygnizem_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Lady_Tanee_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Randgris_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Gloom_Under_Night_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Ktullanux_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Atroce_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Ifrit_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Rsx_0806_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Bacsojin_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Apocalips_H_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Thanatos_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Detale_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Kiel_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Fallen_Bishop_Card3
+      Script: |
+        bonus bInt,0;
+    - Item: Berzebub_Card3
+      Script: |
+        bonus bInt,0;

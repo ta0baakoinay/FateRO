@@ -42,6 +42,7 @@
 #include "clan.hpp"
 #include "clif.hpp"
 #include "date.hpp" // date type enum, date_get()
+#include "deposit.hpp"
 #include "elemental.hpp"
 #include "guild.hpp"
 #include "homunculus.hpp"
@@ -27602,6 +27603,185 @@ BUILDIN_FUNC(specialpopup) {
 	return SCRIPT_CMD_SUCCESS;
 }
 
+BUILDIN_FUNC(getdepositstore)
+{
+	int count = 0;
+
+	for (const auto& pair : deposit_db)
+	{
+		std::shared_ptr<s_deposit_stor> stor = pair.second;
+
+		if (stor->items.empty())
+			continue;
+
+		setd_sub_num(st, NULL, ".@stor_id", count, stor->stor_id, NULL);
+		setd_sub_str(st, NULL, ".@stor_name$", count++, storage_getName(stor->stor_id), NULL);
+	}
+
+	script_pushint(st, count);
+
+	return SCRIPT_CMD_SUCCESS;
+}
+
+BUILDIN_FUNC(getdepositlist)
+{
+	map_session_data* sd;
+
+	if (script_hasdata(st, 3) && script_isstring(st, 3)) // Character Name
+	{
+		if (!script_nick2sd(3, sd))
+			return SCRIPT_CMD_FAILURE;
+	}
+	else // Account ID
+	{
+		if (!script_accid2sd(3, sd))
+			return SCRIPT_CMD_FAILURE;
+	}
+
+	int j = 0, k = 0;
+	int stor_id = script_getnum(st, 2);
+	std::shared_ptr<s_deposit_stor> stor = deposit_db.find(stor_id);
+	if (stor != nullptr && sd != nullptr)
+	{
+		const auto& list = sd->deposit.items[stor->stor_id];
+		for (std::shared_ptr<s_deposit_item> entry : stor->items)
+		{
+			t_itemid nameid = entry->nameid;
+
+			auto idx = std::find_if(list.begin(), list.end(),
+				[&nameid](const s_deposit_items& s) { return (s.nameid == nameid); });
+
+			if (idx != list.end())
+			{
+				setd_sub_num(st, NULL, ".@amount2", j, idx->amount, NULL);
+				setd_sub_num(st, NULL, ".@refine2", j, idx->refine, NULL);
+				if (idx->amount >= entry->amount && idx->refine >= entry->refine)
+				{
+					setd_sub_num(st, NULL, ".@flag", j, 1, NULL);
+					setd_sub_num(st, NULL, ".@count", 0, ++k, NULL);
+				}
+			}
+
+			setd_sub_num(st, NULL, ".@amount", j, entry->amount, NULL);
+			setd_sub_num(st, NULL, ".@refine", j, entry->refine, NULL);
+			setd_sub_num(st, NULL, ".@nameid", j++, entry->nameid, NULL);
+		}
+	}
+
+	script_pushint(st, j);
+
+	return SCRIPT_CMD_SUCCESS;
+}
+
+BUILDIN_FUNC(getdepositbonus)
+{
+	map_session_data* sd = nullptr;
+
+	if (script_hasdata(st, 2) && script_isstring(st, 2))
+	{
+		if (!script_nick2sd(2, sd))
+			return SCRIPT_CMD_FAILURE;
+	}
+	else if (script_hasdata(st, 2))
+	{
+		if (!script_accid2sd(2, sd))
+			return SCRIPT_CMD_FAILURE;
+	}
+	else
+	{
+		// No parameter provided, use current player
+		if (!script_rid2sd(sd))
+			return SCRIPT_CMD_FAILURE;
+	}
+	// Safety check
+	if (!sd) {
+		ShowError("getdepositbonus: Invalid player session\n");
+		script_pushint(st, 0);
+		return SCRIPT_CMD_SUCCESS;
+	}
+
+	// Check if deposit structure is initialized
+	if (!sd->deposit.calc && sd->deposit.bonus.empty()) {
+		ShowDebug("getdepositbonus: No deposit bonuses found for player %s\n", sd->status.name);
+		script_pushint(st, 0);
+		return SCRIPT_CMD_SUCCESS;
+	}
+
+	int j = 0;
+	try {
+		// Use const reference to avoid potential modification during iteration
+		const std::vector<s_deposit_bonus>& bonus_list = sd->deposit.bonus;
+
+		// Additional safety check
+		if (bonus_list.empty()) {
+			script_pushint(st, 0);
+			return SCRIPT_CMD_SUCCESS;
+		}
+
+		for (const auto& it : bonus_list) {
+			// Validate data before setting
+			if (it.type < 0 || it.type > 9999) { // Reasonable bounds check
+				ShowWarning("getdepositbonus: Invalid bonus type %d, skipping\n", it.type);
+				continue;
+			}
+
+			setd_sub_num(st, nullptr, ".@type", j, it.type, nullptr);
+			setd_sub_num(st, nullptr, ".@val1", j, it.val1, nullptr);
+			setd_sub_num(st, nullptr, ".@val2", j, it.val2, nullptr);
+		j++;
+
+			// Prevent excessive iterations that might cause issues
+			if (j >= 1000) {
+				ShowWarning("getdepositbonus: Too many bonuses, limiting to 1000\n");
+				break;
+			}
+	}
+}
+	catch (const std::exception& e) {
+		ShowError("getdepositbonus: Exception occurred - %s\n", e.what());
+		script_pushint(st, 0);
+		return SCRIPT_CMD_FAILURE;
+	}
+	catch (...) {
+		ShowError("getdepositbonus: Unknown exception occurred\n");
+		script_pushint(st, 0);
+		return SCRIPT_CMD_FAILURE;
+	}
+	script_pushint(st, j);
+	return SCRIPT_CMD_SUCCESS;
+}
+
+
+BUILDIN_FUNC(getdepositdesc) {
+    map_session_data* sd;
+    if (!script_rid2sd(sd))
+        return SCRIPT_CMD_FAILURE;
+
+    int stor_id = script_getnum(st, 2);
+
+    std::shared_ptr<s_deposit_stor> deposit = deposit_db.find((uint8)stor_id);
+    if (deposit == nullptr) {
+        script_pushint(st, 0);
+        return SCRIPT_CMD_SUCCESS;
+    }
+
+    int j = 0;
+    for (const auto& entry : deposit->items) {
+        if (entry == nullptr)
+            continue;
+
+        std::shared_ptr<item_data> idata = item_db.find(entry->nameid);
+        std::string desc = (idata != nullptr) ? idata->ename : "Unknown";
+
+		setd_sub_num(st, nullptr, ".@desc_nameid", j, (int64)entry->nameid, nullptr);
+		setd_sub_str(st, nullptr, ".@description$", j, entry->description.c_str(), nullptr);
+        j++;
+    }
+
+    script_pushint(st, j);
+    return SCRIPT_CMD_SUCCESS;
+}
+
 BUILDIN_FUNC(setdialogalign){
 	map_session_data *sd;
 
@@ -28556,6 +28736,12 @@ struct script_function buildin_func[] = {
 	BUILDIN_DEF(autoloot,"??"),
 	BUILDIN_DEF(opentips, "i?"),
 	BUILDIN_DEF(specialpopup,"i"),
+
+	BUILDIN_DEF(getdepositstore, ""),
+	BUILDIN_DEF(getdepositlist, "i?"),
+	BUILDIN_DEF(getdepositbonus, "?"),
+	BUILDIN_DEF(getdepositdesc, "i"),
+
 
 	BUILDIN_DEF(setdialogalign, "i"),
 	BUILDIN_DEF(setdialogsize, "ii"),

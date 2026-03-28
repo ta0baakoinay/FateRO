@@ -30,6 +30,7 @@
 #include "chrif.hpp"
 #include "clan.hpp"
 #include "clif.hpp"
+#include "deposit.hpp"
 #include "duel.hpp"
 #include "elemental.hpp"
 #include "guild.hpp"
@@ -4530,8 +4531,13 @@ ACMD_FUNC(reloadattendancedb){
 ACMD_FUNC(reloadbarterdb){
 	nullpo_retr(-1, sd);
 
-	barter_db.reload();
-	clif_displaymessage(fd, msg_txt(sd, 830)); // Barter database has been reloaded.
+	if (strstr(command, "depositdb") || strncmp(message, "depositdb", 4) == 0) {
+		do_reload_deposit();
+		clif_displaymessage(fd, "Deposit database has been reloaded.");
+	} else {
+		barter_db.reload();
+		clif_displaymessage(fd, msg_txt(sd, 830)); // Barter database has been reloaded.
+	}
 
 	return 0;
 }

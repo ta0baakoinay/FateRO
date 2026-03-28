@@ -33,6 +33,7 @@
 #include "chrif.hpp"
 #include "clan.hpp"
 #include "clif.hpp"
+#include "deposit.hpp"
 #include "duel.hpp"
 #include "elemental.hpp"
 #include "emote.hpp"
@@ -5054,6 +5055,7 @@ void MapServer::finalize(){
 	do_final_instance();
 	do_final_itemdb();
 	do_final_storage();
+	do_final_deposit();
 	do_final_guild();
 	do_final_party();
 	do_final_pc();
@@ -5436,6 +5438,7 @@ bool MapServer::initialize( int32 argc, char *argv[] ){
 	do_init_party();
 	do_init_guild();
 	do_init_storage();
+	do_init_deposit();
 	do_init_pet();
 	do_init_homunculus();
 	do_init_mercenary();

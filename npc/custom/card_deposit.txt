@@ -1,0 +1,288 @@
+prontera,153,175,3	script	Collector	4_M_HUMERCHANT,{
+	.@npc_name$ = "[Collector]";
+
+	mes .@npc_name$;
+	mes "Do you need something?";
+	next;
+
+	// Get available deposit storages
+	.@stor_count = getdepositstore();
+
+	if (.@stor_count == 0) {
+		mes .@npc_name$;
+		mes "No deposit storage available.";
+		close;
+	}
+
+	// Main menu
+	mes .@npc_name$;
+	.@choice = select("[-] See Collection Book:[-] See Collection Benefit:[-] Open Collection Storage") - 1;
+
+	switch(.@choice) {
+		case 0: // Collection Book
+			callsub(S_CollectionBook);
+			break;
+		case 1: // Collection Benefit
+			callsub(S_CollectionBenefit);
+			break;
+		case 2: // Open Storage
+			callsub(S_OpenStorage);
+			break;
+	}
+	close;
+
+// ============================================
+// Sub: Collection Book
+// ============================================
+S_CollectionBook:
+	clear;
+	mes .@npc_name$;
+	mes "Ah, interested in viewing your collection?";
+	mes "Each storage holds treasures and artifacts from your adventures. The more you collect, the stronger you'll become!";
+	mes " ";
+	mes "Which deposit storage would you like to explore?";
+
+	// Build menu for storage selection
+	.@menu2$ = "";
+	for (.@i = 0; .@i < getdepositstore(); .@i++) {
+		if (.@i > 0) .@menu2$ += ":";
+		.@menu2$ += sprintf("[-] %s Storage", .@stor_name$[.@i]);
+	}
+
+	.@selected_stor = select(.@menu2$) - 1;
+	.@stor_id_sel = .@stor_id[.@selected_stor];
+
+	// Get deposit list
+	.@total = getdepositlist(.@stor_id_sel);
+
+	// Get descriptions
+	.@desc_count = getdepositdesc(.@stor_id_sel);
+
+	if (.@total == 0) {
+		clear;
+		mes .@npc_name$;
+		mes "No items in this storage.";
+		close;
+	}
+
+	// List type menu
+	clear;
+	mes .@npc_name$;
+	mes "Excellent choice!";
+	mes "Now, how would you like to view your collection? You can see everything at once, only the items you've collected so far, or the ones you're still missing.";
+	mes " ";
+	mes "What would you prefer?";
+
+	mes .@npc_name$;
+	.@list_type = select(
+		sprintf("[-] All List (%s)", F_InsertComma(.@total)),
+		sprintf("[-] Collected List (%s/%s)", F_InsertComma(.@count), F_InsertComma(.@total)),
+		sprintf("[-] Uncollected List (%s/%s)", F_InsertComma(.@total - .@count), F_InsertComma(.@total))
+	);
+
+	// Calculate pagination
+	.@items_per_page = 12;
+	.@total_to_show = 0;
+
+	// Count items that will be shown based on filter
+	for (.@i = 0; .@i < .@total; .@i++) {
+		if (.@list_type == 2 && !.@flag[.@i]) continue;
+		if (.@list_type == 3 && .@flag[.@i]) continue;
+		.@total_to_show++;
+	}
+
+	.@max_pages = (.@total_to_show + .@items_per_page - 1) / .@items_per_page;
+	if (.@max_pages < 1) .@max_pages = 1;
+
+	// Display pages
+	.@page = 1;
+
+	while (.@page <= .@max_pages) {
+		clear;
+		setdialogsize(400, 450);
+
+		mes " ";
+		mes .@npc_name$;
+		mes sprintf("Here's the List: ( Page %d / %d )", .@page, .@max_pages);
+		mes " ";
+
+		.@start = (.@page - 1) * .@items_per_page;
+		.@end = .@start + .@items_per_page;
+		.@filtered_index = 0;
+
+		for (.@i = 0; .@i < .@total; .@i++) {
+			// Apply filter
+			if (.@list_type == 2 && !.@flag[.@i]) continue;
+			if (.@list_type == 3 && .@flag[.@i]) continue;
+
+			// Check if this item is in current page range
+			if (.@filtered_index >= .@start && .@filtered_index < .@end) {
+				// Find the description for this nameid
+				.@item_desc$ = "";
+				for (.@k = 0; .@k < .@desc_count; .@k++) {
+					if (.@desc_nameid[.@k] == .@nameid[.@i]) {
+						.@item_desc$ = .@description$[.@k];
+						break;
+					}
+				}
+
+				mes sprintf("[ %d / %d ] ^i[%d] %s", .@amount2[.@i], .@amount[.@i], .@nameid[.@i], getitemname(.@nameid[.@i]));
+if (.@item_desc$ != "")
+    mes "^666666" + .@item_desc$ + "^000000";
+			}
+
+			.@filtered_index++;
+		}
+
+		// Navigation
+		next;
+
+		if (.@page == 1 && .@max_pages == 1) {
+			select("[-] Close");
+			return;
+		}
+		else if (.@page == 1) {
+			.@nav = select("[-] Next Page:[-] Close");
+			if (.@nav == 1) .@page++;
+			else return;
+		}
+		else if (.@page == .@max_pages) {
+			.@nav = select("[-] Previous Page:[-] Close");
+			if (.@nav == 1) .@page--;
+			else return;
+		}
+		else {
+			.@nav = select("[-] Previous Page:[-] Next Page:[-] Close");
+			if (.@nav == 1) .@page--;
+			else if (.@nav == 2) .@page++;
+			else return;
+		}
+	}
+
+	return;
+
+// ============================================
+// Sub: Collection Benefit
+// ============================================
+S_CollectionBenefit:
+	clear;
+	mes .@npc_name$;
+
+	.@bonus_count = getdepositbonus();
+
+	if (.@bonus_count < 1) {
+		mes "You didn't have any collection item yet.";
+		close;
+	}
+
+	clear;
+	mes .@npc_name$;
+	mes "Your current collection benefits:";
+	mes " ";
+
+	for (.@i = 0; .@i < .@bonus_count; .@i++) {
+		mes callsub(S_FormatBonus, .@type[.@i], .@val1[.@i], .@val2[.@i]);
+
+		if ((.@i + 1) % 12 == 0 && (.@i + 1) < .@bonus_count) {
+			next;
+			mes .@npc_name$;
+		}
+	}
+
+	close;
+
+// ============================================
+// Sub: Open Storage
+// ============================================
+S_OpenStorage:
+	clear;
+	mes .@npc_name$;
+	mes "You can put in collection item when it unused to get the benefit or take it out if you want to use it.";
+
+	mes .@npc_name$;
+	mes "Please select deposit storage:";
+
+	.@menu2$ = "";
+	for (.@i = 0; .@i < getdepositstore(); .@i++) {
+		if (.@i > 0) .@menu2$ += ":";
+		.@menu2$ += sprintf("[-] %s Storage", .@stor_name$[.@i]);
+	}
+
+	.@selected = select(.@menu2$) - 1;
+
+	close2;
+	openstorage2 .@stor_id[.@selected], STOR_MODE_PUT | STOR_MODE_GET;
+	end;
+
+// ============================================
+// Sub: Format Bonus Text
+// ============================================
+S_FormatBonus:
+	.@type = getarg(0);
+	.@val1 = getarg(1);
+	.@val2 = getarg(2);
+
+	switch(.@type) {
+		case bStr: return sprintf("STR +%d", .@val1);
+		case bAgi: return sprintf("AGI +%d", .@val1);
+		case bVit: return sprintf("VIT +%d", .@val1);
+		case bInt: return sprintf("INT +%d", .@val1);
+		case bDex: return sprintf("DEX +%d", .@val1);
+		case bLuk: return sprintf("LUK +%d", .@val1);
+		case bAllStats: return sprintf("All Stats +%d", .@val1);
+		case bAtk: return sprintf("ATK +%d", .@val1);
+		case bAtk2: return sprintf("ATK +%d", .@val1);
+		case bAtkRate: return sprintf("ATK +%d%%", .@val1);
+		case bBaseAtk: return sprintf("Base ATK +%d", .@val1);
+		case bMatk: return sprintf("MATK +%d", .@val1);
+		case bMatkRate: return sprintf("MATK +%d%%", .@val1);
+		case bMaxHP: return sprintf("Max HP +%d", .@val1);
+		case bMaxSP: return sprintf("Max SP +%d", .@val1);
+		case bMaxHPrate: return sprintf("Max HP +%d%%", .@val1);
+		case bMaxSPrate: return sprintf("Max SP +%d%%", .@val1);
+		case bDef: return sprintf("DEF +%d", .@val1);
+		case bDef2: return sprintf("DEF +%d", .@val1);
+		case bDefRate: return sprintf("DEF +%d%%", .@val1);
+		case bMdef: return sprintf("MDEF +%d", .@val1);
+		case bMdef2: return sprintf("MDEF +%d", .@val1);
+		case bMdefRate: return sprintf("MDEF +%d%%", .@val1);
+		case bHit: return sprintf("HIT +%d", .@val1);
+		case bFlee: return sprintf("FLEE +%d", .@val1);
+		case bFlee2: return sprintf("Perfect Dodge +%d", .@val1);
+		case bCritical: return sprintf("CRIT +%d", .@val1);
+		case bAspd: return sprintf("ASPD +%d", .@val1);
+		case bAspdRate: return sprintf("ASPD +%d%%", .@val1);
+		case bCastrate: return sprintf("Cast Time -%d%%", .@val1);
+		case bDelayRate: return sprintf("Delay -%d%%", .@val1);
+
+		case bAddRace:
+		case bAddClass:
+		case bAddSize:
+		case bAddEle:
+			if (.@val2 > 0)
+				return sprintf("Physical Damage +%d%%", .@val2);
+			break;
+
+		case bMagicAddRace:
+		case bMagicAddClass:
+		case bMagicAddSize:
+		case bMagicAddEle:
+			if (.@val2 > 0)
+				return sprintf("Magic Damage +%d%%", .@val2);
+			break;
+	}
+
+	if (.@val2 != 0)
+		return sprintf("Unknown Bonus (Type: %d, Val1: %d, Val2: %d)", .@type, .@val1, .@val2);
+
+	return sprintf("Unknown Bonus (Type: %d, Value: %d)", .@type, .@val1);
+
+OnInit:
+	questinfo QTYPE_CLICKME;
+	while(1){
+		specialeffect EF_LJOSALFAR;
+		showscript("The Collector");
+		sleep(500);
+	}
+	end;
+}

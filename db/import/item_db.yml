@@ -1510,6 +1510,32 @@ Body:
       bonus bMaxSPrate,10;
       bonus2 bHPRegenRate,50,10000;
       bonus2 bSPRegenRate,10,10000;
+  - Id: 304305
+    AegisName: Turtle_General_Card2
+    Name: Turtle General Card
+    Type: Card
+    Buy: 20
+    Weight: 10
+    Locations:
+      Right_Hand: true
+    Flags:
+      BuyingStore: true
+    Script: |
+      bonus2 bAddClass,Class_All,20;
+      bonus3 bAutoSpell,"SM_MAGNUM",10,30;
+  - Id: 404305
+    AegisName: Turtle_General_Card3
+    Name: Turtle General Card
+    Type: Card
+    Buy: 20
+    Weight: 10
+    Locations:
+      Right_Hand: true
+    Flags:
+      BuyingStore: true
+    Script: |
+      bonus2 bAddClass,Class_All,20;
+      bonus3 bAutoSpell,"SM_MAGNUM",10,30;
 #Body:
 # THQ Quest Items
 #=============================================================
