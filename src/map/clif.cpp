@@ -10969,6 +10969,14 @@ void clif_parse_LoadEndAck(int32 fd,map_session_data *sd)
 
 		if (!sd->state.autotrade) { // Don't trigger NPC event or opening vending/buyingstore will be failed
 			npc_script_event( *sd, NPCE_LOGIN );
+
+		#ifdef VIP_ENABLE
+			// force VIP reset on login
+			status_change_end((struct block_list*)sd, SC_VIPSTATE, INVALID_TIMER);
+			if(sd->vip.time > 0)
+				sc_start(NULL, (struct block_list*)sd, SC_VIPSTATE, 100, 1, (sd->vip.time-time(NULL)) * 1000);
+		#endif
+
 			autocombat_pc_login(sd); // [jsn] Auto Combat
 		}
 

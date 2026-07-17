@@ -1568,6 +1568,8 @@ void chrif_parse_ack_vipActive(int32 fd) {
 		if((flag&0x1)) { //isvip
 			sd->vip.enabled = 1;
 			sd->vip.time = vip_time;
+			// vip_time is in epoch timestamp which are in seconds,  while sc_start requires milliseconds
+			sc_start(NULL, (struct block_list*)sd, SC_VIPSTATE, 100, 1, (vip_time-time(NULL)) * 1000);
 			// Increase storage size for VIP.
 			sd->storage.max_amount = battle_config.vip_storage_increase + MIN_STORAGE;
 			if (sd->storage.max_amount > MAX_STORAGE) {
@@ -1578,6 +1580,7 @@ void chrif_parse_ack_vipActive(int32 fd) {
 		} else if (sd->vip.enabled) {
 			sd->vip.enabled = 0;
 			sd->vip.time = 0;
+			status_change_end((struct block_list*)sd, SC_VIPSTATE, INVALID_TIMER);
 			sd->storage.max_amount = MIN_STORAGE;
 			sd->special_state.no_gemstone = 0;
 			clif_displaymessage(sd->fd,msg_txt(sd,438)); // You are no longer VIP.

@@ -1899,6 +1899,7 @@
 	export_constant(SC_PERIOD_PLUSEXP_2ND);
 	export_constant(SC_POWERUP);
 	export_constant(SC_AGIUP);
+	export_constant(SC_VIPSTATE);
 
 	export_constant(SC_AUTOCOMBAT);
 	export_constant(EFST_AUTOCOMBAT);
@@ -3416,6 +3417,7 @@
 	export_constant(EFST_C_RATE_PLUS);
 	export_constant(EFST_RESIST_PLUS);
 	export_constant(EFST_PVP_DUN_BUFF);
+	export_constant(EFST_VIPSTATE);
 	export_constant(EFST_TARGET_MARKER);
 	export_constant(EFST_BLOCK_SEAL);
 	export_constant(EFST_FROST_STORM);
