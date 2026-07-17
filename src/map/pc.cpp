@@ -9792,9 +9792,32 @@ void pc_close_npc(map_session_data *sd,int32 flag)
 }
 
 /*==========================================
+ * Battle Info
+ *------------------------------------------*/
+void pc_battle_info(struct map_session_data *tsd, struct map_session_data *ssd, uint16 skill_id)
+{
+	char output[256];
+
+	if( !tsd || !ssd || tsd == ssd )
+		return;
+
+	if (ssd->state.battleinfo & 0x01) {
+		sprintf(output, "[ Battleinfo ] : You kill the %s [ %s ] using < %s >.", job_name(tsd->status.class_), tsd->status.name, (skill_id ? skill_get_desc(skill_id) : "Melee/Reflect/Effect"));
+		clif_messagecolor(ssd, 0xADD8E6, output, true, SELF);
+	}
+	if (tsd->state.battleinfo & 0x01) {
+		sprintf(output, "[ Battleinfo ] : The %s [ %s ] kill you using < %s >.", job_name(ssd->status.class_), ssd->status.name, (skill_id ? skill_get_desc(skill_id) : "Melee/Reflect/Effect"));
+		clif_messagecolor(tsd, 0xADD8E6, output, true, SELF);
+	}
+
+}
+
+
+
+/*==========================================
  * Invoked when a player has negative current hp
  *------------------------------------------*/
-int32 pc_dead(map_session_data *sd,block_list *src)
+int32 pc_dead(map_session_data *sd,struct block_list *src, uint16 skill_id)
 {
 	int32 i=0,k=0;
 	t_tick tick = gettick();
@@ -9964,6 +9987,7 @@ int32 pc_dead(map_session_data *sd,block_list *src)
 
 	if (src && src->type == BL_PC) {
 		map_session_data *ssd = (map_session_data *)src;
+		pc_battle_info(sd, ssd, skill_id);
 		pc_setparam(ssd, SP_KILLEDRID, sd->id);
 		npc_script_event( *ssd, NPCE_KILLPC );
 

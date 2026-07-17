@@ -18,6 +18,67 @@
 //	return 0;
 //}
 
+
+ACMD_FUNC(battleinfo)
+{
+    int state = 0;
+
+    if (message && *message) {
+        state = atoi(message);
+        if (state < 0 || state > 15) {
+			clif_displaymessage(fd, "Battle Information States:");
+			clif_displaymessage(fd, " 0 - Off");
+			clif_displaymessage(fd, " 1 - Kill/Death");
+			clif_displaymessage(fd, " 2 - Dispell");
+			clif_displaymessage(fd, " 4 - Provoke");
+			clif_displaymessage(fd, " 8 - Mindbreaker");
+			clif_displaymessage(fd, "15 - All (Kill/Death + Dispell + Provoke + Mindbreaker)");
+			clif_displaymessage(fd, "Example: To enable Kill/Death and Dispell, use @battleinfo 3 (1 + 2).");
+            return -1;
+        }
+    } else {
+			clif_displaymessage(fd, "Battle Information States:");
+			clif_displaymessage(fd, " 0 - Off");
+			clif_displaymessage(fd, " 1 - Kill/Death");
+			clif_displaymessage(fd, " 2 - Dispell");
+			clif_displaymessage(fd, " 4 - Provoke");
+			clif_displaymessage(fd, " 8 - Mindbreaker");
+			clif_displaymessage(fd, "15 - All (Kill/Death + Dispell + Provoke + Mindbreaker)");
+			clif_displaymessage(fd, "Example: To enable Kill/Death and Dispell, use @battleinfo 3 (1 + 2).");
+            return -1;
+	}
+
+    if (state == 0) {
+        clif_displaymessage(fd, "- Battle Information Display OFF -");
+        sd->state.battleinfo = 0;
+    } else {
+        sd->state.battleinfo = state;
+        char output[256] = "- Battle Information Display ON - States: ";
+        int isFirst = 1;
+        if (state & 1) {  // Kill/Death
+            if (!isFirst) strcat(output, " | ");
+            strcat(output, "Kill/Death");
+            isFirst = 0;
+        }
+        if (state & 2) {  // Dispell
+            if (!isFirst) strcat(output, " | ");
+            strcat(output, "Dispell");
+            isFirst = 0;
+        }
+        if (state & 4) {  // Provoke
+            if (!isFirst) strcat(output, " | ");
+            strcat(output, "Provoke");
+            isFirst = 0;
+        }
+        if (state & 8) {  // Mindbreaker
+            if (!isFirst) strcat(output, " | ");
+            strcat(output, "Mindbreaker");
+        }
+        clif_displaymessage(fd, output);
+    }
+
+    return 0;
+}
 /*==========================================
  @showbuff - show buff in party windows
  Upgraded by Shakto

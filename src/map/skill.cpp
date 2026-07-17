@@ -7743,6 +7743,31 @@ int32 skill_castend_nodamage_id (block_list *src, block_list *bl, uint16 skill_i
 		}
 	}
 
+	// ============================ Battle Info Skills
+	char output[256];
+	if (dstsd && sd && dstsd != sd && dstsd->fd) {
+		switch(skill_id) {
+			case SA_DISPELL:
+				if (dstsd->state.battleinfo & 0x02) {
+					sprintf(output, "[ Battleinfo ] : [ %s ] dispelled you.", sd->status.name);
+					clif_messagecolor(dstsd, 0xADD8E6, output, false, SELF);
+				}
+				break;
+			case SM_PROVOKE:
+				if (dstsd->state.battleinfo & 0x04) {
+					sprintf(output, "[ Battleinfo ] : [ %s ] provoked you.", sd->status.name);
+					clif_messagecolor(dstsd, 0xADD8E6, output, false, SELF);
+				}
+				break;
+			case PF_MINDBREAKER:
+				if (dstsd->state.battleinfo & 0x08) {
+					sprintf(output, "[ Battleinfo ] : [ %s ] mindbreaked you", sd->status.name);
+					clif_messagecolor(dstsd, 0xADD8E6, output, false, SELF);
+				}
+				break;
+		}
+	}
+
 	status_data* tstatus = status_get_status_data(*bl);
 	status_data* sstatus = status_get_status_data(*src);
 

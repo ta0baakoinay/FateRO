@@ -497,6 +497,7 @@ public:
 		bool roulette_open;
 		t_itemid item_reform;
 		uint64 item_enchant_index;
+		unsigned int battleinfo : 15; // Battleinfo
 	} state;
 	struct {
 		unsigned char no_weapon_damage, no_magic_damage, no_misc_damage;
@@ -1600,7 +1601,7 @@ int32 pc_skillheal_bonus(map_session_data *sd, uint16 skill_id);
 int32 pc_skillheal2_bonus(map_session_data *sd, uint16 skill_id);
 
 void pc_damage(map_session_data *sd,block_list *src,uint32 hp, uint32 sp, uint32 ap);
-int32 pc_dead(map_session_data *sd,block_list *src);
+int32 pc_dead(map_session_data *sd,struct block_list *src, uint16 skill_id);
 void pc_revive(map_session_data *sd,uint32 hp, uint32 sp, uint32 ap = 0);
 bool pc_revive_item(map_session_data *sd);
 void pc_heal(map_session_data *sd,uint32 hp,uint32 sp, uint32 ap, int32 type);
