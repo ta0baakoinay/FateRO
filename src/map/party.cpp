@@ -816,6 +816,7 @@ int32 party_member_withdraw(int32 party_id, uint32 account_id, uint32 char_id, c
 			memset(&p->data[i], 0, sizeof(p->data[0]));
 			p->party.count--;
 			party_check_state(p);
+			clif_party_info(*p, NULL);
 		}
 	}
 
@@ -832,6 +833,10 @@ int32 party_member_withdraw(int32 party_id, uint32 account_id, uint32 char_id, c
 #endif
 
 		sd->status.party_id = 0;
+		if( sd->state.spb ) {
+			sd->state.spb = 0;
+			clif_displaymessage(sd->fd, "Party buff turned OFF has a member leave from the party");
+		}
 		clif_name_area(sd); //Update name display [Skotlex]
 		//TODO: hp bars should be cleared too
 

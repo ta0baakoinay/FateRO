@@ -32,6 +32,7 @@
 #include "mercenary.hpp"
 #include "mob.hpp"
 #include "npc.hpp"
+#include "party.hpp"
 #include "path.hpp"
 #include "pc.hpp"
 #include "pc_groups.hpp"
@@ -13385,7 +13386,14 @@ static bool status_change_start_post_delay(block_list* src, block_list* bl, sc_t
 
 	if( opt_flag[SCF_ONTOUCH] && sd && !sd->npc_ontouch_.empty() )
 		npc_touchnext_areanpc(sd,false); // Run OnTouch_ on next char in range
-
+	if( sd && sd->status.party_id && (
+		type == SC_BLESSING || type == SC_INCREASEAGI || type == SC_CP_WEAPON || type == SC_CP_SHIELD ||
+		type == SC_CP_ARMOR || type == SC_CP_HELM || type == SC_SPIRIT || type == SC_DEVOTION)
+	)
+	{
+		struct party_data *p = party_search(sd->status.party_id);
+		clif_party_info(*p, NULL);
+	}
 	return true;
 }
 
@@ -14155,7 +14163,14 @@ int32 status_change_end( block_list* bl, enum sc_type type, int32 tid ){
 	// Needed to be here to make sure OPT1_STONEWAIT has been cleared from the target (only on natural expiration of the stone wait timer)
 	if (type == SC_STONEWAIT && tid != INVALID_TIMER)
 		status_change_start(bl, bl, SC_STONE, 100, val1, val2, 0, 0, val3, SCSTART_NOAVOID);
-
+	if( sd && sd->status.party_id && (
+		type == SC_BLESSING || type == SC_INCREASEAGI || type == SC_CP_WEAPON || type == SC_CP_SHIELD ||
+		type == SC_CP_ARMOR || type == SC_CP_HELM || type == SC_SPIRIT || type == SC_DEVOTION )
+	)
+	{
+		struct party_data *p = party_search(sd->status.party_id);
+		clif_party_info(*p, NULL);
+	}
 	return 1;
 }
 
