@@ -46,6 +46,17 @@ Header:
   Version: 4
 
 Body:
+  - Status: Autocombat
+    Icon: EFST_AUTOCOMBAT
+    Flags:
+      NoClearbuff: true
+      NoDispell: true
+      NoBanishingBuster: true
+      NoClearance: true
+      NoSave: true
+      NoSaveInfinite: true
+      RemoveOnMapWarp: true
+      SendVal1: true
   - Status: Stone
     DurationLookup: NPC_PETRIFYATTACK
     States:

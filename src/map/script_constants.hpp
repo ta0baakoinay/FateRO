@@ -1899,6 +1899,28 @@
 	export_constant(SC_PERIOD_PLUSEXP_2ND);
 	export_constant(SC_POWERUP);
 	export_constant(SC_AGIUP);
+
+	export_constant(SC_AUTOCOMBAT);
+	export_constant(EFST_AUTOCOMBAT);
+	export_constant(AC_HEALSKILL);
+	export_constant(AC_HPPOTION);
+	export_constant(AC_SPPOTION);
+	export_constant(AC_SIT);
+	export_constant(AC_BUFFSKILL);
+	export_constant(AC_ATTACKSKILL);
+	export_constant(AC_BUFFITEM);
+	export_constant(AC_LOOTITEM);
+	export_constant(AC_MOBS);
+	export_constant(AC_NORMALATK);
+	export_constant(AC_TELEPORT);
+	export_constant(AC_RETALIATE);
+	export_constant(AC_ENDCONDITION);
+	export_constant(AC_LOOT_NONE);
+	export_constant(AC_LOOT_ALL);
+	export_constant(AC_LOOT_GROUP_1);
+	export_constant(AC_LOOT_GROUP_2);
+	export_constant(AC_LOOT_GROUP_MAX);
+
 	export_constant(SC_PROTECTION);
 	export_constant(SC_BATH_FOAM_A);
 	export_constant(SC_BATH_FOAM_B);

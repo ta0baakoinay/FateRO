@@ -65,6 +65,7 @@
 #include "storage.hpp"
 #include "unit.hpp" // unit_stop_attack(), unit_stop_walking()
 #include "vending.hpp" // struct s_vending
+#include "autocombat.hpp"
 
 using namespace rathena;
 
@@ -844,6 +845,9 @@ void pc_setinvincibletimer(map_session_data& sd) {
 
 	if (val <= 0)
 		return;
+
+	if (sd.sc.getSCE(SC_AUTOCOMBAT)) return; // [jsn] Auto Combat
+
 
 	if( sd.invincible_timer != INVALID_TIMER )
 		delete_timer(sd.invincible_timer,pc_invincible_timer);
@@ -6066,6 +6070,8 @@ enum e_additem_result pc_additem(map_session_data *sd,struct item *item,int32 am
 	//Auto-equip
 	if(id->flag.autoequip)
 		pc_equipitem(sd, i, id->equip);
+	else if (log_type == LOG_TYPE_PICKDROP_PLAYER) // [jsn] Auto Combat
+		autocombat_autoloot_storage(sd, i, amount, w);
 
 	/* rental item check */
 	if( item->expire_time ) {
@@ -8467,6 +8473,13 @@ void pc_gainexp(map_session_data *sd, block_list *src, t_exp base_exp, t_exp job
 	if(sd->prev == nullptr || pc_isdead(sd))
 		return;
 
+	// Apply auto combat EXP penalties
+	if (sd->sc.getSCE(SC_AUTOCOMBAT)) {
+	    base_exp = base_exp * battle_config.autocombat_base_exp_penalty / 100;
+	    job_exp = job_exp * battle_config.autocombat_job_exp_penalty / 100;
+	}
+
+
 	if (!(exp_flag&2)) {
 
 		if (!battle_config.pvp_exp && map_getmapflag(sd->m, MF_PVP))  // [MouseJstr]
@@ -9696,10 +9709,13 @@ void pc_damage(map_session_data *sd,block_list *src,uint32 hp, uint32 sp, uint32
 
 	if (!src)
 		return;
+	bool was_sitting = false; // [jsn] Auto Combat
+
 
 	if( pc_issit(sd) ) {
 		pc_setstand(sd, true);
 		skill_sit(sd,0);
+		was_sitting = true; // [jsn] Auto Combat
 	}
 
 	if (sd->progressbar.npc_id)
@@ -9713,6 +9729,8 @@ void pc_damage(map_session_data *sd,block_list *src,uint32 hp, uint32 sp, uint32
 
 	if(battle_config.prevent_logout_trigger&PLT_DAMAGE)
 		sd->canlog_tick = gettick();
+
+	autocombat_pc_damage(sd, src, was_sitting); // [jsn] Auto Combat
 }
 
 TIMER_FUNC(pc_close_npc_timer){

@@ -13,6 +13,7 @@
 #include <common/strlib.hpp>
 
 #include "achievement.hpp"
+#include "autocombat.hpp"
 #include "atcommand.hpp" // msg_txt()
 #include "battle.hpp" // struct battle_config
 #include "clif.hpp"
@@ -142,6 +143,12 @@ int32 chat_joinchat(map_session_data* sd, int32 chatid, const char* pass)
 		clif_joinchatfail( *sd, ENTERROOM_WRONG_PASSWORD );
 		return 0;
 	}
+
+// End Auto Combat when joining chatroom
+if( sd->sc.getSCE(SC_AUTOCOMBAT) ) {
+    status_change_end(sd, SC_AUTOCOMBAT);
+}
+
 
 	if( sd->status.base_level < cd->minLvl || sd->status.base_level > cd->maxLvl ) {
 		if(sd->status.base_level < cd->minLvl)

@@ -9,3 +9,9 @@
  **/
 
 //BUILDIN_DEF(example,""),
+BUILDIN_DEF(getautocombatv, "i"),
+BUILDIN_DEF(getautocombat, "i?"),
+BUILDIN_DEF(setautocombat, "i?????"),
+BUILDIN_DEF(getskillname, "i"),
+BUILDIN_DEF(getavailablemobs, "r"),
+BUILDIN_DEF(getautocombatduration, "ii"),

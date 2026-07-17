@@ -1894,6 +1894,7 @@ int32 npc_touch_areanpc(map_session_data* sd, int16 m, int16 x, int16 y, npc_dat
 {
 	nullpo_retr(0, sd);
 	nullpo_retr(0, nd);
+	if (sd->sc.getSCE(SC_AUTOCOMBAT)) return 1; // [jsn] Auto Combat
 
 	if (nd->is_invisible)
 		return 1; // a npc was found, but it is disabled

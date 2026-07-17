@@ -5451,6 +5451,7 @@ bool MapServer::initialize( int32 argc, char *argv[] ){
 	do_init_duel();
 	do_init_vending();
 	do_init_buyingstore();
+	do_init_autocombat(); // [jsn] Auto Combat
 	do_init_emote();
 
 	npc_event_do_oninit();	// Init npcs (OnInit)

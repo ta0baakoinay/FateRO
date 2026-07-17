@@ -19,6 +19,7 @@
 #include <common/utilities.hpp>
 #include <common/utils.hpp>
 
+#include "autocombat.hpp" // [jsn] Auto Combat
 #include "battle.hpp"
 #include "battleground.hpp"
 #include "clif.hpp"
@@ -10836,6 +10837,12 @@ static bool status_change_start_post_delay(block_list* src, block_list* bl, sc_t
 	if(!(flag&SCSTART_LOADED)) // &4 - Do not parse val settings when loading SCs
 	switch(type)
 	{
+		case SC_AUTOCOMBAT: // [jsn] Auto Combat
+			tick_time = AUTOCOMBAT_DEFAULTNEXTTICK;
+			if (val1 == 1) val4 = INT_MAX;
+			else val4 = tick / tick_time;
+			if (sd != nullptr) autocombat_status_start(sd, gettick());
+			break;
 		/* Permanent effects */
 		case SC_AETERNA:
 		case SC_MODECHANGE:
@@ -13547,6 +13554,9 @@ int32 status_change_end( block_list* bl, enum sc_type type, int32 tid ){
 	status_data* status = status_get_status_data(*bl);
 
 	switch(type) {
+		case SC_AUTOCOMBAT: // [jsn] Auto Combat
+			autocombat_status_end(sd);
+			break;
 		case SC_KEEPING:
 		case SC_BARRIER:
 			if (unit_data* ud = unit_bl2ud(bl); ud != nullptr) {
@@ -14198,6 +14208,23 @@ TIMER_FUNC(status_change_timer){
 	FreeBlockLock freeLock(false);
 
 	switch(type) {
+	case SC_AUTOCOMBAT: // [jsn] Auto Combat
+		if (sd == nullptr || bl == nullptr || !sce) {
+
+			return 0;
+		}
+
+		if (sce->val4 > 0) {
+			if (sd->sc.getSCE(SC_AUTOCOMBAT)) { // Double-check status still exists
+				sce->val4--;
+				autocombat_main(sd, tick);
+				sc_timer_next(tick + AUTOCOMBAT_DEFAULTNEXTTICK);
+				return 0;
+			}
+		}
+		// When val4 reaches 0 or status doesn't exist, end naturally
+
+		break;
 	case SC_MAXIMIZEPOWER:
 	case SC_CLOAKING:
 		if(!status_damage(nullptr, bl, 0, 1, 0, 3, 0))

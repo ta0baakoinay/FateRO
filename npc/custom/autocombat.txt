@@ -1,0 +1,391 @@
+//===== rAthena Script ======================================
+//= Auto Combat
+//===== By: ==================================================
+//= jsn (discord: jasonch35)
+//===== Current Version: =====================================
+//= 20241211
+//===== Description: =========================================
+//= Inspired by Ragnarok:EL
+//= Duration variable is either:
+//=		AC_DURATION
+//=		#AC_DURATION
+//= depending on AUTOCOMBAT_DURATION_CONFIG in autocombat.hpp
+//= If set, AC duration is automatically calculated based on
+//=		on the remaining VIP duration.
+//============================================================
+-	script	AutoCombat	FAKE_NPC,{
+function skill_menu;
+OnInit:
+	// Max duration in minutes for autocombat in every reset
+	// This is ignored if AUTOCOMBAT_DURATION_CONFIG is set to 0
+	// or an item id
+	.max_duration = 0;
+	.max_duration_vip = 0; // set to 0 to disable
+	bindatcmd "acstart",strnpcinfo(3)+"::OnAutoCombatStart";
+	bindatcmd "acend",strnpcinfo(3)+"::OnAutoCombatEnd";
+
+	//===== DO NOT TOUCH BELOW ==================================================
+	.on$ = "^007000"; .off$ = "^FF0000"; .post$ = "^000000";
+	.box1$ = "[  "+.on$+"/"+.post$+"  ]  ";
+	.box2$ = "[     ]  ";
+	.box3$ = "[  "+.off$+"x"+.post$+"  ]  ";
+	end;
+
+OnAutoCombatEnd:
+	sc_end(SC_AUTOCOMBAT);
+	end;
+
+OnAutoCombatStart:
+	sc_end(SC_AUTOCOMBAT);
+	if ((.@dur = getautocombatduration(.max_duration, .max_duration_vip)) >= 0) {
+		if (.@dur <= 1)
+			message strcharinfo(0), "Your Auto Combat duration has expired.";
+		else
+			message strcharinfo(0), "You have "+callfunc("F_InsertComma", .@dur)+" seconds remaining for Auto Combat.";
+	}
+	while(!.@while) {
+		switch(select("Auto Combat","Attack Menu","Support Buffs","Item Loot","Teleport & Misc","Regeneration")) {
+		case 1:
+			if (strcharinfo(3) != mapMA$) {
+				getmapxy(mapMA$, .@y, .@x, BL_PC);
+				setautocombat(AC_MOBS, 0);
+			}
+			.@size = getavailablemobs(.@mobs);
+			if (!.@size) {
+				message strcharinfo(0),"No monsters in this map.";
+			} else {
+				message strcharinfo(0),"Select mobs to attack.";
+				while(true) {
+					.@select$ = "~ Start Combat ~:";
+					for (.@i = 0; .@i < .@size; .@i++) {
+						.@mob_name$ = getmonsterinfo(.@mobs[.@i], MOB_NAME);
+						if (getautocombat(AC_MOBS, .@mobs[.@i]))
+							.@select$ += .box1$ + .on$ + .@mob_name$ + .post$ + ":";
+						else
+							.@select$ += .box2$ + .@mob_name$ + ":";
+					}
+					.@select$ += "Clear Selected";
+					.@s = select(.@select$) - 2;
+					if (.@s == -1) {
+						getmapxy(mapMA$, .@y, .@x, BL_PC);
+						if (.@dur == -1) {
+							sc_start(SC_AUTOCOMBAT, 1, 1);
+						} else {
+							if (.@dur <= 1) {
+								message strcharinfo(0), "Your Auto Combat duration has expired.";
+								atcommand "@refresh";
+								end;
+							}
+							sc_start(SC_AUTOCOMBAT, (.@dur * 1000), 0);
+						}
+						.@while = 1;
+						break;
+					}
+					if (.@s == .@size) {
+						setautocombat(AC_MOBS, 0);
+						continue;
+					}
+					setautocombat(AC_MOBS, .@mobs[.@s]);
+				}
+			}
+			break;
+		case 2:
+			while(true) {
+				.@menu$ = "<- Return:"+(getautocombat(AC_NORMALATK) ? .box2$ : .box1$+.on$)+"Normal Attack"+(getautocombat(AC_NORMALATK) ? "" : .post$)+":";
+				.@menu$ += ""+(getautocombat(AC_RETALIATE) ? .box2$ : .box1$+.on$)+"Retaliate When Attacked"+(getautocombat(AC_RETALIATE) ? "" : .post$)+":";
+				freeloop(true);
+				.@size = getautocombatv(AC_ATTACKSKILL);
+				for (.@i = 0; .@i < .@size; .@i++)
+					.@menu$ += skill_menu(@ACINFO_ID[.@i], getautocombat(AC_ATTACKSKILL,@ACINFO_ID[.@i]));
+				freeloop(false);
+				.@s = select(.@menu$) - 4;
+				if (.@s == -3) break;
+				else if (.@s == -2) setautocombat(AC_NORMALATK);
+				else if (.@s == -1) setautocombat(AC_RETALIATE);
+				else {
+					if (!getautocombat(AC_ATTACKSKILL,@ACINFO_ID[.@s])) {
+						message(strcharinfo(0),"Please input skill level.");
+						input(.@skill_lv);
+						if (.@skill_lv < 1 || .@skill_lv > getskilllv(@ACINFO_ID[.@s]))
+							.@skill_lv = getskilllv(@ACINFO_ID[.@s]);
+					}
+					setautocombat(AC_ATTACKSKILL, @ACINFO_ID[.@s], .@skill_lv);
+				}
+			}
+			break;
+		case 3:
+			.@while2 = false;
+			while(!.@while2) {
+				switch(select("<- Return","Skill Buffs", "Item Buffs")) {
+				case 1:
+					.@while2 = true;
+					break;
+				case 2:
+					while(true) {
+						.@size = getautocombatv(AC_BUFFSKILL);
+						.@menu$ = "<- Return:";
+						for (.@i = 0; .@i < .@size; .@i++) {
+							.@menu$ += skill_menu(@ACINFO_ID[.@i], getautocombat(AC_BUFFSKILL,@ACINFO_ID[.@i]));
+						}
+						.@s = select(.@menu$) - 2;
+						if (.@s == -1) break;
+						if (!getautocombat(AC_BUFFSKILL,@ACINFO_ID[.@s])) {
+							message(strcharinfo(0),"Please input skill level.");
+							input(.@skill_lv);
+							if (.@skill_lv < 1 || .@skill_lv > getskilllv(@ACINFO_ID[.@s]))
+								.@skill_lv = getskilllv(@ACINFO_ID[.@s]);
+						}
+						setautocombat(AC_BUFFSKILL, @ACINFO_ID[.@s], .@skill_lv);
+					}
+					break;
+				case 3:
+					disable_items;
+					while(true) {
+						.@size = getautocombatv(AC_BUFFITEM);
+						.@menu$ = "<- Return:";
+						for (.@i = 0; .@i < .@size; .@i++) {
+							.@menu$ += ""+(getautocombat(AC_BUFFITEM,@ACINFO_ID[.@i]) ? .box1$+.on$ : .box2$)+""+getitemname(@ACINFO_ID[.@i])+""+(getautocombat(AC_BUFFITEM,@ACINFO_ID[.@i]) ? .post$ : "")+":";
+						}
+						.@s = select(.@menu$) - 2;
+						if (.@s == -1) break;
+						setautocombat(AC_BUFFITEM, @ACINFO_ID[.@s]);
+					}
+					enable_items;
+					break;
+				}
+			}
+			break;
+		case 4:
+			.@while2 = false;
+			while(!.@while2) {
+				.@menu$ = "<- Return:";
+				.@menu$ += ""+(getautocombatv(AC_LOOTITEM) == AC_LOOT_NONE ? .box1$+.on$ : .box2$)+"Disable Looting"+(getautocombatv(AC_LOOTITEM) == AC_LOOT_NONE ? .post$ : "")+":";
+				.@menu$ += ""+(getautocombatv(AC_LOOTITEM) == AC_LOOT_ALL ? .box1$+.on$ : .box2$)+"Loot Everything"+(getautocombatv(AC_LOOTITEM) == AC_LOOT_ALL ? .post$ : "")+":";
+				.@menu$ += ""+(getautocombatv(AC_LOOTITEM) == AC_LOOT_GROUP_1 ? .box1$+.on$ : .box2$)+"Loot Group 1 Only"+(getautocombatv(AC_LOOTITEM) == AC_LOOT_GROUP_1 ? .post$ : "")+":";
+				.@menu$ += ""+(getautocombatv(AC_LOOTITEM) == AC_LOOT_GROUP_2 ? .box1$+.on$ : .box2$)+"Loot Group 2 Only"+(getautocombatv(AC_LOOTITEM) == AC_LOOT_GROUP_2 ? .post$ : "")+":";
+				.@s = select(.@menu$) - 3;
+				if (.@s == -2) break;
+				if (.@s <= 0) {
+					setautocombat(AC_LOOTITEM, .@s);
+					continue;
+				}
+				.@break = false;
+				while(!.@break) {
+					.@group$ = "<- Return:";
+					.@group$ += ""+(getautocombatv(AC_LOOTITEM) == .@s ? .box1$+.on$ : .box2$)+" Enable Loot Group "+.@s+""+(getautocombatv(AC_LOOTITEM) == .@s ? .post$ : "")+":";
+					.@group$ += "[ > ]  Add Item:";
+					.@size = query_sql("SELECT `item_id` FROM `autocombat_items` WHERE `char_id` = "+getcharid(0)+" AND `type` = "+(.@s + 1)+"", .@itemid);
+					for (.@i = 0; .@i < .@size; .@i++)
+						.@group$ += "- " + getitemname(.@itemid[.@i]) + ":";
+					.@t = select(.@group$) - 4;
+					if (.@t == -3) {
+						.@break = true;
+					} else if (.@t == -2) {
+						setautocombat(AC_LOOTITEM, .@s);
+						for (.@i = 0; .@i < .@size; .@i++) {
+							setautocombat(AC_LOOTITEM, .@itemid[.@i]);
+						}
+					} else if (.@t == -1) {
+						input(.@additem);
+						if (getitemname(.@additem) == "null") {
+							message(strcharinfo(0), "Item ID not found.");
+							break;
+						}
+						if (getautocombat(AC_LOOTITEM, .@additem)) {
+							message(strcharinfo(0), ""+getitemname(.@additem)+" is already on group "+.@s+".");
+							break;
+						}
+						query_sql("INSERT INTO `autocombat_items` (`char_id`, `type`, `item_id`) VALUES ("+getcharid(0)+", "+(.@s + 1)+", "+.@additem+")");
+						if (getautocombatv(AC_LOOTITEM) == .@s)
+							setautocombat(AC_LOOTITEM, .@additem);
+					} else {
+						query_sql("DELETE FROM `autocombat_items` WHERE `char_id` = "+getcharid(0)+" AND `type` = "+(.@s + 1)+" AND `item_id` = "+.@itemid[.@t]+"");
+						if (getautocombatv(AC_LOOTITEM) == .@s)
+							setautocombat(AC_LOOTITEM, .@itemid[.@t]);
+					}
+				}
+			}
+			break;
+		case 5:
+			.@break = 0;
+			while(!.@break) {
+				.@menu$ = "<- Return:";
+				.@menu$ += ""+(getautocombat(AC_TELEPORT, 0) ? .box1$ : .box2$)+" Use Teleport Skill:";
+				.@menu$ += ""+(getautocombat(AC_TELEPORT, 1) ? .box1$ : .box2$)+" Use Fly Wing:";
+				.@menu$ += ""+(getautocombat(AC_TELEPORT, 2) ? .box1$ : .box2$)+" Teleport from MVP:";
+				.@menu$ += ""+(getautocombat(AC_TELEPORT, 3) ? "[ "+.on$+""+getautocombat(AC_TELEPORT, 3)+"%"+.post$+" ]" : .box3$)+" Emergency Teleport HP Treshold:";
+				.@menu$ += ""+(getautocombat(AC_TELEPORT, 4) ? "[ "+.on$+""+getautocombat(AC_TELEPORT, 4)+"s"+.post$+" ]" : .box3$)+" Teleport No Mob Delay:";
+				.@menu$ += "[ "+.on$+""+getautocombatv(AC_ENDCONDITION)+""+.post$+" ] When AC Ends:";
+				switch(select(.@menu$)) {
+				case 1:
+					.@break = 1;
+					break;
+				case 2:
+					setautocombat(AC_TELEPORT, 0, 0);
+					break;
+				case 3:
+					setautocombat(AC_TELEPORT, 1, 0);
+					break;
+				case 4:
+					setautocombat(AC_TELEPORT, 2, 0);
+					break;
+				case 5:
+					message strcharinfo(0),"Please input from 3 to 90 percent HP to emergency teleport.";
+					input(.@minhp);
+					if (.@minhp < 3 || .@minhp > 90) .@minhp = 0; // set default
+					setautocombat(AC_TELEPORT, 3, .@minhp);
+					break;
+				case 6:
+					message strcharinfo(0),"Please input up to 120 seconds to teleport if no monsters are found.";
+					input(.@teleport);
+					if (.@teleport < 1 || .@teleport > 120) .@teleport = 0; // set default
+					setautocombat(AC_TELEPORT, 4, .@teleport);
+					break;
+				case 7:
+					setautocombat(AC_ENDCONDITION);
+					break;
+				}
+			}
+			break;
+		case 6:
+			.@break = 0;
+			while(!.@break) {
+				.@menu$ = "<- Return:";
+				.@size = getautocombatv(AC_HEALSKILL);
+				for (.@i = 0; .@i < .@size; .@i++) {
+					if (getskilllv(@ACINFO_ID[.@i]) > 0) {
+						if (@ACINFO_VAL[.@i]) {
+							.@menu$ += "[ "+.on$+"Lv "+@ACINFO_VAL[.@i]+""+.post$+" ] "+.on$+getskillname(@ACINFO_ID[.@i])+.post$+" @ "+@ACINFO_VAL2[.@i]+"% "+(.@i == 2 ? "SP" : "HP")+":";
+						} else {
+							.@menu$ += .box2$+getskillname(@ACINFO_ID[.@i])+":";
+						}
+					} else .@menu$ += ":";
+				}
+				.@menu$ += "HP Potions:SP Potions:";
+				.@menu$ += "[  "+.on$+""+getautocombat(AC_SIT,0)+"%"+.post$+"  ] Sit to Regen HP:";
+				.@menu$ += ""+(getautocombat(AC_SIT,1) ? "[  "+.on$+""+getautocombat(AC_SIT,1)+"%"+.post$+"  ]" : .box3$)+" Sit to Regen SP:";
+				switch((.@s = select(.@menu$))) {
+				case 1:
+					.@break = 1;
+					break;
+				case 2:
+				case 3:
+				case 4:
+					.@s -= 2;
+					if (!getautocombat(AC_HEALSKILL, .@s)) {
+						message(strcharinfo(0),"Please input skill level.");
+						input(.@skill_lv);
+						message strcharinfo(0),"Please input minimun "+(.@s == 2 ? "SP" : "HP")+" to use "+getskillname(@ACINFO_ID[.@s])+".";
+						input(.@minhp);
+						if (.@skill_lv < 1 || .@skill_lv > getskilllv(@ACINFO_ID[.@s]))
+							.@skill_lv = getskilllv(@ACINFO_ID[.@s]);
+						if (.@minhp < 1 || .@minhp > 99) .@minhp = 1; // set default
+					} else {
+						.@skill_lv = .@minhp = 0;
+					}
+					setautocombat(AC_HEALSKILL, .@s, .@skill_lv, .@minhp);
+					break;
+				case 5:
+					while(true) {
+						.@size = getautocombatv(AC_HPPOTION);
+						.@menu$ = "<- Return:";
+						for (.@i = 0; .@i < .@size; .@i++) {
+							if ((.@rate = getautocombat(AC_HPPOTION, @ACINFO_ID[.@i])) > 0)
+								.@menu$ += "[ "+.on$+""+.@rate+"% HP"+.post$+" ] "+.on$+getitemname(@ACINFO_ID[.@i])+.post$+":";
+							else
+								.@menu$ += .box2$+getitemname(@ACINFO_ID[.@i])+":";
+						}
+						.@s = select(.@menu$) - 2;
+						if (.@s == -1) break;
+						if (getautocombat(AC_HPPOTION, @ACINFO_ID[.@s])) {
+							setautocombat(AC_HPPOTION, @ACINFO_ID[.@s], 0);
+							continue;
+						}
+						message strcharinfo(0),"Please input HP threshold to use "+getitemname(@ACINFO_ID[.@s])+".";
+						input(.@minhp);
+						if (.@minhp < 1 || .@minhp > 99) {
+							message strcharinfo(0),"Invalid HP percentage. Please try again.";
+							continue;
+						}
+						setautocombat(AC_HPPOTION, @ACINFO_ID[.@s], .@minhp);
+					}
+					break;
+				case 6:
+					while(true) {
+						.@size = getautocombatv(AC_SPPOTION);
+						.@menu$ = "<- Return:";
+						for (.@i = 0; .@i < .@size; .@i++) {
+							if ((.@rate = getautocombat(AC_SPPOTION, @ACINFO_ID[.@i])) > 0)
+								.@menu$ += "[ "+.on$+""+.@rate+"% SP"+.post$+" ] "+.on$+getitemname(@ACINFO_ID[.@i])+.post$+":";
+							else
+								.@menu$ += .box2$+getitemname(@ACINFO_ID[.@i])+":";
+						}
+						.@s = select(.@menu$) - 2;
+						if (.@s == -1) break;
+						if (getautocombat(AC_SPPOTION, @ACINFO_ID[.@s])) {
+							setautocombat(AC_SPPOTION, @ACINFO_ID[.@s], 0);
+							continue;
+						}
+						message strcharinfo(0),"Please input SP threshold to use "+getitemname(@ACINFO_ID[.@s])+".";
+						input(.@minhp);
+						if (.@minhp < 1 || .@minhp > 99) {
+							message strcharinfo(0),"Invalid SP percentage. Please try again.";
+							continue;
+						}
+						setautocombat(AC_SPPOTION, @ACINFO_ID[.@s], .@minhp);
+					}
+					break;
+				case 7:
+					message strcharinfo(0),"Please input from 5 to 75 percent HP to sit.";
+					input(.@minhp);
+					if (.@minhp < 5 || .@minhp > 75) .@minhp = 5; // set default
+					setautocombat(AC_SIT,0,.@minhp);
+					break;
+				case 8:
+					message strcharinfo(0),"Please input from 5 to 75 percent SP to sit. Set to 0 to disable.";
+					input(.@minsp);
+					if (.@minsp < 5 || .@minsp > 75) .@minsp = 0;
+					setautocombat(AC_SIT,1,.@minsp);
+					break;
+				}
+			}
+		}
+	}
+	end;
+
+function	skill_menu	{
+	.@skill_id = getarg(0);
+	.@active = getarg(1);
+	if (.@active) {
+		.@menu$ = "[ "+.on$+"Lv "+.@active+""+.post$+" ] "+.on$+getskillname(.@skill_id)+.post$+":";
+	} else {
+		.@menu$ = .box2$+getskillname(.@skill_id)+":";
+	}
+	return .@menu$;
+}
+}
+
+function	script	F_AutoCombatItem	{
+	doevent("AutoCombat::OnAutoCombatStart");
+	return;
+	if (getstatus(SC_AUTOCOMBAT)) {
+		sc_end(SC_AUTOCOMBAT);
+		return;
+	}
+	.@dur = getautocombatduration(getvariableofnpc(.max_duration, "AutoCombat"), getvariableofnpc(.max_duration_vip, "AutoCombat"));
+	switch(.@dur) {
+	case -1:
+		sc_start(SC_AUTOCOMBAT, 1, 1);
+		break;
+	case 0:
+	case 1:
+		message strcharinfo(0), "Your Auto Combat duration has expired.";
+		atcommand "@refresh";
+		break;
+	default:
+		message strcharinfo(0), "You have "+callfunc("F_InsertComma", .@dur)+" seconds remaining for Auto Combat.";
+		sc_start(SC_AUTOCOMBAT, (.@dur * 1000), 0);
+		break;
+	}
+	return;
+}

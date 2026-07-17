@@ -531,6 +531,10 @@ struct Battle_Config
 	int32 feature_search_stores;
 	int32 searchstore_querydelay;
 	int32 searchstore_maxresults;
+	int32 autocombat_skill_delay;
+    int32 autocombat_drop_rate_penalty;     // ADD THIS LINE
+    int32 autocombat_base_exp_penalty;      // ADD THIS LINE
+    int32 autocombat_job_exp_penalty;       // ADD THIS LINE
 	int32 display_party_name;
 	int32 cashshop_show_points;
 	int32 mail_show_status;

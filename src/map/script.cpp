@@ -31,6 +31,7 @@
 #include <common/utilities.hpp>
 #include <common/utils.hpp>
 
+#include "autocombat.hpp" // [jsn] Auto Combat
 #include "achievement.hpp"
 #include "atcommand.hpp"
 #include "battle.hpp"

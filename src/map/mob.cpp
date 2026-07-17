@@ -40,6 +40,7 @@
 #include "pc.hpp"
 #include "pet.hpp"
 #include "quest.hpp"
+#include "autocombat.hpp"
 
 using namespace rathena;
 
@@ -2590,7 +2591,7 @@ static void mob_item_drop(mob_data *md, std::shared_ptr<s_item_drop_list>& dlist
 	if( sd == nullptr ) sd = map_charid2sd(dlist->second_charid);
 	if( sd == nullptr ) sd = map_charid2sd(dlist->third_charid);
 	test_autoloot = sd 
-		&& (drop_rate <= sd->state.autoloot || pc_isautolooting(sd, ditem->item_data.nameid))
+		&& (drop_rate <= sd->state.autoloot || pc_isautolooting(sd, ditem->item_data.nameid) || autocombat_autoloot(sd, ditem->item_data.nameid))
 		&& (flag ? ((battle_config.homunculus_autoloot ? (battle_config.hom_idle_no_share == 0 || !pc_isidle_hom(sd)) : 0) || (battle_config.mercenary_autoloot ? (battle_config.mer_idle_no_share == 0 || !pc_isidle_mer(sd)) : 0)) :
 			(battle_config.idle_no_autoloot == 0 || DIFF_TICK(last_tick, sd->idletime) < battle_config.idle_no_autoloot));
 #ifdef AUTOLOOT_DISTANCE
@@ -2777,6 +2778,9 @@ void mob_damage(mob_data *md, block_list *src, int32 damage)
 		//Log damage
 		mob_log_damage(md, src, static_cast<int64>(damage));
 	}
+
+
+		autocombat_mob_damage(src); // [jsn] Auto Combat
 
 	if (battle_config.show_mob_info&3)
 		clif_name_area(md);
@@ -3326,6 +3330,15 @@ int32 mob_dead(mob_data *md, block_list *src, int32 type)
 
 			drop_rate = mob_getdroprate(src, md->db, entry->rate, drop_modifier, md);
 
+						// Apply auto combat drop rate penalty
+			if (src && src->type == BL_PC) {
+			    map_session_data *sd = (map_session_data*)src;
+			    if (sd && sd->sc.getSCE(SC_AUTOCOMBAT)) {
+			        int original_rate = drop_rate;
+			        drop_rate = drop_rate * battle_config.autocombat_drop_rate_penalty / 100;
+			    }
+			}
+
 			// attempt to drop the item
 			if (rnd() % 10000 >= drop_rate)
 				continue;
@@ -3346,7 +3359,8 @@ int32 mob_dead(mob_data *md, block_list *src, int32 type)
 			}
 			// Announce first, or else ditem will be freed. [Lance]
 			// By popular demand, use base drop rate for autoloot code. [Skotlex]
-			mob_item_drop(md, dlist, ditem, 0, battle_config.autoloot_adjust ? drop_rate : entry->rate, homkillonly || merckillonly);
+			int autoloot_rate = battle_config.autoloot_adjust ? drop_rate : md->db->dropitem[i]->rate;
+			mob_item_drop(md, dlist, ditem, 0, autoloot_rate, homkillonly || merckillonly);
 		}
 
 		// Ore Discovery (triggers if owner has loot priority, does not require to be the killer)
