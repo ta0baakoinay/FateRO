@@ -4215,11 +4215,13 @@ static int32 skill_check_unit_range_sub(block_list *bl, va_list ap)
 
 	switch (skill_id) {
 		case AL_PNEUMA: //Pneuma doesn't work even if just one cell overlaps with Land Protector
+		case MG_SAFETYWALL:
+		case WZ_FIREPILLAR:
 			if(g_skill_id == SA_LANDPROTECTOR)
 				break;
 			[[fallthrough]];
 		case MH_STEINWAND:
-		case MG_SAFETYWALL:
+		//case MG_SAFETYWALL:
 		case SC_MAELSTROM:
 			if(g_skill_id != MH_STEINWAND && g_skill_id != MG_SAFETYWALL && g_skill_id != AL_PNEUMA && g_skill_id != SC_MAELSTROM)
 				return 0;
@@ -14454,6 +14456,13 @@ int32 skill_castend_pos2(block_list* src, int32 x, int32 y, uint16 skill_id, uin
 			return 0; // Don't consume gems if cast on Land Protector
 		}
 	}
+
+	case PF_FOGWALL:
+		if( map_getcell(src->m, x, y, CELL_CHKLANDPROTECTOR) ) {
+			clif_skill_fail(*sd,skill_id,USESKILL_FAIL_LEVEL,0);
+			break;
+		}
+
 	[[fallthrough]];
 	case MG_FIREWALL:
 	case MG_THUNDERSTORM:
@@ -14483,7 +14492,7 @@ int32 skill_castend_pos2(block_list* src, int32 x, int32 y, uint16 skill_id, uin
 	case HT_CLAYMORETRAP:
 	case AS_VENOMDUST:
 	case AM_DEMONSTRATION:
-	case PF_FOGWALL:
+	//case PF_FOGWALL:
 	case PF_SPIDERWEB:
 	case HT_TALKIEBOX:
 	case WE_CALLPARTNER:
@@ -14599,6 +14608,11 @@ int32 skill_castend_pos2(block_list* src, int32 x, int32 y, uint16 skill_id, uin
 		break;
 
 	case WZ_ICEWALL:
+		if( map_getcell(src->m, x, y, CELL_CHKLANDPROTECTOR) ) {
+			clif_skill_fail(*sd,skill_id,USESKILL_FAIL_LEVEL,0);
+			break;
+		}
+
 	case NPC_CANE_OF_EVIL_EYE:
 		flag|=1;
 		if(skill_unitsetting(src,skill_id,skill_lv,x,y,0))
@@ -16478,11 +16492,22 @@ static int32 skill_unit_onplace(skill_unit *unit, block_list *bl, t_tick tick)
 
 	status_data* tstatus = status_get_status_data(*bl);
 
+	if( (skill_get_type(sg->skill_id) == WZ_METEOR && ((battle_config.land_protector_behavior) ? map_getcell(bl->m, bl->x, bl->y, CELL_CHKLANDPROTECTOR) : map_getcell(unit->m, unit->x, unit->y, CELL_CHKLANDPROTECTOR)) && sg->skill_id != SA_LANDPROTECTOR) ||
+		map_getcell(bl->m, bl->x, bl->y, CELL_CHKMAELSTROM) )
+		return 0; //AoE skills are ineffective. [Skotlex]
+
+
+
 	if( (skill_get_type(sg->skill_id) == BF_MAGIC && ((battle_config.land_protector_behavior) ? map_getcell(bl->m, bl->x, bl->y, CELL_CHKLANDPROTECTOR) : map_getcell(unit->m, unit->x, unit->y, CELL_CHKLANDPROTECTOR)) && sg->skill_id != SA_LANDPROTECTOR) ||
 		map_getcell(bl->m, bl->x, bl->y, CELL_CHKMAELSTROM) )
 		return 0; //AoE skills are ineffective. [Skotlex]
 
 	std::shared_ptr<s_skill_db> skill = skill_db.find(sg->skill_id);
+
+	if( skill->inf2[INF2_IGNORELANDPROTECTOR] && skill_get_type(sg->skill_id) == WZ_METEOR && (battle_config.land_protector_behavior ? map_getcell(bl->m, bl->x, bl->y, CELL_CHKLANDPROTECTOR) : map_getcell(unit->m, unit->x, unit->y, CELL_CHKLANDPROTECTOR)) )
+		return 0; //AoE skills are ineffective. [Skotlex]
+
+
 
 	if( (skill->inf2[INF2_ISSONG] || skill->inf2[INF2_ISENSEMBLE]) && map_getcell(bl->m, bl->x, bl->y, CELL_CHKBASILICA) )
 		return 0; //Songs don't work in Basilica
@@ -21345,6 +21370,29 @@ static int32 skill_cell_overlap(block_list *bl, va_list ap)
 				break;
 			[[fallthrough]];
 		case HW_GANBANTEIN:
+			switch (unit->group->skill_id) {
+			case WZ_METEOR:
+				if(map_getcell(bl->m, bl->x, bl->y, CELL_CHKLANDPROTECTOR)){
+					return 1;
+				}else{
+					skill_delunit(unit);
+					return 1;
+				}
+			case WZ_STORMGUST:
+				if(map_getcell(bl->m, bl->x, bl->y, CELL_CHKLANDPROTECTOR)){
+					return 1;
+				}else{
+					skill_delunit(unit);
+					return 1;
+				}
+            case SA_LANDPROTECTOR:
+				skill_delunit(unit);
+				return 1;
+			 default:
+				skill_delunit(unit);
+				return 1;
+            }
+            break;
 		case LG_EARTHDRIVE:
 			// Officially songs/dances are removed
 			if (skill_get_unit_flag(unit->group->skill_id, UF_RANGEDSINGLEUNIT)) {
@@ -21434,8 +21482,8 @@ static int32 skill_cell_overlap(block_list *bl, va_list ap)
 	std::bitset<INF2_MAX> inf2 = skill_db.find(skill_id)->inf2;
 
 	if (unit->group->skill_id == SA_LANDPROTECTOR && !inf2[INF2_ISTRAP] && !inf2[INF2_IGNORELANDPROTECTOR] ) { //It deletes everything except traps and barriers
-		(*alive) = 0;
-		return 1;
+		//(*alive) = 0;
+		//return 1;
 	}
 
 	return 0;
