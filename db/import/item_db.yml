@@ -103,7 +103,7 @@ Body:
       NoGuildStorage: true
       NoMail: true
       NoAuction: true
-  Script: |
+    Script: |
     callfunc "F_AutoCombatItem";
   - Id: 30000
     AegisName: Elite_Armor
