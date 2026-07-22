@@ -1552,6 +1552,29 @@ Body:
     Script: |
       bonus2 bAddClass,Class_All,20;
       bonus3 bAutoSpell,"SM_MAGNUM",10,30;
+  - Id: 120000
+    AegisName: Wep_C_Drake_Axe
+    Name: Costume Drake Axe
+    Type: Shadowgear
+    Jobs:
+      Blacksmith: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bStr,3;
+  - Id: 120001
+    AegisName: Costume_DRAKEBOW
+    Name: Costume Drake Bow
+    Type: Shadowgear
+    Jobs:
+      Hunter: true
+      Rogue: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bDex,3;
 #Body:
 # THQ Quest Items
 #=============================================================
