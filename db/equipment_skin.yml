@@ -40,10 +40,10 @@ Header:
   Version: 1
 
 Body:
-  - Type: "LOOK_WEAPON"
-    ItemID: Costume_DRAKEBOW
-    SkinID: Bow_Of_Rudra
-
-  - Type: "LOOK_SHIELD"
-    ItemID: Valkyrja's_Shield
-    SkinID: Valkyrja's_Shield
+#  - Type: "LOOK_WEAPON"
+#    ItemID: Costume_DRAKEBOW
+#    SkinID: Bow_Of_Rudra
+#
+#  - Type: "LOOK_SHIELD"
+#    ItemID: Valkyrja's_Shield
+#    SkinID: Valkyrja's_Shield

@@ -1553,7 +1553,7 @@ Body:
       bonus2 bAddClass,Class_All,20;
       bonus3 bAutoSpell,"SM_MAGNUM",10,30;
   - Id: 120000
-    AegisName: Wep_C_Drake_Axe
+    AegisName: Costume_DRAKEAXE
     Name: Costume Drake Axe
     Type: Shadowgear
     Jobs:
@@ -1575,6 +1575,203 @@ Body:
     EquipLevelMin: 1
     Script: |
       bonus bDex,3;
+  - Id: 120002
+    AegisName: Costume_DRAKECLAW
+    Name: Costume Drake Claw
+    Type: Shadowgear
+    Jobs:
+      Monk: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bStr,3;
+
+  - Id: 120003
+    AegisName: Costume_DRAKECRUCIFIX
+    Name: Costume Drake Crucifix
+    Type: Shadowgear
+    Jobs:
+      Priest: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bInt,3;
+
+  - Id: 120004
+    AegisName: Costume_DRAKEDAGGER
+    Name: Costume Drake Dagger
+    Type: Shadowgear
+    Jobs:
+      Assassin: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bStr,3;
+
+  - Id: 120005
+    AegisName: Costume_DRAKEDESTROYER
+    Name: Costume Drake Destroyer
+    Type: Shadowgear
+    Jobs:
+      Gunslinger: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bDex,3;
+
+  - Id: 120006
+    AegisName: Costume_DRAKEGUITAR
+    Name: Costume Drake Guitar
+    Type: Shadowgear
+    Jobs:
+      BardDancer: true
+    Gender: Male
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bDex,3;
+
+  - Id: 120007
+    AegisName: Costume_DRAKEKATAR
+    Name: Costume Drake Katar
+    Type: Shadowgear
+    Jobs:
+      Assassin: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bStr,3;
+
+  - Id: 120008
+    AegisName: Costume_DRAKEKILLER
+    Name: Costume Drake Killer
+    Type: Shadowgear
+    Jobs:
+      Gunslinger: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bDex,3;
+
+  - Id: 120009
+    AegisName: Costume_DRAKEMACE
+    Name: Costume Drake Mace
+    Type: Shadowgear
+    Jobs:
+      Alchemist: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bInt,3;
+
+  - Id: 120010
+    AegisName: Costume_DRAKEKUNAI
+    Name: Costume Drake Kunai
+    Type: Shadowgear
+    Jobs:
+      Ninja: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bInt,3;
+
+  - Id: 120011
+    AegisName: Costume_DRAKEPISTOL
+    Name: Costume Drake Pistol
+    Type: Shadowgear
+    Jobs:
+      Gunslinger: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bDex,3;
+
+  - Id: 120012
+    AegisName: Costume_DRAKESCYTHE
+    Name: Costume Drake Scythe
+    Type: Shadowgear
+    Jobs:
+      Ninja: true
+      StarGladiator: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      if (BaseClass == Job_Ninja)
+         bonus bVit,3;
+      else
+         bonus bStr,3;
+
+  - Id: 120013
+    AegisName: Costume_DRAKESPEAR
+    Name: Costume Drake Spear
+    Type: Shadowgear
+    Jobs:
+      Paladin: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bVit,3;
+
+  - Id: 120014
+    AegisName: Costume_DRAKESTAFF
+    Name: Costume Drake Staff
+    Type: Shadowgear
+    Jobs:
+      Wizard: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bInt,3;
+
+  - Id: 120015
+    AegisName: Costume_DRAKETRAUNCHEON
+    Name: Costume Drake Trauncheon
+    Type: Shadowgear
+    Jobs:
+      Sage: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bInt,3;
+
+  - Id: 120016
+    AegisName: Costume_DRAKEUMBRELLA
+    Name: Costume Drake Umbrella
+    Type: Shadowgear
+    Jobs:
+      BardDancer: true
+    Gender: Female
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bDex,3;
+
+  - Id: 120017
+    AegisName: Costume_DRAKESHOTGUN
+    Name: Costume Drake Shotgun
+    Type: Shadowgear
+    Jobs:
+      Gunslinger: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bDex,3;      
 #Body:
 # THQ Quest Items
 #=============================================================
