@@ -1,0 +1,49 @@
+# This file is a part of rAthena.
+#   Copyright(C) 2021 rAthena Development Team
+#   https://rathena.org - https://github.com/rathena
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+###########################################################################
+# Equipment Skin Database
+###########################################################################
+#
+# Equipment Skin Settings
+#
+###########################################################################
+# - ItemID:    Item ID equipped in shadow weapon slot that triggers the skin
+#   ItemName:  (Optional) Human-readable name for documentation purposes
+#   SkinID:    Visual appearance ID (view ID) to display instead of actual weapon
+#   SkinName:  (Optional) Human-readable name of the skin appearance
+###########################################################################
+# Notes:
+# - Only LOOK_WEAPON is currently supported (shields are not supported)
+# - The item must be equipped in the shadow weapon slot (EQP_SHADOW_WEAPON)
+# - SkinID corresponds to weapon view IDs from the client
+# - When the shadow weapon item is equipped, the character's weapon appearance
+#   will change to the specified SkinID regardless of their actual weapon
+###########################################################################
+
+Header:
+  Type: EQUIPMENT_SKIN_DB
+  Version: 1
+
+Body:
+  - Type: "LOOK_WEAPON"
+    ItemID: Costume_DRAKEBOW
+    SkinID: Bow_Of_Rudra
+
+  - Type: "LOOK_SHIELD"
+    ItemID: Valkyrja's_Shield
+    SkinID: Valkyrja's_Shield

@@ -36,6 +36,7 @@
 #include "clan.hpp"
 #include "clif.hpp"
 #include "elemental.hpp"
+#include "equipment_skin.hpp"
 #include "emote.hpp"
 #include "guild.hpp"
 #include "homunculus.hpp"
@@ -4228,11 +4229,13 @@ void clif_changelook(block_list *bl, int32 type, int32 val) {
 
 	if( vd ) //temp hack to let Warp Portal change appearance
 		switch(type) {
+
 			case LOOK_WEAPON:
 				if (sd) {
 					sd->update_look( LOOK_WEAPON );
 					sd->update_look( LOOK_SHIELD );
-					val = vd->look[LOOK_WEAPON];
+					val = vd->look[LOOK_WEAPON];			
+
 				}
 				else 
 					vd->look[LOOK_WEAPON] = val;
@@ -4241,11 +4244,12 @@ void clif_changelook(block_list *bl, int32 type, int32 val) {
 				if (sd) {
 					sd->update_look( LOOK_WEAPON );
 					sd->update_look( LOOK_SHIELD );
-					val = vd->look[LOOK_SHIELD];
+					val = vd->look[LOOK_SHIELD];			
 				}
 				else 
 					vd->look[LOOK_SHIELD] = val;
 				break;
+			
 			case LOOK_BASE:
 				if ( val == JT_INVISIBLE )
 					return;

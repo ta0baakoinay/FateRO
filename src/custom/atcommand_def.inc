@@ -12,3 +12,4 @@
 ACMD_DEF(battleinfo),
 ACMD_DEF(spb),
 ACMD_DEF(packetfilter),
+ACMD_DEF(reloadequipmentskin),

@@ -36,6 +36,7 @@
 #include "deposit.hpp"
 #include "duel.hpp"
 #include "elemental.hpp"
+#include "equipment_skin.hpp"
 #include "emote.hpp"
 #include "guild.hpp"
 #include "homunculus.hpp"
@@ -5045,6 +5046,7 @@ void MapServer::finalize(){
 	do_final_battle();
 	do_final_chrif();
 	do_final_clan();
+	
 #ifndef MAP_GENERATOR
 	do_final_clif();
 #endif
@@ -5076,6 +5078,7 @@ void MapServer::finalize(){
 	do_final_buyingstore();
 	do_final_emote();
 	do_final_path();
+	do_final_equipment_skin();
 
 	map_db->destroy(map_db, map_db_final);
 
@@ -5424,6 +5427,7 @@ bool MapServer::initialize( int32 argc, char *argv[] ){
 	do_init_instance();
 	do_init_chrif();
 	do_init_clan();
+	
 #ifndef MAP_GENERATOR
 	do_init_clif();
 #endif
@@ -5453,6 +5457,7 @@ bool MapServer::initialize( int32 argc, char *argv[] ){
 	do_init_buyingstore();
 	do_init_autocombat(); // [jsn] Auto Combat
 	do_init_emote();
+	do_init_equipment_skin();
 
 	npc_event_do_oninit();	// Init npcs (OnInit)
 

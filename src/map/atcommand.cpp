@@ -33,6 +33,7 @@
 #include "deposit.hpp"
 #include "duel.hpp"
 #include "elemental.hpp"
+#include "equipment_skin.hpp"
 #include "guild.hpp"
 #include "homunculus.hpp"
 #include "instance.hpp"

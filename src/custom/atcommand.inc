@@ -105,3 +105,12 @@ ACMD_FUNC(spb) {
 		clif_party_info(*p,sd);
 		return 0;
 }
+
+
+ACMD_FUNC(reloadequipmentskin) {  
+    if (equipment_skin_db.reload())  
+        clif_displaymessage(fd, "Equipment skin database has been reloaded.");  
+    else  
+        clif_displaymessage(fd, "Failed to reload equipment skin database.");  
+    return 0;
+}

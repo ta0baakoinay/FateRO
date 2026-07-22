@@ -987,7 +987,7 @@ public:
 	int32 instance_id;
 	e_instance_mode instance_mode; ///< Mode of instance player last leaves from (used for instance destruction button)
 
-	int16 setlook_head_top, setlook_head_mid, setlook_head_bottom, setlook_robe; ///< Stores 'setlook' script command values.
+	int16 setlook_head_top, setlook_head_mid, setlook_head_bottom, setlook_robe, setlook_weapon, setlook_shield; ///< Stores 'setlook' script command values.
 
 	struct{
 		int32 tid;

@@ -146,6 +146,9 @@
     <ClInclude Include="elemental.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="equipment_skin.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>    
     <ClInclude Include="emote.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -283,6 +286,9 @@
     <ClCompile Include="elemental.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="equipment_skin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>    
     <ClCompile Include="emote.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
