@@ -184,7 +184,7 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 50
+                Price: 2000000
                 Material: Phracon
               - Type: Enriched
                 Rate: 10000
@@ -195,7 +195,7 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 50
+                Price: 2000000
                 Material: Phracon
               - Type: Enriched
                 Rate: 10000
@@ -206,7 +206,7 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 50
+                Price: 2000000
                 Material: Phracon
               - Type: Enriched
                 Rate: 10000
@@ -217,7 +217,7 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 50
+                Price: 2000000
                 Material: Phracon
               - Type: Enriched
                 Rate: 10000
@@ -228,7 +228,7 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 50
+                Price: 2000000
                 Material: Phracon
               - Type: Enriched
                 Rate: 10000
@@ -239,7 +239,7 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 50
+                Price: 2000000
                 Material: Phracon
               - Type: Enriched
                 Rate: 10000
@@ -250,7 +250,7 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 50
+                Price: 2000000
                 Material: Phracon
               - Type: Enriched
                 Rate: 10000
@@ -263,7 +263,7 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 6000
-                Price: 50
+                Price: 2000000
                 Material: Phracon
                 BreakingRate: 10000
               - Type: Enriched
@@ -278,7 +278,7 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 4000
-                Price: 50
+                Price: 2000000
                 Material: Phracon
                 BreakingRate: 10000
               - Type: Enriched
@@ -293,7 +293,7 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 2000
-                Price: 50
+                Price: 2000000
                 Material: Phracon
                 BreakingRate: 10000
               - Type: Enriched
@@ -308,66 +308,66 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 200
+                Price: 2000000
                 Material: Emveretarcon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 2
             Bonus: 600
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 200
+                Price: 2000000
                 Material: Emveretarcon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 3
             Bonus: 900
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 200
+                Price: 2000000
                 Material: Emveretarcon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 4
             Bonus: 1200
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 200
+                Price: 2000000
                 Material: Emveretarcon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 5
             Bonus: 1500
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 200
+                Price: 2000000
                 Material: Emveretarcon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 6
             Bonus: 1800
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 200
+                Price: 2000000
                 Material: Emveretarcon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 7
             Bonus: 2100
@@ -375,12 +375,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 6000
-                Price: 200
+                Price: 2000000
                 Material: Emveretarcon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 9000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
           - Level: 8
@@ -390,12 +390,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 4000
-                Price: 200
+                Price: 2000000
                 Material: Emveretarcon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 7000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
           - Level: 9
@@ -405,12 +405,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 2000
-                Price: 200
+                Price: 2000000
                 Material: Emveretarcon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 4000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
           - Level: 10
@@ -420,12 +420,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 2000
-                Price: 200
+                Price: 2000000
                 Material: Emveretarcon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 3000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
       - Level: 3
@@ -435,55 +435,55 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 5000
+                Price: 2000000
                 Material: Oridecon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 2
             Bonus: 1000
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 5000
+                Price: 2000000
                 Material: Oridecon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 3
             Bonus: 1500
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 5000
+                Price: 2000000
                 Material: Oridecon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 4
             Bonus: 2000
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 5000
+                Price: 2000000
                 Material: Oridecon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 5
             Bonus: 2500
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 5000
+                Price: 2000000
                 Material: Oridecon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 6
             Bonus: 3000
@@ -491,12 +491,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 6000
-                Price: 5000
+                Price: 2000000
                 Material: Oridecon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 9000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
           - Level: 7
@@ -505,12 +505,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 5000
-                Price: 5000
+                Price: 2000000
                 Material: Oridecon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 8000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
           - Level: 8
@@ -520,12 +520,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 2000
-                Price: 5000
+                Price: 2000000
                 Material: Oridecon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 4000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
           - Level: 9
@@ -535,12 +535,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 2000
-                Price: 5000
+                Price: 2000000
                 Material: Oridecon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 4000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
           - Level: 10
@@ -550,12 +550,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 2000
-                Price: 5000
+                Price: 2000000
                 Material: Oridecon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 3000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
 
@@ -566,44 +566,44 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 20000
+                Price: 2000000
                 Material: Oridecon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 2
             Bonus: 1400
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 20000
+                Price: 2000000
                 Material: Oridecon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 3
             Bonus: 2100
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 20000
+                Price: 2000000
                 Material: Oridecon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 4
             Bonus: 2800
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 20000
+                Price: 2000000
                 Material: Oridecon
               - Type: Enriched
                 Rate: 10000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
           - Level: 5
             Bonus: 3500
@@ -611,12 +611,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 6000
-                Price: 20000
+                Price: 2000000
                 Material: Oridecon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 9000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
           - Level: 6
@@ -625,12 +625,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 4000
-                Price: 20000
+                Price: 2000000
                 Material: Oridecon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 7000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
           - Level: 7
@@ -639,12 +639,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 4000
-                Price: 20000
+                Price: 2000000
                 Material: Oridecon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 7000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
           - Level: 8
@@ -654,12 +654,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 2000
-                Price: 20000
+                Price: 2000000
                 Material: Oridecon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 4000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
           - Level: 9
@@ -669,12 +669,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 2000
-                Price: 20000
+                Price: 2000000
                 Material: Oridecon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 4000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
           - Level: 10
@@ -684,12 +684,12 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 1000
-                Price: 20000
+                Price: 2000000
                 Material: Oridecon
                 BreakingRate: 10000
               - Type: Enriched
                 Rate: 2000
-                Price: 2000
+                Price: 2000000
                 Material: Enriched_Oridecon
                 BreakingRate: 10000
   - Group: Shadow_Armor
@@ -700,11 +700,11 @@ Body:
             Chances:
               - Type: Normal
                 Rate: 10000
-                Price: 10000
+                Price: 2000000
                 Material: Elunium
               - Type: Enriched
                 Rate: 10000
-                Price: 10000
+                Price: 2000000
                 Material: Enriched_Elunium
           - Level: 2
             Chances:
