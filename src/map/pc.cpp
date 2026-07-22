@@ -645,7 +645,16 @@ void map_session_data::update_look( _look look ){
 				
 				enum equip_index eqi = EQI_HAND_R;
 
-				if( this->equip_index[eqi] >= 0 && this->inventory_data[this->equip_index[eqi]] != nullptr ){
+				// Costume weapon (shadow weapon slot) takes priority over the real weapon's view
+				if( this->equip_index[EQI_SHADOW_WEAPON] >= 0 && this->inventory_data[this->equip_index[EQI_SHADOW_WEAPON]] != nullptr ){
+					const item_data& id = *this->inventory_data[this->equip_index[EQI_SHADOW_WEAPON]];
+
+					if( id.view_id != 0 ){
+						val = id.view_id;
+					}else{
+						val = id.nameid;
+					}
+				}else if( this->equip_index[eqi] >= 0 && this->inventory_data[this->equip_index[eqi]] != nullptr ){
 					const item_data& id = *this->inventory_data[this->equip_index[eqi]];
 
 					if( id.view_id != 0 ){
@@ -686,7 +695,10 @@ void map_session_data::update_look( _look look ){
 
 					const item_data& id = *this->inventory_data[this->equip_index[eqi]];
 
-					if( id.view_id != 0 ){
+					// Hide the offhand weapon's view when a costume weapon is overriding the main hand
+					if( this->equip_index[EQI_SHADOW_WEAPON] >= 0 && this->inventory_data[this->equip_index[EQI_SHADOW_WEAPON]] != nullptr && id.type == IT_WEAPON ){
+						val = 0;
+					}else if( id.view_id != 0 ){
 						val = id.view_id;
 					}else{
 						val = id.nameid;
@@ -15555,7 +15567,8 @@ bool pc_job_can_entermap(enum e_job jobid, int32 m, int32 group_lv) {
  * @param sd
  **/
 void pc_set_costume_view(map_session_data *sd) {
-	int32 i = -1, head_low = 0, head_mid = 0, head_top = 0, robe = 0, weapon = 0, shield = 0;
+	int32 i = -1, head_low = 0, head_mid = 0, head_top = 0, robe = 0;
+	int32 old_weapon = 0, old_shield = 0, weapon = 0, shield = 0;
 	struct item_data *id = nullptr;
 
 	nullpo_retv(sd);
@@ -15564,11 +15577,15 @@ void pc_set_costume_view(map_session_data *sd) {
 	head_mid = sd->status.head_mid;
 	head_top = sd->status.head_top;
 	robe = sd->status.robe;
+
 	// Store current visual weapon/shield values (not status.weapon which is for skill checks)
 	sd->update_look(LOOK_WEAPON);
 	sd->update_look(LOOK_SHIELD);
-	weapon = sd->vd.look[LOOK_WEAPON];
-	shield = sd->vd.look[LOOK_SHIELD];
+	old_weapon = sd->vd.look[LOOK_WEAPON];
+	old_shield = sd->vd.look[LOOK_SHIELD];
+	weapon = old_weapon;
+	shield = old_shield;
+
 	sd->status.head_bottom = sd->status.head_mid = sd->status.head_top = sd->status.robe = 0;
 
 	//Added check to prevent sending the same look on multiple slots ->
@@ -15609,6 +15626,7 @@ void pc_set_costume_view(map_session_data *sd) {
 			sd->status.head_top = id->look;
 		if ((i = sd->equip_index[EQI_COSTUME_GARMENT]) != -1 && (id = sd->inventory_data[i]))
 			sd->status.robe = id->look;
+
 		if ((i = sd->equip_index[EQI_SHADOW_WEAPON]) != -1 && (id = sd->inventory_data[i])) {
 			equipment_skin_data* skin = equipment_skin_db.find_weapon_skin(id->nameid);
 			if (skin)
@@ -15622,7 +15640,7 @@ void pc_set_costume_view(map_session_data *sd) {
 				shield = skin->skinid;
 			else
 				shield = id->look;
-		}	
+		}
 	}
 
 	if (sd->setlook_head_bottom)
@@ -15650,10 +15668,10 @@ void pc_set_costume_view(map_session_data *sd) {
 		clif_changelook(sd, LOOK_HEAD_TOP, sd->status.head_top);
 	if (robe != sd->status.robe)
 		clif_changelook(sd, LOOK_ROBE, sd->status.robe);
-	if (weapon != sd->vd.look[LOOK_WEAPON])
+	if (weapon != old_weapon)
 		clif_changelook(sd, LOOK_WEAPON, weapon);
-	if (shield != sd->vd.look[LOOK_SHIELD])
-		clif_changelook(sd, LOOK_SHIELD, shield);	
+	if (shield != old_shield)
+		clif_changelook(sd, LOOK_SHIELD, shield);
 }
 
 std::shared_ptr<s_attendance_period> pc_attendance_period(){
