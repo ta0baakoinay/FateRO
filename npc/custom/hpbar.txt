@@ -1,0 +1,75 @@
+-	script	HPBar	-1,{
+
+OnMobTarget:
+	// Fired from src/map/unit.cpp when a player targets a mob with MD_MVP mode.
+	// @HPBar_MobGID is set by the source hook via pc_setreg before this event fires.
+	.@gid = @HPBar_MobGID;
+
+	if (!unitexists(.@gid))
+		end;
+
+	// Bump the version counter so any previous OnHPBar loop for this
+	// player (from an earlier target) sees a mismatch and exits on its
+	// own next tick, instead of two loops racing to control the cutin.
+	@HPBar_Ver = @HPBar_Ver + 1;
+	.@ver = @HPBar_Ver;
+	.@mid = .@gid;
+
+	while (@HPBar_Ver == .@ver) {
+
+		// Stop if the mob despawned/died
+		if (!unitexists(.@mid)) {
+			cutin "", 255;
+			end;
+		}
+
+		// Stop if the viewer died or logged out mid-loop
+		if (Hp <= 0) {
+			cutin "", 255;
+			end;
+		}
+
+		getunitdata(.@mid, .@ud);
+
+		.@U_MAXHP = .@ud[UMOB_MAXHP];
+		.@U_HP    = .@ud[UMOB_HP];
+
+		if (.@U_MAXHP <= 0) {
+			cutin "", 255;
+			end;
+		}
+
+		if (.@U_HP > .@U_MAXHP) {
+			setunitdata .@mid, UMOB_HP, .@U_MAXHP;
+			getunitdata(.@mid, .@ud);
+			.@U_MAXHP = .@ud[UMOB_MAXHP];
+			.@U_HP    = .@ud[UMOB_HP];
+		}
+
+		.@P_HP = (.@U_HP * 100) / .@U_MAXHP;
+
+		if (.@P_HP < 0) .@P_HP = 0;
+		if (.@P_HP > 100) .@P_HP = 100;
+
+		cutin .@P_HP + "", 1;
+
+		sleep2 100;
+	}
+
+	// Loop was superseded by a newer target/untarget/death/logout event
+	end;
+
+OnMobUntarget:
+	// Fired when the player switches from an MVP target to a non-MVP one.
+	@HPBar_Ver = @HPBar_Ver + 1;
+	cutin "", 255;
+	end;
+
+OnPCDieEvent:
+OnPCLogoutEvent:
+	// Special global labels - fire automatically for the affected player.
+	@HPBar_Ver = @HPBar_Ver + 1;
+	cutin "", 255;
+	end;
+
+}

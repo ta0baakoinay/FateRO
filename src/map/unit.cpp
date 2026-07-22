@@ -2935,6 +2935,24 @@ int32 unit_attack(block_list *src,int32 target_id,int32 continuous)
 		return stop_flag;
 	}
 
+// --- HP Bar hook: MVP target tracking ---
+	if (src->type == BL_PC && target->type == BL_MOB) {
+		map_session_data *sd = (map_session_data*)src;
+		mob_data *tmd = (mob_data*)target;
+
+		if (status_has_mode(&tmd->status, MD_MVP)) {
+			if (sd->hpbar_target_gid != target_id) {
+				sd->hpbar_target_gid = target_id;
+				pc_setreg(sd, add_str("@HPBar_MobGID"), target_id);
+				npc_event(sd, "HPBar::OnMobTarget", 0);
+			}
+		} else if (sd->hpbar_target_gid != 0) {
+			sd->hpbar_target_gid = 0;
+			npc_event(sd, "HPBar::OnMobUntarget", 0);
+		}
+	}
+	// --- end HP Bar hook ---
+
 	ud->state.attack_continue = (continuous&1)?1:0;
 	ud->state.step_attack = (continuous&2)?1:0;
 	unit_set_target(ud, target_id);

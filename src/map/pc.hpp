@@ -416,6 +416,7 @@ struct s_emote_data {
 
 class map_session_data : public block_list {
 public:
+	int32 hpbar_target_gid = 0; // HP Bar: last-targeted MVP mob GID
 	struct unit_data ud;
 	struct view_data vd;
 	struct status_data base_status, battle_status;
