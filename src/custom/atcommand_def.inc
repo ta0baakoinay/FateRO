@@ -11,3 +11,4 @@
 //ACMD_DEF(newcommand),
 ACMD_DEF(battleinfo),
 ACMD_DEF(spb),
+ACMD_DEF(packetfilter),

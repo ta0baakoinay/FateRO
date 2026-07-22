@@ -389,6 +389,281 @@ static bool clif_session_isValid(map_session_data *sd) {
 	return ( sd != nullptr && session_isActive(sd->fd) );
 }
 
+static bool check_filter(int flag, struct map_session_data *sd, struct block_list *tbl, struct map_session_data *tsd) {
+	nullpo_retr(false, sd);
+	nullpo_retr(false, tbl);
+
+	if ((tbl->type & (BL_PC|BL_PET|BL_HOM|BL_MER|BL_ELEM|BL_MOB)) == 0)
+		return true;
+	if ((flag & FILTER_SELF) != 0 && tsd != NULL) {
+		if (sd->status.account_id == tsd->status.account_id)
+			return true;
+	}
+	if ((flag & FILTER_PARTY) != 0 && sd->status.party_id > 0 && tsd != NULL) {
+		if (sd->status.account_id != tsd->status.account_id && sd->status.party_id == tsd->status.party_id)
+			return true;
+	}
+	if ((flag & FILTER_GUILD) != 0 && sd->status.guild_id > 0 && tsd != NULL) {
+		if (sd->status.account_id != tsd->status.account_id && sd->status.guild_id == tsd->status.guild_id)
+			return true;
+	}
+	if ((flag & FILTER_BG) != 0 && sd->bg_id > 0 && tsd != NULL) {
+		if (sd->status.account_id != tsd->status.account_id && sd->bg_id == tsd->bg_id)
+			return true;
+	}
+	if ((flag & FILTER_CLAN) != 0 && sd->status.clan_id > 0 && tsd != NULL) {
+		if (sd->status.account_id != tsd->status.account_id && sd->status.clan_id == tsd->status.clan_id)
+			return true;
+	}
+	if ((flag & FILTER_OTHER) != 0 && tsd != NULL) {
+		if (sd->bg_id > 0 && sd->bg_id != tsd->bg_id) // when you are on a Battleground team, you have to stay on the map anyway... and your guildmates can also register on the other BG team
+			return true;
+		if ((sd->status.party_id == 0 || (sd->status.party_id > 0 && sd->status.party_id != tsd->status.party_id)) &&
+			(sd->status.guild_id == 0 || (sd->status.guild_id > 0 && sd->status.guild_id != tsd->status.guild_id)) &&
+			(sd->status.clan_id == 0 || (sd->status.clan_id > 0 && sd->status.clan_id != tsd->status.clan_id)))
+			return true;
+	}
+	if ((flag & FILTER_HOMUN) != 0) {
+		if (tbl->type == BL_PET || tbl->type == BL_HOM || tbl->type == BL_MER || tbl->type == BL_ELEM || (tbl->type == BL_MOB && tsd != NULL))
+			return true;
+	}
+	if ((flag & FILTER_MOB) != 0 && tbl->type == BL_MOB && tsd == NULL)
+		return true;
+	return false;
+}
+
+static struct map_session_data *target_sd(struct block_list *bl) {
+	nullpo_retr(NULL, bl);
+
+	if ((bl->type & (BL_PC|BL_PET|BL_HOM|BL_MER|BL_ELEM|BL_MOB)) == 0)
+		return NULL;
+
+	struct map_session_data *sd;
+
+	switch (bl->type) {
+		case BL_PC: {
+			sd = BL_CAST(BL_PC, bl);
+			break;
+		}
+		case BL_PET: {
+			sd = ((pet_data*)bl)->master;
+			break;
+		}
+		case BL_HOM: {
+			sd = ((homun_data*)bl)->master;
+			break;
+		}
+		case BL_MER: {
+			sd = ((s_mercenary_data*)bl)->master;
+			break;
+		}
+		case BL_ELEM: {
+			sd = ((s_elemental_data*)bl)->master;
+			break;
+		}
+		case BL_MOB: {
+			struct mob_data *md = BL_CAST(BL_MOB, bl);
+			if (md->master_id > 0) {
+				struct block_list *mbl = map_id2bl(md->master_id);
+				if (mbl->type == BL_PC)
+					sd = map_id2sd(md->master_id);
+				else
+					sd = NULL;
+			}
+			else
+				sd = NULL;
+			break;
+		}
+		default:
+			sd = NULL;
+	}
+	return sd;
+}
+
+static int clif_send_sub_pre_filter(struct block_list **bl, unsigned char *buf, struct block_list *src_bl) {
+	struct map_session_data *sd;
+
+	if ((*bl)->type != BL_PC)
+		return 0;
+
+	sd = BL_CAST(BL_PC, *bl);
+
+	if (sd->block_ == 0)
+		return 0;
+
+	switch(RBUFW(buf, 0)) {
+		case 0x8d: // clif_GlobalMessage
+			if (sd->block_chat > 0) {
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 4));
+				struct map_session_data *tsd = target_sd(tbl);
+
+				if (check_filter(sd->block_chat, sd, tbl, tsd))
+					return 1;
+			}
+			break;
+		case 0xc0: // clif_emotion
+			if (sd->block_emotion > 0) {
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 2));
+				struct map_session_data *tsd = target_sd(tbl);
+				if (check_filter(sd->block_emotion, sd, tbl, tsd))
+					return 1;
+			}
+			break;
+		case 0x1c8: // clif_useitemack
+			if (sd->block_item > 0) {
+#if PACKETVER_MAIN_NUM >= 20181121 || PACKETVER_RE_NUM >= 20180704 || PACKETVER_ZERO_NUM >= 20181114
+//				ShowDebug("useItemAckType ItemID: %d | src: %d\n", RBUFL(buf, 4), RBUFL(buf, 8));
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 8));
+#else // nobody uses below PACKETVER 3 right ? RIGHT ???
+//				ShowDebug("useItemAckType ItemID: %d | src: %d\n", RBUFW(buf, 4), RBUFL(buf, 6));
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 6));
+#endif
+				struct map_session_data *tsd = target_sd(tbl);
+				if (check_filter(sd->block_item, sd, tbl, tsd))
+					return 1;
+			}
+			break;
+		case 0x8a: // clif_damage & clif_delay_damage ... it seems the src and target having at the same packet placement
+		case 0x2e1:
+		case 0x8c8:
+			if (sd->block_attack > 0) {
+				if (RBUFL(buf, 2) == sd->status.account_id) // always show self attack
+					return 0;
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 6));
+				struct map_session_data *tsd = target_sd(tbl);
+				if (check_filter(sd->block_attack, sd, tbl, tsd))
+					return 1;
+			}
+			break;
+		case HEADER_ZC_USESKILL_ACK: // clif_useskill ... it seems the src and target having at the same packet placement
+//			ShowDebug("HEADER_ZC_USESKILL_ACK 0xb1a src: %d | target: %d | skill ID: %d\n", RBUFL(buf, 2), RBUFL(buf, 6), RBUFW(buf, 14));
+			if (sd->block_buff > 0 || sd->block_target_spell > 0 || sd->block_aoe_spell > 0) {
+				if (RBUFL(buf, 2) == sd->status.account_id) // always show self casting animation
+					return 0;
+				struct block_list *tbl = map_id2bl(RBUFL(buf, ((skill_get_inf(RBUFW(buf, 14)) & INF_GROUND_SKILL) != 0)? 2:6)); // if its ground skill, use src, else base on target
+				struct map_session_data *tsd = target_sd(tbl);
+				if (sd->block_buff > 0 && (skill_get_inf(RBUFW(buf, 14)) & (INF_SUPPORT_SKILL|INF_SELF_SKILL)) != 0 && check_filter(sd->block_buff, sd, tbl, tsd))
+					return 1;
+				else if (sd->block_target_spell > 0 && (skill_get_inf(RBUFW(buf, 14)) & INF_ATTACK_SKILL) != 0 && check_filter(sd->block_target_spell, sd, tbl, tsd))
+					return 1;
+				else if (sd->block_aoe_spell > 0 && (skill_get_inf(RBUFW(buf, 14)) & INF_GROUND_SKILL) != 0 && check_filter(sd->block_aoe_spell, sd, tbl, tsd))
+					return 1;
+			}
+			break;
+		case 0x9cb: // clif_skill_nodamage
+//			ShowDebug("clif_skill_nodamage skill ID: %d | target: %d | src: %d\n", RBUFW(buf, 2), RBUFL(buf, 8), RBUFL(buf, 12));
+			if (sd->block_buff > 0 && (skill_get_inf(RBUFW(buf, 2)) & (INF_SUPPORT_SKILL|INF_SELF_SKILL)) != 0 && (skill_get_inf2_(RBUFW(buf, 2), { INF2_ISSONG, INF2_ISENSEMBLE })) == 0) {
+				if (RBUFL(buf, 12) == sd->status.account_id) // always show self buffing animation
+					return 0;
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 8)); // ... hopefully nobody complain about this
+				struct map_session_data *tsd = target_sd(tbl);
+				if (check_filter(sd->block_buff, sd, tbl, tsd))
+					return 1;
+			}
+			else if (sd->block_target_spell > 0 && (skill_get_inf(RBUFW(buf, 2)) & INF_ATTACK_SKILL) != 0) {
+				if (RBUFL(buf, 12) == sd->status.account_id) // always show spell attack animation
+					return 0;
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 8)); // ... hopefully nobody complain about this
+				struct map_session_data *tsd = target_sd(tbl);
+				if (check_filter(sd->block_target_spell, sd, tbl, tsd))
+					return 1;
+			}
+			else if (sd->block_music > 0 && (skill_get_inf2_(RBUFW(buf, 2), { INF2_ISSONG, INF2_ISENSEMBLE })) != 0) {
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 12)); // ... hopefully nobody complain about this
+				struct map_session_data *tsd = target_sd(tbl);
+				if (check_filter(sd->block_music, sd, tbl, tsd))
+					return 1;
+			}
+			break;
+		case 0x1de: // clif_skill_damage
+//			ShowDebug("clif_skill_damage skill ID: %d | target: %d | src: %d\n", RBUFW(buf, 2), RBUFL(buf, 8), RBUFL(buf, 4));
+			if (sd->block_target_spell > 0 && (skill_get_inf(RBUFW(buf, 2)) & INF_ATTACK_SKILL) != 0) {
+				if (RBUFL(buf, 4) == sd->status.account_id) // always show spell attack animation
+					return 0;
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 8)); // ... hopefully nobody complain about this
+				struct map_session_data *tsd = target_sd(tbl);
+				if (check_filter(sd->block_target_spell, sd, tbl, tsd))
+					return 1;
+			}
+			break;
+		case 0x117: // clif_skill_poseffect
+//			ShowDebug("clif_skill_poseffect skill ID: %d | src: %d\n", RBUFW(buf, 2), RBUFL(buf, 4));
+			if (sd->block_aoe_spell > 0) {
+				if (RBUFL(buf, 4) == sd->status.account_id) // always show spell attack animation
+					return 0;
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 4));
+				struct map_session_data *tsd = target_sd(tbl);
+				if (check_filter(sd->block_aoe_spell, sd, tbl, tsd))
+					return 1;
+			}
+			break;
+		case 0x9c: // clif_changed_dir
+//			ShowDebug("clif_changed_dir src: %d\n", RBUFL(buf, 2));
+			if (sd->block_direction > 0) {
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 2));
+				struct map_session_data *tsd = target_sd(tbl);
+				if (check_filter(sd->block_direction, sd, tbl, tsd))
+					return 1;
+			}
+			break;
+		case 0x28a: // clif_changeoption2
+			if (sd->block_status > 0) {
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 2));
+				struct map_session_data *tsd = target_sd(tbl);
+				if (check_filter(sd->block_status, sd, tbl, tsd))
+					return 1;
+			}
+			break;
+		case 0x983: // clif_status_change_sub ... nobody uses client before 2009 right ?
+			if (sd->block_status > 0) {
+				struct block_list *tbl = map_id2bl(RBUFL(buf, 4));
+				struct map_session_data *tsd = target_sd(tbl);
+				if (check_filter(sd->block_status, sd, tbl, tsd))
+					return 1;
+			}
+			break;
+//		case idle_unitType: // clif_set_unit_idle ... 0x9ff ? <-- doesn't run clif_send_sub because it is using SELF flag
+//			ShowDebug("idle_unitType 0x%x", RBUFW(buf, 0));
+//			if (sd->block_status > 0) {
+//				struct packet_idle_unit *p = (struct packet_idle_unit *)idle_unitType;
+//				p->virtue = 0;
+//				clif->send(&p, sizeof(p), src_bl, SELF);
+//				return 1;
+//			}
+//			break;
+//		case unit_walkingType: // clif_set_unit_walking ... 0x9fd ? <-- doesn't run clif_send_sub because it is using SELF flag
+//			ShowDebug("unit_walkingType 0x%x", RBUFW(buf, 0));
+//			if (sd->block_status > 0) {
+//				struct packet_unit_walking *p = (struct packet_unit_walking *)unit_walkingType;
+//				p->virtue = 0;
+//				clif->send(&p, sizeof(p), src_bl, SELF);
+//				return 1;
+//			}
+//			break;
+//		case spawn_unitType: // clif_spawn_unit 0x9fe <-- can run when using @go/@warp
+//			ShowDebug("spawn_unitType 0x%x | src AID: %d | src CID %d | job %d | LOOK_HAIR %d", RBUFW(buf,0), RBUFL(buf,5), RBUFL(buf,9), RBUFW(buf,23), RBUFW(buf,25));
+//			if (sd->block_status > 0) {
+//				struct packet_spawn_unit *p = (struct packet_spawn_unit*)RBUFP(buf, 0);
+//				p->virtue = 0;
+//				clif->send(&p, sizeof(p), src_bl, SELF);
+//				return 1;
+//			}
+//			break;
+//		case 0x229: // ????? UNKNOWN TERRITORY !!!! Don't enable this, this is for OPT1 & OPT2. Enable this will cause players can see hiding/cloacking characters !!
+//			if (sd->block_status > 0) {
+//				ShowDebug("src: %d | option1 %d | option2 %d\n", RBUFL(buf, 2), RBUFW(buf, 6), RBUFW(buf, 8));
+//				struct block_list *tbl = map_id2bl(RBUFL(buf, 2));
+//				struct map_session_data *tsd = target_sd(tbl);
+//				if (check_filter(sd->block_status, sd, tbl, tsd))
+//					return 1;
+//			}
+//			break;
+		default:
+			break;
+	}
+	return 0;
+}
+
 /*==========================================
  * sub process of clif_send
  * Called from a map_foreachinallarea (grabs all players in specific area and subjects them to this function)
@@ -418,6 +693,10 @@ static int32 clif_send_sub(block_list *bl, va_list ap)
 	len = va_arg(ap,int32);
 	nullpo_ret(src_bl = va_arg(ap,block_list*));
 	type = va_arg(ap,int32);
+
+	if(clif_send_sub_pre_filter(&bl, buf, src_bl))
+		return 0;
+
 
 	switch(type) {
 	case AREA_WOS:

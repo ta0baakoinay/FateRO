@@ -10486,6 +10486,399 @@ ACMD_FUNC(channel) {
 	return 0;
 }
 
+int set_flag(int fd, char *tmp) {
+	char msg[CHAT_SIZE_MAX];
+	size_t l = strlen(tmp);
+	unsigned short i = 1;
+	int flag = 0;
+	char type[2];
+	type[0] = TOUPPER(tmp[0]);
+	type[1] = '\0';
+	if (l == 1) {
+		safesnprintf(msg, CHAT_SIZE_MAX, "Invalid format in [%s] type. Must have additional fields.", type);
+		clif_displaymessage(fd, msg);
+		return 0;
+	}
+	if (l > 9) {
+		safesnprintf(msg, CHAT_SIZE_MAX, "Invalid format in [%s] type. There are too many types!", type);
+		clif_displaymessage(fd, msg);
+		return 0;
+	}
+	for (i = 1; i < l; i++) {
+		switch(tmp[i]) {
+		case 'S': case 's':
+			if ((flag & FILTER_SELF) != 0) {
+				safesnprintf(msg, CHAT_SIZE_MAX, "Invalid format in [%s] type. [S]elf flag has been set.", type);
+				clif_displaymessage(fd, msg);
+				return 0;
+			}
+			flag |= FILTER_SELF;
+			break;
+		case 'P': case 'p':
+			if ((flag & FILTER_PARTY) != 0) {
+				safesnprintf(msg, CHAT_SIZE_MAX, "Invalid format in [%s] type. [P]arty flag has been set.", type);
+				clif_displaymessage(fd, msg);
+				return 0;
+			}
+			flag |= FILTER_PARTY;
+			break;
+		case 'G': case 'g':
+			if ((flag & FILTER_GUILD) != 0) {
+				safesnprintf(msg, CHAT_SIZE_MAX, "Invalid format in [%s] type. [G]uild flag has been set.", type);
+				clif_displaymessage(fd, msg);
+				return 0;
+			}
+			flag |= FILTER_GUILD;
+			break;
+		case 'C': case 'c':
+			if ((flag & FILTER_CLAN) != 0) {
+				safesnprintf(msg, CHAT_SIZE_MAX, "Invalid format in [%s] type. [C]lan flag has been set.", type);
+				clif_displaymessage(fd, msg);
+				return 0;
+			}
+			flag |= FILTER_CLAN;
+			break;
+		case 'B': case 'b':
+			if ((flag & FILTER_BG) != 0) {
+				safesnprintf(msg, CHAT_SIZE_MAX, "Invalid format in [%s] type. [B]attleground flag has been set.", type);
+				clif_displaymessage(fd, msg);
+				return 0;
+			}
+			flag |= FILTER_BG;
+			break;
+		case 'O': case 'o':
+			if ((flag & FILTER_OTHER) != 0) {
+				safesnprintf(msg, CHAT_SIZE_MAX, "Invalid format in [%s] type. [O]thers flag has been set.", type);
+				clif_displaymessage(fd, msg);
+				return 0;
+			}
+			flag |= FILTER_OTHER;
+			break;
+		case 'H': case 'h':
+			if ((flag & FILTER_HOMUN) != 0) {
+				safesnprintf(msg, CHAT_SIZE_MAX, "Invalid format in [%s] type. [H]omunculus/Pets/Mercenary/Elemental flag has been set.", type);
+				clif_displaymessage(fd, msg);
+				return 0;
+			}
+			flag |= FILTER_HOMUN;
+			break;
+		case 'M': case 'm':
+			if ((flag & FILTER_MOB) != 0) {
+				safesnprintf(msg, CHAT_SIZE_MAX, "Invalid format in [%s] type. [M]onster flag has been set.", type);
+				clif_displaymessage(fd, msg);
+				return 0;
+			}
+			flag |= FILTER_MOB;
+			break;
+		default: {
+			char subtype[2];
+			subtype[0] = TOUPPER(tmp[i]);
+			subtype[1] = '\0';
+			safesnprintf(msg, CHAT_SIZE_MAX, "Invalid format in [%s] type. Unknown type '%s'.", type, subtype);
+			clif_displaymessage(fd, msg);
+			return 0;
+		}
+		}
+	}
+	return flag;
+}
+
+void print_packetfilter_sub(int fd, int flag, const char *message) {
+	clif_displaymessage(fd, message);
+	if ((flag & FILTER_SELF) != 0)
+		clif_displaymessage(fd, "    -> Self");
+	if ((flag & FILTER_PARTY) != 0)
+		clif_displaymessage(fd, "    -> Party");
+	if ((flag & FILTER_GUILD) != 0)
+		clif_displaymessage(fd, "    -> Guild");
+	if ((flag & FILTER_BG) != 0)
+		clif_displaymessage(fd, "    -> Battleground");
+	if ((flag & FILTER_CLAN) != 0)
+		clif_displaymessage(fd, "    -> Clan");
+	if ((flag & FILTER_OTHER) != 0)
+		clif_displaymessage(fd, "    -> Other players");
+	if ((flag & FILTER_HOMUN) != 0)
+		clif_displaymessage(fd, "    -> Homunculus/Pets/Mercenary/Elemental");
+	if ((flag & FILTER_MOB) != 0)
+		clif_displaymessage(fd, "    -> Monster");
+	return;
+}
+
+void print_packetfilter(int fd, struct map_session_data *sd) {
+	if (sd->block_chat != 0)
+		print_packetfilter_sub(fd, sd->block_chat, "Enabled [C]hat filter.");
+	if (sd->block_emotion != 0)
+		print_packetfilter_sub(fd, sd->block_emotion, "Enabled [E]motion filter.");
+	if (sd->block_item != 0)
+		print_packetfilter_sub(fd, sd->block_item, "Enabled [I]tem use filter.");
+	if (sd->block_attack != 0)
+		print_packetfilter_sub(fd, sd->block_attack, "Enabled normal [A]ttack filter.");
+	if (sd->block_buff != 0)
+		print_packetfilter_sub(fd, sd->block_buff, "Enabled skill [B]uff filter.");
+	if (sd->block_status != 0)
+		print_packetfilter_sub(fd, sd->block_status, "Enabled [S]tatus effect filter.");
+	if (sd->block_target_spell != 0)
+		print_packetfilter_sub(fd, sd->block_target_spell, "Enabled single [T]arget offensive skill/spell filter.");
+	if (sd->block_aoe_spell != 0)
+		print_packetfilter_sub(fd, sd->block_aoe_spell, "Enabled [G]round based spell or area spell filter.");
+	if (sd->block_music != 0)
+		print_packetfilter_sub(fd, sd->block_music, "Enabled [M]usic filter from bard and dancer songs.");
+	if (sd->block_direction != 0)
+		print_packetfilter_sub(fd, sd->block_direction, "Enabled [D]irection filter.");
+	return;
+}
+
+void print_packetfilter_guide(int fd) {
+	clif_displaymessage(fd, " ==== @packetfilter ===");
+	clif_displaymessage(fd, "Main types are:");
+	clif_displaymessage(fd, "    [C] -> block normal Chat. Include dancer's scream and bard's frost joke.");
+	clif_displaymessage(fd, "    [E] -> block Emotions. (not include pet performance)");
+	clif_displaymessage(fd, "    [I] -> block Item use effect.");
+	clif_displaymessage(fd, "    [A] -> block normal Attack animation, base on receiving side. Your own attack are always shown.");
+	clif_displaymessage(fd, "    [B] -> block Buff spell effect, base on receiving side. Your own action are always shown.");
+	clif_displaymessage(fd, "    [S] -> block Status effect.");
+	clif_displaymessage(fd, "    [T] -> block Target skill/spell effect, base on receiving side. Your own action are always shown.");
+	clif_displaymessage(fd, "    [G] -> block Ground based spell or aoe spell effect. Some skills are not filtered.");
+	clif_displaymessage(fd, "    [M] -> block Music from bard and dancer songs.");
+	clif_displaymessage(fd, "    [D] -> block Direction and face direction.");
+	clif_displaymessage(fd, "Sub types are:");
+	clif_displaymessage(fd, "    [S] -> Self");
+	clif_displaymessage(fd, "    [P] -> Party");
+	clif_displaymessage(fd, "    [G] -> Guild");
+	clif_displaymessage(fd, "    [C] -> Clan");
+	clif_displaymessage(fd, "    [B] -> Battleground");
+	clif_displaymessage(fd, "    [O] -> Other players");
+	clif_displaymessage(fd, "    [H] -> Homunculus/Pets/Mercenary/Elemental");
+	clif_displaymessage(fd, "    [M] -> Monsters");
+	clif_displaymessage(fd, "Example: @packetfilter COHM EOHM");
+	clif_displaymessage(fd, "    -> block normal chat and emotion from non-related players, pets, homunculus and monsters.");
+	clif_displaymessage(fd, "         this doesn't block normal chat from party/guild members.");
+	clif_displaymessage(fd, "Example: @packetfilter off");
+	clif_displaymessage(fd, "    -> turn packet filter off");
+	return;
+}
+
+void remove_packetfilter(int fd, struct map_session_data *sd) {
+	sd->block_ = 0;
+	sd->block_chat = 0;
+	sd->block_emotion = 0;
+	sd->block_item = 0;
+	sd->block_attack = 0;
+	sd->block_buff = 0;
+	sd->block_status = 0;
+	sd->block_target_spell = 0;
+	sd->block_aoe_spell = 0;
+	sd->block_music = 0;
+	sd->block_direction = 0;
+
+	pc_setaccountreg(sd, add_str("BLOCK_"), 0);
+	pc_setaccountreg(sd, add_str("BLOCK_CHAT"), 0);
+	pc_setaccountreg(sd, add_str("BLOCK_EMOTION"), 0);
+	pc_setaccountreg(sd, add_str("BLOCK_ITEM"), 0);
+	pc_setaccountreg(sd, add_str("BLOCK_ATTACK"), 0);
+	pc_setaccountreg(sd, add_str("BLOCK_BUFF"), 0);
+	pc_setaccountreg(sd, add_str("BLOCK_STATUS"), 0);
+	pc_setaccountreg(sd, add_str("BLOCK_TARGET_SPELL"), 0);
+	pc_setaccountreg(sd, add_str("BLOCK_AOE_SPELL"), 0);
+	pc_setaccountreg(sd, add_str("BLOCK_MUSIC"), 0);
+	pc_setaccountreg(sd, add_str("BLOCK_DIRECTION"), 0);
+
+	clif_displaymessage(fd, "@packetfilter has turn OFF.");
+	return;
+}
+
+ACMD_FUNC(packetfilter) {
+	char msg[CHAT_SIZE_MAX];
+
+	nullpo_retr(-1, sd);
+
+	if (strlen(message) == 0 || !*message) {
+		if (sd->block_ == 0)
+			print_packetfilter_guide(fd);
+		else
+			print_packetfilter(fd, sd);
+		return 0;
+	}
+	if (stristr(message, "off") && stristr("off", message)) {
+		remove_packetfilter(fd, sd);
+		return 0;
+	}
+	size_t l = strlen(message);
+	char *tmp = (char*)aMalloc(l +1);
+	unsigned short i = 0, j = 0;
+	int chat_flag = 0;
+	int emotion_flag = 0;
+	int item_flag = 0;
+	int attack_flag = 0;
+	int buff_flag = 0;
+	int status_flag = 0;
+	int target_spell_flag = 0;
+	int aoe_spell_flag = 0;
+	int music_flag = 0;
+	int direction_flag = 0;
+	while (i <= l) {
+		if (message[i] != ' ' && message[i] != '\0')
+			tmp[j++] = message[i];
+		else if (message[i-1] != ' ') {
+			tmp[j] = '\0';
+			switch(tmp[0]) {
+			case 'C': case 'c':
+				chat_flag = set_flag(fd, tmp);
+				if (chat_flag == 0) {
+					aFree(tmp);
+					return false;
+				}
+				break;
+			case 'E': case 'e':
+				emotion_flag = set_flag(fd, tmp);
+				if (emotion_flag == 0) {
+					aFree(tmp);
+					return false;
+				}
+				break;
+			case 'I': case 'i':
+				item_flag = set_flag(fd, tmp);
+				if (item_flag == 0) {
+					aFree(tmp);
+					return false;
+				}
+				break;
+			case 'A': case 'a':
+				attack_flag = set_flag(fd, tmp);
+				if (attack_flag == 0) {
+					aFree(tmp);
+					return false;
+				}
+				break;
+			case 'B': case 'b':
+				buff_flag = set_flag(fd, tmp);
+				if (buff_flag == 0) {
+					aFree(tmp);
+					return false;
+				}
+				break;
+			case 'S': case 's':
+				status_flag = set_flag(fd, tmp);
+				if (status_flag == 0) {
+					aFree(tmp);
+					return false;
+				}
+				break;
+			case 'T': case 't':
+				target_spell_flag = set_flag(fd, tmp);
+				if (target_spell_flag == 0) {
+					aFree(tmp);
+					return false;
+				}
+				break;
+			case 'G': case 'g':
+				aoe_spell_flag = set_flag(fd, tmp);
+				if (aoe_spell_flag == 0) {
+					aFree(tmp);
+					return false;
+				}
+				break;
+			case 'M': case 'm':
+				music_flag = set_flag(fd, tmp);
+				if (music_flag == 0) {
+					aFree(tmp);
+					return false;
+				}
+				break;
+			case 'D': case 'd':
+				direction_flag = set_flag(fd, tmp);
+				if (direction_flag == 0) {
+					aFree(tmp);
+					return false;
+				}
+				break;
+			default: {
+				char type[2];
+				type[0] = tmp[0];
+				type[1] = '\0';
+				safesnprintf(msg, CHAT_SIZE_MAX, "Unknown type '%s'.", type);
+				clif_displaymessage(fd, msg);
+				aFree(tmp);
+				return false;
+			}
+			}
+			j = 0;
+		}
+		i++;
+	}
+	if ((chat_flag & FILTER_SELF) != 0) { // the client just send the chat anyway
+		clif_displaymessage(fd, "Warning: [C]hat type can't filter [S]elf. Disable this filter.");
+		chat_flag &= ~FILTER_SELF;
+	}
+	if ((emotion_flag & FILTER_SELF) != 0) { // why there is a weird bug that after @packetfilter off, I can't even use /emote anymore ??
+		clif_displaymessage(fd, "Warning: [E]motion type can't filter [S]elf. Disable this filter.");
+		emotion_flag &= ~FILTER_SELF;
+	}
+	if ((item_flag & FILTER_SELF) != 0) { // it looks like bug ? after using the item, the item amount in inventory still stay the same, better disable it
+		clif_displaymessage(fd, "Warning: [I]tem type can't filter [S]elf. Disable this filter.");
+		item_flag &= ~FILTER_SELF;
+	}
+	if ((attack_flag & FILTER_SELF) != 0) { // the very defination of moonwalk, you walk a few steps, suddenly go back a few cell, and walk in front again, and backstep again ...
+		clif_displaymessage(fd, "Warning: [A]ttack type can't filter [S]elf. Disable this filter.");
+		attack_flag &= ~FILTER_SELF;
+	}
+	if ((status_flag & FILTER_SELF) != 0) { // this is no brainer, why you want to block your own status change effect ?
+		clif_displaymessage(fd, "Warning: [S]tatus type can't filter [S]elf. Disable this filter.");
+		status_flag &= ~FILTER_SELF;
+	}
+	if ((target_spell_flag & FILTER_SELF) != 0) { // ever heard of stutter step ? if you get his by level 10 firebolt, you should be stun for 1 second
+		clif_displaymessage(fd, "Warning: [T]arget type skill/spells can't filter [S]elf. Disable this filter.");
+		target_spell_flag &= ~FILTER_SELF;
+	}
+	if ((direction_flag & FILTER_SELF) != 0) { // the client just send the direction anyway
+		clif_displaymessage(fd, "Warning: [D]irection type can't filter [S]elf. Disable this filter.");
+		direction_flag &= ~FILTER_SELF;
+	}
+	if ((status_flag & FILTER_PARTY) != 0)
+		clif_displaymessage(fd, "Caution: Enable [S]tatus type filter on [P]arty will cause 'Party Member abnormal status' to malfunction.");
+	if (status_flag != 0 && buff_flag == 0)
+		clif_displaymessage(fd, "Caution: Enable [S]tatus type filter but without [B]uff type filter will still cause status effect to shown on cast.");
+	if ((direction_flag & (FILTER_OTHER|FILTER_MOB)) != 0) {
+		clif_displaymessage(fd, "Caution: Enable [D]irection type filter may cause certain skills to not work correctly, example like Rogue's backstab.");
+		clif_displaymessage(fd, "     Recommend use on filtering Party/Guild. Highly Recommend for supportive class use, like Priest, Soul Linker etc.");
+	}
+	if (!chat_flag && !emotion_flag && !item_flag && !attack_flag && !buff_flag && !status_flag && !target_spell_flag && !aoe_spell_flag && !music_flag && !direction_flag) {
+		clif_displaymessage(fd, "No packet filter has been set.");
+		remove_packetfilter(fd, sd);
+		aFree(tmp);
+		return 0;
+	}
+	sd->block_ = 1;
+	sd->block_chat = chat_flag;
+	sd->block_emotion = emotion_flag;
+	sd->block_item = item_flag;
+	sd->block_attack = attack_flag;
+	sd->block_buff = buff_flag;
+	sd->block_status = status_flag;
+	sd->block_target_spell = target_spell_flag;
+	sd->block_aoe_spell = aoe_spell_flag;
+	sd->block_music = music_flag;
+	sd->block_direction = direction_flag;
+
+	pc_setaccountreg(sd, add_str("BLOCK_"), sd->block_);
+	pc_setaccountreg(sd, add_str("BLOCK_CHAT"), sd->block_chat);
+	pc_setaccountreg(sd, add_str("BLOCK_EMOTION"), sd->block_emotion);
+	pc_setaccountreg(sd, add_str("BLOCK_ITEM"), sd->block_item);
+	pc_setaccountreg(sd, add_str("BLOCK_ATTACK"), sd->block_attack);
+	pc_setaccountreg(sd, add_str("BLOCK_BUFF"), sd->block_buff);
+	pc_setaccountreg(sd, add_str("BLOCK_STATUS"), sd->block_status);
+	pc_setaccountreg(sd, add_str("BLOCK_TARGET_SPELL"), sd->block_target_spell);
+	pc_setaccountreg(sd, add_str("BLOCK_AOE_SPELL"), sd->block_aoe_spell);
+	pc_setaccountreg(sd, add_str("BLOCK_MUSIC"), sd->block_music);
+	pc_setaccountreg(sd, add_str("BLOCK_DIRECTION"), sd->block_direction);
+
+	print_packetfilter(fd, sd);
+	safesnprintf(msg, CHAT_SIZE_MAX, "@packetfilter has turn ON.");
+	clif_displaymessage(fd, msg);
+	aFree(tmp);
+	return 0;
+}
+
 ACMD_FUNC(fontcolor)
 {
 	if( !message || !*message ) {

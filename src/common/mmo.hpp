@@ -139,6 +139,17 @@ enum e_enchantgrade : uint16{
 	#define MAX_ENCHANTGRADE ENCHANTGRADE_NONE
 #endif
 
+enum filter_flag {
+	FILTER_SELF  = 1,
+	FILTER_PARTY = 2,
+	FILTER_GUILD = 4,
+	FILTER_BG    = 8,
+	FILTER_CLAN  = 16,
+	FILTER_OTHER = 32,
+	FILTER_HOMUN = 64,
+	FILTER_MOB   = 128,
+};
+
 // for produce
 #define MIN_ATTRIBUTE 0
 #define MAX_ATTRIBUTE 4

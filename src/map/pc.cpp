@@ -2400,6 +2400,18 @@ void pc_reg_received(map_session_data *sd)
 	}
 	sd->roulette.prizeIdx = -1;
 
+	sd->block_ = static_cast<int>(pc_readaccountreg(sd, add_str("BLOCK_")));
+	sd->block_chat = static_cast<int>(pc_readaccountreg(sd, add_str("BLOCK_CHAT")));
+	sd->block_emotion = static_cast<int>(pc_readaccountreg(sd, add_str("BLOCK_EMOTION")));
+	sd->block_item = static_cast<int>(pc_readaccountreg(sd, add_str("BLOCK_ITEM")));
+	sd->block_attack = static_cast<int>(pc_readaccountreg(sd, add_str("BLOCK_ATTACK")));
+	sd->block_buff = static_cast<int>(pc_readaccountreg(sd, add_str("BLOCK_BUFF")));
+	sd->block_status = static_cast<int>(pc_readaccountreg(sd, add_str("BLOCK_STATUS")));
+	sd->block_target_spell = static_cast<int>(pc_readaccountreg(sd, add_str("BLOCK_TARGET_SPELL")));
+	sd->block_aoe_spell = static_cast<int>(pc_readaccountreg(sd, add_str("BLOCK_AOE_SPELL")));
+	sd->block_music = static_cast<int>(pc_readaccountreg(sd, add_str("BLOCK_MUSIC")));
+	sd->block_direction = static_cast<int>(pc_readaccountreg(sd, add_str("BLOCK_DIRECTION")));
+
 	//SG map and mob read [Komurka]
 	for(i=0;i<MAX_PC_FEELHATE;i++) { //for now - someone need to make reading from txt/sql
 		uint16 j;
