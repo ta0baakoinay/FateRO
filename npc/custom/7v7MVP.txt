@@ -1,0 +1,343 @@
+-	script	7v7_MVP_Manager	-1,{
+
+OnInit:
+    .ArenaMap$ = "guild_vs5";
+
+    setmapflag .ArenaMap$, mf_pvp;
+    setmapflag .ArenaMap$, mf_noexppenalty;
+    setmapflag .ArenaMap$, mf_pvp_nocalcrank;
+    setmapflag .ArenaMap$, mf_noloot;   // no item drops from any mob (incl. MVP) on this map
+
+    .TeamA_X = 18; .TeamA_Y = 49;
+    .TeamB_X = 81; .TeamB_Y = 49;
+
+    // Barricade column x-position, full map height so it can't be walked around
+    .BarA_X = 21; .BarY1 = 1; .BarY2 = 200;
+    .BarB_X = 78;
+
+    .MvpX = 49; .MvpY = 38;
+    .MvpID[0] = 1511;
+    .MvpID[1] = 1190;
+    .MvpID[2] = 1751;
+    .MvpCount = 3;
+    .MvpAmount = 1;
+
+    .ReturnMap$ = "prontera"; .ReturnX = 155; .ReturnY = 180;
+
+    .RewardItemID = 673;
+    .RewardItemAmt = 5;
+
+    .BuffSec = 15;
+    .CountdownSec = 10;
+    .TimeLimitMS = 900000; // 15 minutes - keep in sync with the OnTimer label below
+
+    .EventActive = 0;
+    .TeamA_PartyID = 0;
+    .TeamB_PartyID = 0;
+
+    callsub L_RaiseBarricades;
+
+    bindatcmd "7v7start", strnpcinfo(0) + "::OnAtcmd_Start", 99, 99;
+    bindatcmd "7v7end",   strnpcinfo(0) + "::OnAtcmd_End",   99, 99;
+    end;
+
+// ------------------------------------------------------------
+// Barricade control
+// ------------------------------------------------------------
+L_RaiseBarricades:
+    setcell .ArenaMap$, .BarA_X, .BarY1, .BarA_X, .BarY2, cell_walkable, 0;
+    setcell .ArenaMap$, .BarB_X, .BarY1, .BarB_X, .BarY2, cell_walkable, 0;
+    for (.@i = 1; .@i <= 8; .@i++) {
+        hideoffnpc "Barricade#A" + .@i;
+        hideoffnpc "Barricade#B" + .@i;
+    }
+    return;
+
+L_LowerBarricades:
+    setcell .ArenaMap$, .BarA_X, .BarY1, .BarA_X, .BarY2, cell_walkable, 1;
+    setcell .ArenaMap$, .BarB_X, .BarY1, .BarB_X, .BarY2, cell_walkable, 1;
+    for (.@i = 1; .@i <= 8; .@i++) {
+        hideonnpc "Barricade#A" + .@i;
+        hideonnpc "Barricade#B" + .@i;
+    }
+    return;
+
+// ------------------------------------------------------------
+// @7v7start <Team A party name>,<Team B party name>
+// ------------------------------------------------------------
+OnAtcmd_Start:
+    if (.EventActive) {
+        dispbottom "[7v7 MVP Event] A match is currently in progress.";
+        end;
+    }
+
+    // Safety net: never let this event touch mob_npc_event_type while WoE is live
+    if (agitcheck() || agitcheck2()) {
+        dispbottom "[7v7 MVP Event] Cannot start a match while WoE is in progress.";
+        end;
+    }
+
+    explode(.@arg$, .@atcmd_parameters$, ",");
+    .@nameA$ = .@arg$[0];
+    .@nameB$ = .@arg$[1];
+
+    if (.@nameA$ == "" || .@nameB$ == "") {
+        dispbottom "[7v7 MVP Event] Usage: @7v7start <Team A party name>,<Team B party name>";
+        end;
+    }
+
+    // ---- Validate Team A ----
+    .@partyA = 0;
+    .@sqlA$ = "SELECT `party_id` FROM `party` WHERE `name` = '" + escape_sql(.@nameA$) + "'";
+    .@rowsA = query_sql(.@sqlA$, .@pidA);
+    if (.@rowsA <= 0 || !.@pidA) {
+        dispbottom "[7v7 MVP Event] No party named '" + .@nameA$ + "' could be found.";
+        end;
+    }
+    getpartymember .@pidA,1;
+    getpartymember .@pidA,2;
+    .@countA = $@partymembercount;
+    if (.@countA != 7) {
+        dispbottom "[7v7 MVP Event] Team A's party ('" + .@nameA$ + "') must have exactly 7 members (currently " + .@countA + ").";
+        end;
+    }
+    .@onlineA = 0;
+    for (.@i = 0; .@i < .@countA; .@i++)
+        if (isloggedin($@partymemberaid[.@i], $@partymembercid[.@i]))
+            .@onlineA++;
+    if (.@onlineA != 7) {
+        dispbottom "[7v7 MVP Event] All 7 members of Team A's party ('" + .@nameA$ + "') must be online.";
+        end;
+    }
+    .@partyA = .@pidA;
+
+    // ---- Validate Team B ----
+    .@partyB = 0;
+    .@sqlB$ = "SELECT `party_id` FROM `party` WHERE `name` = '" + escape_sql(.@nameB$) + "'";
+    .@rowsB = query_sql(.@sqlB$, .@pidB);
+    if (.@rowsB <= 0 || !.@pidB) {
+        dispbottom "[7v7 MVP Event] No party named '" + .@nameB$ + "' could be found.";
+        end;
+    }
+    getpartymember .@pidB,1;
+    getpartymember .@pidB,2;
+    .@countB = $@partymembercount;
+    if (.@countB != 7) {
+        dispbottom "[7v7 MVP Event] Team B's party ('" + .@nameB$ + "') must have exactly 7 members (currently " + .@countB + ").";
+        end;
+    }
+    .@onlineB = 0;
+    for (.@i = 0; .@i < .@countB; .@i++)
+        if (isloggedin($@partymemberaid[.@i], $@partymembercid[.@i]))
+            .@onlineB++;
+    if (.@onlineB != 7) {
+        dispbottom "[7v7 MVP Event] All 7 members of Team B's party ('" + .@nameB$ + "') must be online.";
+        end;
+    }
+    .@partyB = .@pidB;
+
+    if (.@partyA == .@partyB) {
+        dispbottom "[7v7 MVP Event] Team A and Team B can't be the same party.";
+        end;
+    }
+
+    .TeamA_PartyID = .@partyA;
+    .TeamB_PartyID = .@partyB;
+
+    announce "[7v7 MVP Event] " + strcharinfo(0) + " has started the match! Get ready!", bc_all;
+    donpcevent strnpcinfo(0) + "::OnStartMatch";
+    end;
+
+OnAtcmd_End:
+    if (!.EventActive) {
+        dispbottom "[7v7 MVP Event] No match is currently in progress.";
+        end;
+    }
+    stopnpctimer;
+    killmonster .ArenaMap$, strnpcinfo(0) + "::OnMvpDead";
+    announce "[7v7 MVP Event] " + strcharinfo(0) + " has ended the match early. No winner is credited.", bc_all;
+    mapannounce .ArenaMap$, "The match has been stopped by a GM. Barricades are going back up.", bc_map;
+    callsub L_EndMatch;
+    end;
+
+// ------------------------------------------------------------
+// Match start - recalls both parties into the arena
+// ------------------------------------------------------------
+OnStartMatch:
+    .EventActive = 1;
+    .KillLogCount = 0;
+    announce "[7v7 MVP Event] Both teams are ready! Recalling players behind the barricades.", bc_all;
+
+    getpartymember .TeamA_PartyID,1;
+    getpartymember .TeamA_PartyID,2;
+    for (.@i = 0; .@i < $@partymembercount; .@i++) {
+        if (isloggedin($@partymemberaid[.@i], $@partymembercid[.@i])) {
+            attachrid $@partymemberaid[.@i];
+            warp .ArenaMap$, .TeamA_X, .TeamA_Y;
+            dispbottom "You've been recalled to the arena as TEAM A. Buff up - the match begins shortly!";
+        }
+    }
+
+    getpartymember .TeamB_PartyID,1;
+    getpartymember .TeamB_PartyID,2;
+    for (.@i = 0; .@i < $@partymembercount; .@i++) {
+        if (isloggedin($@partymemberaid[.@i], $@partymembercid[.@i])) {
+            attachrid $@partymemberaid[.@i];
+            warp .ArenaMap$, .TeamB_X, .TeamB_Y;
+            dispbottom "You've been recalled to the arena as TEAM B. Buff up - the match begins shortly!";
+        }
+    }
+    detachrid;
+
+    // ---- Buff-up / prep window ----
+    mapannounce .ArenaMap$, "You have " + .BuffSec + " seconds to buff up and prepare!", bc_map;
+    sleep .BuffSec * 1000;
+    mapannounce .ArenaMap$, "Prep time is over!", bc_map;
+
+    // ---- Barricade drop countdown ----
+    for (.@c = .CountdownSec; .@c > 0; .@c--) {
+        mapannounce .ArenaMap$, "Barricades drop in " + .@c + "...", bc_map;
+        sleep 1000;
+    }
+
+    callsub L_LowerBarricades;
+    mapannounce .ArenaMap$, "FIGHT! The MVP has spawned - highest damage wins!", bc_map;
+
+    // Temporarily force top-damage crediting for THIS mob's death event only.
+    // Restored back to the server default (1 = last hit, for WoE) in L_EndMatch.
+    setbattleflag("mob_npc_event_type", 0);
+
+    .@mvpPick = .MvpID[rand(0, .MvpCount - 1)];
+    monster .ArenaMap$, .MvpX, .MvpY, "MVP Target", .@mvpPick, .MvpAmount, strnpcinfo(0) + "::OnMvpDead";
+
+    initnpctimer;
+    end;
+
+// ------------------------------------------------------------
+// Live kill log while the match is active
+// ------------------------------------------------------------
+OnPCDieEvent:
+    if (!.EventActive) end;
+    if (strcharinfo(3) != .ArenaMap$) end;
+
+    .@victim$ = strcharinfo(0);
+    .@killer$ = (killerrid) ? rid2name(killerrid) : "the environment";
+    mapannounce .ArenaMap$, .@victim$ + " was killed by " + .@killer$ + "!", bc_map;
+
+    .KillLog$[.KillLogCount] = .@killer$ + " killed " + .@victim$;
+    .KillLogCount++;
+    end;
+
+// ------------------------------------------------------------
+// Timeout - nobody killed the MVP in time
+// ------------------------------------------------------------
+OnTimer900000:
+    if (!.EventActive) end;
+    stopnpctimer;
+    killmonster .ArenaMap$, strnpcinfo(0) + "::OnMvpDead";
+    mapannounce .ArenaMap$, "Time's up! The match ends in a draw - no damage winner determined.", bc_map;
+    callsub L_EndMatch;
+    end;
+
+// ------------------------------------------------------------
+// MVP died - RID attached here is the top damage dealer
+// (mob_npc_event_type is forced to 0 for this match only)
+// ------------------------------------------------------------
+OnMvpDead:
+    stopnpctimer;
+
+    if (!getcharid(1)) {
+        mapannounce .ArenaMap$, "The MVP was defeated, but no party could be credited with the win.", bc_map;
+        callsub L_EndMatch;
+        end;
+    }
+
+    .@winparty = getcharid(1);
+    .@winner$ = (.@winparty == .TeamA_PartyID) ? "Team A" : (.@winparty == .TeamB_PartyID) ? "Team B" : "Unknown";
+
+    mapannounce .ArenaMap$, strcharinfo(0) + " dealt the killing blow on the MVP! " + .@winner$ + " (" + getpartyname(.@winparty) + ") wins with the highest MVP damage!", bc_map;
+
+    getpartymember .@winparty,1;
+    getpartymember .@winparty,2;
+    for (.@i = 0; .@i < $@partymembercount; .@i++) {
+        if (isloggedin($@partymemberaid[.@i], $@partymembercid[.@i])) {
+            attachrid $@partymemberaid[.@i];
+            getitem .RewardItemID, .RewardItemAmt;
+            dispbottom "Your party won the 7v7 MVP event! Reward granted.";
+        }
+    }
+    detachrid;
+
+    callsub L_EndMatch;
+    end;
+
+// ------------------------------------------------------------
+// Cleanup - restores mob_npc_event_type, announces kill log,
+// raises barricades, recalls everyone home, resets state.
+// This is the single point every end path (win/timeout/GM end)
+// funnels through, so the battle_config restore always happens.
+// ------------------------------------------------------------
+L_EndMatch:
+    // Always restore the server's real setting (1 = last hit, for WoE)
+    setbattleflag("mob_npc_event_type", 1);
+
+    if (.KillLogCount) {
+        mapannounce .ArenaMap$, "--- Match Summary ---", bc_map;
+        for (.@i = 0; .@i < .KillLogCount; .@i++)
+            mapannounce .ArenaMap$, .KillLog$[.@i], bc_map;
+    }
+
+    sleep 5000;
+    callsub L_RaiseBarricades;
+
+    if (.TeamA_PartyID) {
+        getpartymember .TeamA_PartyID,1;
+        getpartymember .TeamA_PartyID,2;
+        for (.@i = 0; .@i < $@partymembercount; .@i++) {
+            if (isloggedin($@partymemberaid[.@i], $@partymembercid[.@i])) {
+                attachrid $@partymemberaid[.@i];
+                if (strcharinfo(3) == .ArenaMap$) warp .ReturnMap$, .ReturnX, .ReturnY;
+            }
+        }
+    }
+    if (.TeamB_PartyID) {
+        getpartymember .TeamB_PartyID,1;
+        getpartymember .TeamB_PartyID,2;
+        for (.@i = 0; .@i < $@partymembercount; .@i++) {
+            if (isloggedin($@partymemberaid[.@i], $@partymembercid[.@i])) {
+                attachrid $@partymemberaid[.@i];
+                if (strcharinfo(3) == .ArenaMap$) warp .ReturnMap$, .ReturnX, .ReturnY;
+            }
+        }
+    }
+    detachrid;
+
+    for (.@i = 0; .@i < .KillLogCount; .@i++)
+        .KillLog$[.@i] = "";
+    .KillLogCount = 0;
+    .TeamA_PartyID = 0;
+    .TeamB_PartyID = 0;
+    .EventActive = 0;
+    return;
+}
+
+// ------------------------------------------------------------
+// Barricade visuals
+// ------------------------------------------------------------
+guild_vs5,21,46,0	script	Barricade#A1	111,{ end; }
+guild_vs5,21,47,0	script	Barricade#A2	111,{ end; }
+guild_vs5,21,48,0	script	Barricade#A3	111,{ end; }
+guild_vs5,21,49,0	script	Barricade#A4	111,{ end; }
+guild_vs5,21,50,0	script	Barricade#A5	111,{ end; }
+guild_vs5,21,51,0	script	Barricade#A6	111,{ end; }
+guild_vs5,21,52,0	script	Barricade#A7	111,{ end; }
+guild_vs5,21,53,0	script	Barricade#A8	111,{ end; }
+
+guild_vs5,78,46,0	script	Barricade#B1	111,{ end; }
+guild_vs5,78,47,0	script	Barricade#B2	111,{ end; }
+guild_vs5,78,48,0	script	Barricade#B3	111,{ end; }
+guild_vs5,78,49,0	script	Barricade#B4	111,{ end; }
+guild_vs5,78,50,0	script	Barricade#B5	111,{ end; }
+guild_vs5,78,51,0	script	Barricade#B6	111,{ end; }
+guild_vs5,78,52,0	script	Barricade#B7	111,{ end; }
+guild_vs5,78,53,0	script	Barricade#B8	111,{ end; }
