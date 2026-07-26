@@ -82,6 +82,130 @@ Header:
   Type: MOB_DB
   Version: 5
 
+Body:
+  - Id: 20350
+    AegisName: MD_A013_BELLARE
+    Name: A013 - Bellare
+    Level: 112
+    Hp: 10000000
+    BaseExp: 3250
+    JobExp: 3000
+    Attack: 10000
+    Attack2: 10000
+    Defense: 20
+    MagicDefense: 15
+    Str: 321
+    Agi: 246
+    Vit: 132
+    Int: 87
+    Dex: 444
+    Luk: 186
+    AttackRange: 7
+    SkillRange: 10
+    ChaseRange: 12
+    Size: Medium
+    Race: Demihuman
+    Element: Fire
+    ElementLevel: 2
+    WalkSpeed: 200
+    AttackDelay: 206
+    AttackMotion: 384
+    ClientAttackMotion: 288
+    DamageMotion: 288
+    Ai: Abr_Offensive
+    Mode:
+      IgnoreMagic: true
+
+  - Id: 20834
+    AegisName: ABR_BATTLE_WARIOR
+    Name: ABR Battle Warrior
+    Level: 200
+    Hp: 10000000
+    Attack: 10000
+    Attack2: 10000
+    Str: 447
+    Agi: 447
+    Vit: 447
+    Int: 447
+    Dex: 447
+    Luk: 447
+    AttackRange: 3
+    SkillRange: 10
+    ChaseRange: 12
+    Size: Medium
+    Race: Formless
+    Element: Water
+    ElementLevel: 2
+    WalkSpeed: 200
+    AttackDelay: 432
+    AttackMotion: 864
+    ClientAttackMotion: 648
+    DamageMotion: 1440
+    Ai: Abr_Offensive
+    Mode:
+      IgnoreMagic: true
+
+  - Id: 20837
+    AegisName: ABR_INFINITY
+    Name: ABR Infinity
+    Level: 200
+    Hp: 10000000
+    Attack: 10000
+    Attack2: 10000
+    Str: 447
+    Agi: 447
+    Vit: 447
+    Int: 447
+    Dex: 447
+    Luk: 447
+    AttackRange: 5
+    SkillRange: 8
+    ChaseRange: 12
+    Size: Large
+    Race: Formless
+    Element: Wind
+    ElementLevel: 2
+    WalkSpeed: 200
+    AttackDelay: 864
+    AttackMotion: 1728
+    ClientAttackMotion: 840
+    DamageMotion: 1008
+    Ai: Abr_Offensive
+    Mode:
+      IgnoreMagic: true
+
+  - Id: 2019
+    AegisName: ANCIENT_TREE
+    Name: Ancient Tree
+    Level: 144
+    Hp: 10000000
+    BaseExp: 4750
+    JobExp: 3616
+    Attack: 10000
+    Attack2: 10000
+    Defense: 20
+    MagicDefense: 37
+    Str: 444
+    Agi: 216
+    Vit: 279
+    Int: 174
+    Dex: 447
+    Luk: 90
+    AttackRange: 1
+    SkillRange: 10
+    ChaseRange: 12
+    Size: Large
+    Race: Plant
+    Element: Earth
+    ElementLevel: 3
+    WalkSpeed: 290
+    AttackDelay: 504
+    AttackMotion: 960
+    ClientAttackMotion: 480
+    DamageMotion: 576
+    Ai: Abr_Offensive
+    Mode:
+      IgnoreMagic: true
 #Body:
 # eAthena Dev Team
 #=============================================================

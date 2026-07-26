@@ -1,0 +1,1088 @@
+//====================================================
+// Monster Arena NPC - Account-Wide Access Version WITH PAUSE/RESUME TIMER
+// Modified: Points system + GM Item Management + Permanent Rate Storage
+//====================================================
+
+prontera,156,175,6	script	Monster Arena	10456,{
+
+	// GM Level 99 Drop Rate Management
+	if (getgmlevel() >= 99) {
+		mes "[Monster Arena]";
+		mes "^FF0000[GM MODE]^000000";
+		mes "What would you like to do?";
+		next;
+		
+		switch(select("Enter Arena:Drop Rate Management:Item Management:View Rankings:Reset Rankings:Regular Player Mode")) {
+			case 1:
+				// Continue to normal arena entry
+				break;
+			case 2:
+				// Drop Rate Management
+				callsub GM_DropRateMenu;
+				end;
+			case 3:
+				// Item Management
+				callsub GM_ItemMenu;
+				end;
+			case 4:
+				// View Rankings
+				callsub ShowRankings;
+				end;
+			case 5:
+				// Reset Rankings (GM Only)
+				callsub GM_ResetRankings;
+				end;
+			case 6:
+				// Continue as regular player
+				break;
+		}
+	}
+
+	// Show account arena points
+	mes "[Monster Arena]";
+	mes "^0000FFYour Arena Points: " + #ARENA_POINTS + "^000000";
+	next;
+
+	// Check if player has remaining time (paused or active)
+
+	if (#arena_remaining > 0) {
+		mes "[Monster Arena]";
+		mes "Welcome back!";
+		mes "Your Account has remaining arena time.";
+		.@hours = #arena_remaining / 3600;
+		.@minutes = (#arena_remaining % 3600) / 60;
+		if (.@hours > 0) {
+			mes "Remaining time: " + .@hours + " hours " + .@minutes + " minutes.";
+		} else {
+			mes "Remaining time: " + .@minutes + " minutes.";
+		}
+		mes "^0000FF(Any character on this account can enter)^000000";
+		mes "^00FF00Timer only runs while inside the arena^000000";
+		next;
+		mes "Would you like to enter, or view rankings?";
+		next;
+
+		.@sel = select("Enter Arena:View Rankings");
+		if (.@sel == 1) {
+			close2;
+
+			// Resume timer by setting expire time
+			set #arena_expire, gettimetick(2) + #arena_remaining;
+			warp "rockrdg1",0,0;
+			end;
+		} else {
+			callsub ShowRankings;
+			end;
+		}
+	}
+
+	mes "[Monster Arena]";
+	mes "Welcome to the Monster Arena!";
+	mes "To enter, you must pay with ^FF0000Credit^000000.";
+	mes "^0000FF(Payment grants access to ALL characters on your account)^000000";
+	mes "^00FF00Timer only runs while inside the arena^000000";
+	next;
+
+	mes "[Monster Arena]";
+	mes "Choose your duration:";
+	mes " - 500 Credit = 3 Hours";
+	mes " - 1000 Credit = 8 Hours";
+	mes " - 1500 Credit = 12 Hours";
+	mes " - 3000 Credit = 24 Hours";
+	next;
+
+	switch(select("3 Hours (500):8 Hours (1000):12 Hours (1500):24 Hours (3000):View Rankings:Cancel")) {
+		case 1: set .@cost,500; set .@time,10800; break;    // 3*60*60
+		case 2: set .@cost,1000; set .@time,28800; break;   // 8*60*60
+		case 3: set .@cost,1500; set .@time,43200; break;   // 12*60*60
+		case 4: set .@cost,3000; set .@time,86400; break;   // 24*60*60
+		case 5:
+			callsub ShowRankings;
+			end;
+		default:
+			mes "[Monster Arena]";
+			mes "Come back anytime!";
+			close;
+	}
+
+	if (countitem(909) < .@cost) {
+		mes "[Monster Arena]";
+		mes "You don't have enough Credit!";
+		close;
+	}
+
+	delitem 909, .@cost;
+	// Store remaining time instead of absolute expire time
+	set #arena_remaining, .@time;
+	// Set expire time for immediate entry
+	set #arena_expire, gettimetick(2) + .@time;
+
+	mes "[Monster Arena]";
+	mes "Payment received!";
+	if (.@time < 3600) {
+		mes "You have " + (.@time/60) + " minutes inside the Arena.";
+	} else {
+		mes "You have " + (.@time/3600) + " hours inside the Arena.";
+	}
+	mes "^00FF00All characters on this account can now enter!^000000";
+	mes "^0000FFTimer only runs while inside the arena^000000";
+	close2;
+	warp "rockrdg1",0,0;
+	end;
+
+// Show Rankings Sub-routine
+ShowRankings:
+	mes "[Monster Arena Rankings]";
+	mes "^0000FFTop 10 Monster Slayers^000000";
+	mes "^00FF00(Account-based rankings)^000000";
+	mes " ";
+	
+	// Query top 10 from SQL
+	query_sql("SELECT `account_id`, `char_name`, `kill_count` FROM `arena_rankings` ORDER BY `kill_count` DESC LIMIT 10", .@aid, .@name$, .@kills);
+	
+	if (getarraysize(.@aid) == 0) {
+		mes "No rankings yet!";
+		mes "Be the first to hunt in the arena!";
+	} else {
+		for (.@i = 0; .@i < getarraysize(.@aid); .@i++) {
+			.@rank = .@i + 1;
+			.@kill_display$ = .@kills[.@i] + " kills";
+			
+			mes "#" + .@rank + " - " + .@name$[.@i];
+			mes "    " + .@kill_display$;
+		}
+	}
+	
+	// Show player's own ranking if not in top 10
+	query_sql("SELECT `kill_count` FROM `arena_rankings` WHERE `account_id` = " + getcharid(3), .@my_kills);
+	if (getarraysize(.@my_kills) > 0) {
+		query_sql("SELECT COUNT(*) FROM `arena_rankings` WHERE `kill_count` > " + .@my_kills[0], .@better_count);
+		.@my_rank = .@better_count[0] + 1;
+		
+		if (.@my_rank > 10) {
+			mes " ";
+			mes "^0000FFYour Ranking:^000000";
+			mes "#" + .@my_rank + " - " + strcharinfo(0);
+			mes "    " + .@my_kills[0] + " kills";
+		}
+	} else {
+		mes " ";
+		mes "^808080You haven't killed any monsters yet!^000000";
+	}
+	
+	next;
+	return;
+
+// GM Reset Rankings Sub-routine
+GM_ResetRankings:
+	mes "[GM - Reset Rankings]";
+	mes "^FF0000WARNING!^000000";
+	mes "This will DELETE ALL ranking data!";
+	mes "This action cannot be undone!";
+	next;
+	
+	mes "[GM - Reset Rankings]";
+	mes "Type 'RESET' to confirm:";
+	next;
+	
+	input .@confirm$;
+	if (.@confirm$ != "RESET") {
+		mes "[Cancelled]";
+		mes "Rankings were not reset.";
+		close;
+	}
+	
+	// Get current rank 1 before deleting
+	query_sql("SELECT `account_id`, `char_name`, `kill_count` FROM `arena_rankings` ORDER BY `kill_count` DESC LIMIT 1", .@top_aid, .@top_name$, .@top_kills);
+	
+	// Delete all rankings
+	query_sql("DELETE FROM `arena_rankings`");
+	
+	mes "[Success]";
+	mes "All ranking data has been deleted!";
+	mes "The leaderboard is now empty.";
+	
+	// Reward top 1 if exists
+	if (getarraysize(.@top_aid) > 0) {
+		// Get character ID for the account
+		query_sql("SELECT `char_id` FROM `char` WHERE `account_id` = " + .@top_aid[0] + " ORDER BY `last_login` DESC LIMIT 1", .@charid);
+		
+		if (getarraysize(.@charid) > 0) {
+			.@sender$ = "Monster Arena";
+			.@title$ = "Arena Champion Reward";
+			.@body$ = "Congratulations!\r\n \r\nYou were #1 in the Monster Arena\r\nwith " + .@top_kills[0] + " total kills!\r\n \r\n[ Your reward is attached ]";
+			
+			// Send mail using the same format as WoE script
+			.@item_id = 909;
+			.@amount = 50;
+			
+			setarray .@reward_id[0], .@item_id;
+			setarray .@reward_amount[0], .@amount;
+			
+			mail .@charid[0], .@sender$, .@title$, .@body$, 0, .@reward_id, .@reward_amount;
+			
+			mes " ";
+			mes "^00FF00Reward sent to: " + .@top_name$[0] + "^000000";
+			mes "Total Kills: " + .@top_kills[0];
+			mes "Item: 50 Credits";
+			mes "Delivered via mail system.";
+		} else {
+			mes " ";
+			mes "^FF0000Could not find character for account.^000000";
+			mes "Champion: " + .@top_name$[0];
+			mes "Manual reward may be required.";
+		}
+		
+		// Announce the winner
+		announce "Monster Arena: " + .@top_name$[0] + " was the #1 ranked player with " + .@top_kills[0] + " kills and has received a Champion Trophy!", bc_all;
+	}
+	
+	// Announce to arena players
+	if (getmapusers("rockrdg1") > 0) {
+		mapannounce "rockrdg1", "GM Notice: Arena kill rankings have been reset!", bc_map;
+	}
+	announce "Arena kill rankings have been reset by a GM!", bc_all;
+	close;
+
+// GM Points Boost Management Sub-routine
+GM_DropRateMenu:
+	mes "[Monster Arena - GM Panel]";
+	mes "^FF0000Points Boost Management^000000";
+	.@boost = getvariableofnpc(.points_boost, "MonsterArenaDrops");
+	.@miss = getvariableofnpc(.miss_chance, "MonsterArenaDrops");
+	mes "Current boost: ^0000FF" + (.@boost/100) + "." + ((.@boost%100)/10) + "x^000000";
+	mes "Current miss chance: ^0000FF" + .@miss + "%^000000";
+	next;
+
+	switch(select("View Current Boost:Set Points Boost:Set Miss Chance:Reset to Default:Save Settings:Load Saved Settings:Cancel")) {
+		case 1:
+			mes "[Points Boost]";
+			mes "Boost: " + (.@boost/100) + "." + ((.@boost%100)/10) + "x";
+			mes "Miss chance: " + .@miss + "%";
+			next;
+			callsub GM_DropRateMenu;
+			return;
+		case 2:
+			mes "[Set Points Boost]";
+			mes "Enter boost (10-1000, e.g. 100=1.0x, 150=1.5x):";
+			next;
+			input .@new_boost;
+			if (.@new_boost < 10 || .@new_boost > 1000) {
+				mes "[Error]";
+				mes "Invalid range! Use 10-1000.";
+				next;
+				callsub GM_DropRateMenu;
+				return;
+			}
+			set getvariableofnpc(.points_boost, "MonsterArenaDrops"), .@new_boost;
+			mes "[Success]";
+			mes "Points boost set to: " + (.@new_boost/100) + "." + ((.@new_boost%100)/10) + "x";
+			if (getmapusers("rockrdg1") > 0) {
+				mapannounce "rockrdg1", "GM Notice: Arena points boost adjusted!", bc_map;
+			}
+			next;
+			callsub GM_DropRateMenu;
+			return;
+		case 3:
+			mes "[Set Miss Chance]";
+			mes "Enter miss chance % (0-100):";
+			next;
+			input .@new_miss;
+			if (.@new_miss < 0 || .@new_miss > 100) {
+				mes "[Error]";
+				mes "Invalid range! Use 0-100.";
+				next;
+				callsub GM_DropRateMenu;
+				return;
+			}
+			set getvariableofnpc(.miss_chance, "MonsterArenaDrops"), .@new_miss;
+			mes "[Success]";
+			mes "Miss chance set to: " + .@new_miss + "%";
+			next;
+			callsub GM_DropRateMenu;
+			return;
+		case 4:
+			set getvariableofnpc(.points_boost, "MonsterArenaDrops"), 100;
+			set getvariableofnpc(.miss_chance, "MonsterArenaDrops"), 20;
+			mes "[Success]";
+			mes "Reset to default: 1.0x boost, 20% miss chance.";
+			next;
+			callsub GM_DropRateMenu;
+			return;
+		case 5:
+			callsub GM_SaveRates;
+			return;
+		case 6:
+			callsub GM_LoadRates;
+			return;
+		case 7:
+			mes "[Monster Arena]";
+			mes "GM Panel closed.";
+			close;
+	}
+	return;
+
+// GM Item Management Sub-routine (manages the point-value slots
+// summed by OnNPCKillEvent — NOT actual item drops)
+GM_ItemMenu:
+	mes "[Monster Arena - Point Item Management]";
+	mes "^FF0000Point Slot Management Panel^000000";
+	mes "These items each contribute a flat point value.";
+	mes "^0000FFEvery kill sums ALL active slots' points^000000";
+	mes "^0000FF(then applies the global points boost).^000000";
+	next;
+	
+	switch(select("View Active Slots:Add New Slot:Remove Slot:Modify Slot Points:Reset Slots:Cancel")) {
+		case 1:
+			callsub GM_ViewItems;
+			break;
+		case 2:
+			callsub GM_AddItem;
+			break;
+		case 3:
+			callsub GM_RemoveItem;
+			break;
+		case 4:
+			callsub GM_ModifyItemPoints;
+			break;
+		case 5:
+			callsub GM_ResetItems;
+			break;
+		case 6:
+			mes "[Monster Arena]";
+			mes "Item Management closed.";
+			close;
+	}
+	return;
+
+GM_ViewItems:
+	mes "[Active Point Slots]";
+	mes "^0000FFCurrently Active Slots:^000000";
+	
+	.@count = getvariableofnpc(.item_count, "MonsterArenaDrops");
+	.@total = 0;
+	
+	if (.@count == 0) {
+		mes "No point slots configured!";
+	} else {
+		for (.@i = 0; .@i < .@count; .@i++) {
+			.@item_id = getvariableofnpc(.item_ids[.@i], "MonsterArenaDrops");
+			.@points = getvariableofnpc(.item_rates[.@i], "MonsterArenaDrops");
+			.@item_name$ = getitemname(.@item_id);
+			if (.@item_name$ == "null") .@item_name$ = "Unknown Item";
+			.@total += .@points;
+			
+			mes "Slot " + (.@i+1) + ": " + .@item_name$ + " (ID: " + .@item_id + ")";
+			mes "    Points: " + .@points;
+		}
+		mes " ";
+		mes "^00FF00Total base points per kill: " + .@total + "^000000";
+	}
+	
+	next;
+	callsub GM_ItemMenu;
+	return;
+
+GM_AddItem:
+	mes "[Add New Point Slot]";
+	mes "Enter the Item ID to label this slot with:";
+	mes "^808080(cosmetic only — points are awarded regardless of item ID)^000000";
+	next;
+	
+	input .@new_item_id;
+	if (.@new_item_id <= 0) {
+		mes "[Error]";
+		mes "Invalid Item ID!";
+		next;
+		callsub GM_ItemMenu;
+		return;
+	}
+	
+	// Check if item exists
+	.@item_name$ = getitemname(.@new_item_id);
+	if (.@item_name$ == "null") {
+		mes "[Error]";
+		mes "Item ID " + .@new_item_id + " does not exist!";
+		next;
+		callsub GM_ItemMenu;
+		return;
+	}
+	
+	mes "[Add Slot: " + .@item_name$ + "]";
+	mes "Enter points value for this slot (1-1000):";
+	next;
+	
+	input .@new_points;
+	if (.@new_points < 1 || .@new_points > 1000) {
+		mes "[Error]";
+		mes "Invalid range! Use 1-1000 points.";
+		next;
+		callsub GM_ItemMenu;
+		return;
+	}
+	
+	// Add the slot
+	.@count = getvariableofnpc(.item_count, "MonsterArenaDrops");
+	if (.@count >= 50) {
+		mes "[Error]";
+		mes "Maximum slot limit (50) reached!";
+		next;
+		callsub GM_ItemMenu;
+		return;
+	}
+	
+	// Check if item already exists
+	for (.@i = 0; .@i < .@count; .@i++) {
+		if (getvariableofnpc(.item_ids[.@i], "MonsterArenaDrops") == .@new_item_id) {
+			mes "[Error]";
+			mes "This item is already used as a slot label!";
+			mes "Use 'Modify Slot Points' instead.";
+			next;
+			callsub GM_ItemMenu;
+			return;
+		}
+	}
+	
+	set getvariableofnpc(.item_ids[.@count], "MonsterArenaDrops"), .@new_item_id;
+	set getvariableofnpc(.item_rates[.@count], "MonsterArenaDrops"), .@new_points;
+	set getvariableofnpc(.item_count, "MonsterArenaDrops"), .@count + 1;
+	
+	mes "[Success]";
+	mes "Added slot: " + .@item_name$ + " (ID: " + .@new_item_id + ")";
+	mes "Points: " + .@new_points;
+	
+	if (getmapusers("rockrdg1") > 0) {
+		mapannounce "rockrdg1", "GM Notice: Arena point value per kill has changed!", bc_map;
+	}
+	next;
+	callsub GM_ItemMenu;
+	return;
+
+GM_RemoveItem:
+	mes "[Remove Point Slot]";
+	.@count = getvariableofnpc(.item_count, "MonsterArenaDrops");
+	
+	if (.@count == 0) {
+		mes "No slots to remove!";
+		next;
+		callsub GM_ItemMenu;
+		return;
+	}
+	
+	mes "Select slot to remove:";
+	
+	.@menu$ = "";
+	for (.@i = 0; .@i < .@count; .@i++) {
+		.@item_id = getvariableofnpc(.item_ids[.@i], "MonsterArenaDrops");
+		.@points = getvariableofnpc(.item_rates[.@i], "MonsterArenaDrops");
+		.@item_name$ = getitemname(.@item_id);
+		if (.@item_name$ == "null") .@item_name$ = "Unknown";
+		.@menu$ += .@item_name$ + " (" + .@points + " pts):";
+	}
+	.@menu$ += "Cancel";
+	
+	.@choice = select(.@menu$) - 1;
+	
+	if (.@choice >= .@count) {
+		callsub GM_ItemMenu;
+		return;
+	}
+	
+	// Get slot info before removal
+	.@removed_id = getvariableofnpc(.item_ids[.@choice], "MonsterArenaDrops");
+	.@removed_points = getvariableofnpc(.item_rates[.@choice], "MonsterArenaDrops");
+	.@removed_name$ = getitemname(.@removed_id);
+	
+	// Shift slots down to fill the gap
+	for (.@i = .@choice; .@i < .@count - 1; .@i++) {
+		.@next_id = getvariableofnpc(.item_ids[.@i + 1], "MonsterArenaDrops");
+		.@next_points = getvariableofnpc(.item_rates[.@i + 1], "MonsterArenaDrops");
+		set getvariableofnpc(.item_ids[.@i], "MonsterArenaDrops"), .@next_id;
+		set getvariableofnpc(.item_rates[.@i], "MonsterArenaDrops"), .@next_points;
+	}
+	
+	// Clear last slot and decrease count
+	set getvariableofnpc(.item_ids[.@count - 1], "MonsterArenaDrops"), 0;
+	set getvariableofnpc(.item_rates[.@count - 1], "MonsterArenaDrops"), 0;
+	set getvariableofnpc(.item_count, "MonsterArenaDrops"), .@count - 1;
+	
+	mes "[Success]";
+	mes "Removed: " + .@removed_name$ + " (" + .@removed_points + " pts)";
+	
+	if (getmapusers("rockrdg1") > 0) {
+		mapannounce "rockrdg1", "GM Notice: Arena point value per kill has changed!", bc_map;
+	}
+	next;
+	callsub GM_ItemMenu;
+	return;
+
+GM_ModifyItemPoints:
+	mes "[Modify Slot Points]";
+	.@count = getvariableofnpc(.item_count, "MonsterArenaDrops");
+	
+	if (.@count == 0) {
+		mes "No slots to modify!";
+		next;
+		callsub GM_ItemMenu;
+		return;
+	}
+	
+	mes "Select slot to modify:";
+	
+	.@menu$ = "";
+	for (.@i = 0; .@i < .@count; .@i++) {
+		.@item_id = getvariableofnpc(.item_ids[.@i], "MonsterArenaDrops");
+		.@points = getvariableofnpc(.item_rates[.@i], "MonsterArenaDrops");
+		.@item_name$ = getitemname(.@item_id);
+		if (.@item_name$ == "null") .@item_name$ = "Unknown";
+		.@menu$ += .@item_name$ + " (" + .@points + " pts):";
+	}
+	.@menu$ += "Cancel";
+	
+	.@choice = select(.@menu$) - 1;
+	
+	if (.@choice >= .@count) {
+		callsub GM_ItemMenu;
+		return;
+	}
+	
+	.@item_id = getvariableofnpc(.item_ids[.@choice], "MonsterArenaDrops");
+	.@current_points = getvariableofnpc(.item_rates[.@choice], "MonsterArenaDrops");
+	.@item_name$ = getitemname(.@item_id);
+	
+	mes "[Modify " + .@item_name$ + "]";
+	mes "Current points: " + .@current_points;
+	mes "";
+	mes "Enter new points value (1-1000):";
+	next;
+	
+	input .@new_points;
+	if (.@new_points < 1 || .@new_points > 1000) {
+		mes "[Error]";
+		mes "Invalid range! Use 1-1000 points.";
+		next;
+		callsub GM_ItemMenu;
+		return;
+	}
+	
+	set getvariableofnpc(.item_rates[.@choice], "MonsterArenaDrops"), .@new_points;
+	
+	mes "[Success]";
+	mes .@item_name$ + " points updated to: " + .@new_points;
+	
+	if (getmapusers("rockrdg1") > 0) {
+		mapannounce "rockrdg1", "GM Notice: Arena point value per kill has changed!", bc_map;
+	}
+	next;
+	callsub GM_ItemMenu;
+	return;
+
+GM_ResetItems:
+	mes "[Reset Point Slots]";
+	mes "^FF0000WARNING!^000000";
+	mes "This will remove ALL custom slots and";
+	mes "reset to the default 3 slots (6 total points)!";
+	next;
+	
+	if(select("Yes, reset slots:Cancel") == 1) {
+		// Reset to defaults matching OnInit
+		set getvariableofnpc(.item_count, "MonsterArenaDrops"), 3;
+		set getvariableofnpc(.item_ids[0], "MonsterArenaDrops"), 909;
+		set getvariableofnpc(.item_rates[0], "MonsterArenaDrops"), 3;
+		set getvariableofnpc(.item_ids[1], "MonsterArenaDrops"), 958;
+		set getvariableofnpc(.item_rates[1], "MonsterArenaDrops"), 2;
+		set getvariableofnpc(.item_ids[2], "MonsterArenaDrops"), 957;
+		set getvariableofnpc(.item_rates[2], "MonsterArenaDrops"), 1;
+		
+		// Clear other slots
+		for (.@i = 3; .@i < 50; .@i++) {
+			set getvariableofnpc(.item_ids[.@i], "MonsterArenaDrops"), 0;
+			set getvariableofnpc(.item_rates[.@i], "MonsterArenaDrops"), 0;
+		}
+		
+		mes "[Success]";
+		mes "Point slots reset to default (6 total points per kill).";
+		
+		if (getmapusers("rockrdg1") > 0) {
+			mapannounce "rockrdg1", "GM Notice: Arena point slots reset to default!", bc_map;
+		}
+		next;
+	}
+	callsub GM_ItemMenu;
+	return;
+
+// GM Save Settings Sub-routine (persists points boost, miss chance, item slots)
+GM_SaveRates:
+	mes "[Save Current Settings]";
+	mes "This will save current settings as permanent defaults.";
+	mes "Settings will persist through server restarts.";
+	next;
+
+	if(select("Save Current Settings:Cancel") == 1) {
+		.@boost = getvariableofnpc(.points_boost, "MonsterArenaDrops");
+		.@miss = getvariableofnpc(.miss_chance, "MonsterArenaDrops");
+		.@count = getvariableofnpc(.item_count, "MonsterArenaDrops");
+
+		query_sql("DELETE FROM `arena_drop_settings`");
+		query_sql("INSERT INTO `arena_drop_settings` (`setting_type`, `setting_key`, `setting_value`) VALUES ('multiplier', 'points_boost', " + .@boost + ")");
+		query_sql("INSERT INTO `arena_drop_settings` (`setting_type`, `setting_key`, `setting_value`) VALUES ('system', 'miss_chance', " + .@miss + ")");
+		query_sql("INSERT INTO `arena_drop_settings` (`setting_type`, `setting_key`, `setting_value`) VALUES ('system', 'item_count', " + .@count + ")");
+
+		for (.@i = 0; .@i < .@count; .@i++) {
+			.@item_id = getvariableofnpc(.item_ids[.@i], "MonsterArenaDrops");
+			.@rate = getvariableofnpc(.item_rates[.@i], "MonsterArenaDrops");
+			query_sql("INSERT INTO `arena_drop_settings` (`setting_type`, `setting_key`, `setting_value`, `extra_value`) VALUES ('item', 'item_" + .@i + "', " + .@item_id + ", " + .@rate + ")");
+		}
+
+		mes "[Success]";
+		mes "Settings saved! Boost: " + (.@boost/100) + "." + ((.@boost%100)/10) + "x, Miss: " + .@miss + "%, Slots: " + .@count;
+		next;
+	}
+	callsub GM_DropRateMenu;
+	return;
+
+// GM Load Settings Sub-routine
+GM_LoadRates:
+	mes "[Load Saved Settings]";
+	mes "^FF0000Current settings will be overwritten!^000000";
+	next;
+
+	if(select("Load Saved Settings:Cancel") == 1) {
+		query_sql("SELECT `setting_value` FROM `arena_drop_settings` WHERE `setting_type` = 'system' AND `setting_key` = 'item_count'", .@count_result);
+		if (getarraysize(.@count_result) == 0) {
+			mes "[Error]";
+			mes "No saved settings found! Use 'Save Settings' first.";
+			next;
+			callsub GM_DropRateMenu;
+			return;
+		}
+
+		query_sql("SELECT `setting_value` FROM `arena_drop_settings` WHERE `setting_type` = 'multiplier' AND `setting_key` = 'points_boost'", .@boost);
+		if (getarraysize(.@boost) > 0) set getvariableofnpc(.points_boost, "MonsterArenaDrops"), .@boost[0];
+
+		query_sql("SELECT `setting_value` FROM `arena_drop_settings` WHERE `setting_type` = 'system' AND `setting_key` = 'miss_chance'", .@miss);
+		if (getarraysize(.@miss) > 0) set getvariableofnpc(.miss_chance, "MonsterArenaDrops"), .@miss[0];
+
+		.@saved_count = .@count_result[0];
+		set getvariableofnpc(.item_count, "MonsterArenaDrops"), .@saved_count;
+
+		for (.@i = 0; .@i < 50; .@i++) {
+			set getvariableofnpc(.item_ids[.@i], "MonsterArenaDrops"), 0;
+			set getvariableofnpc(.item_rates[.@i], "MonsterArenaDrops"), 0;
+		}
+
+		for (.@i = 0; .@i < .@saved_count; .@i++) {
+			query_sql("SELECT `setting_value`, `extra_value` FROM `arena_drop_settings` WHERE `setting_type` = 'item' AND `setting_key` = 'item_" + .@i + "'", .@item_data, .@rate_data);
+			if (getarraysize(.@item_data) > 0) {
+				set getvariableofnpc(.item_ids[.@i], "MonsterArenaDrops"), .@item_data[0];
+				set getvariableofnpc(.item_rates[.@i], "MonsterArenaDrops"), .@rate_data[0];
+			}
+		}
+
+		mes "[Success]";
+		mes "Settings loaded successfully!";
+		next;
+	}
+	callsub GM_DropRateMenu;
+	return;
+
+ OnInit:
+	waitingroom "Monster Arena",0;
+	end;   
+}
+
+//====================================================
+// Fixed Arena Timer System - PAUSE/RESUME VERSION
+//====================================================
+-	script	ArenaTimer	-1,{
+
+OnPCLoadMapEvent:
+	if (strcharinfo(3) == "rockrdg1") {
+		// Clean up any existing timer first
+		deltimer "ArenaTimer::OnTimeCheck";
+		
+		.@current = gettimetick(2);
+		
+		// Check if player has remaining time
+		if (#arena_remaining <= 0) {
+			dispbottom "You don't have arena time! Please purchase time from the NPC.";
+			sleep2 1000;
+			warp "SavePoint",0,0;
+			end;
+		}
+		
+		// Resume timer - set new expire time based on remaining time
+		set #arena_expire, .@current + #arena_remaining;
+		
+		// Show welcome message with time
+		.@hours = #arena_remaining / 3600;
+		.@minutes = (#arena_remaining % 3600) / 60;
+		
+		if (.@hours > 0) {
+			dispbottom "Welcome! Account time remaining: " + .@hours + "h " + .@minutes + "m";
+		} else {
+			dispbottom "Welcome! Account time remaining: " + .@minutes + "m";
+		}
+		dispbottom "Use @arenatime for precise time. Timer resumed!";
+		dispbottom "^0000FF(All characters on this account can access the arena)^000000";
+		
+		// Start timer immediately
+		addtimer 30000, "ArenaTimer::OnTimeCheck";
+	}
+	end;
+
+OnTimeCheck:
+	// Exit immediately if not in arena
+	if (strcharinfo(3) != "rockrdg1") end;
+	
+	.@current = gettimetick(2);
+	
+	// Check if time expired
+	if (#arena_expire <= .@current) {
+		dispbottom "Your account's arena time has expired!";
+		set #arena_expire, 0;
+		set #arena_remaining, 0;
+		sleep2 1000;
+		warp "SavePoint",0,0;
+		end;
+	}
+	
+	// Update remaining time
+	set #arena_remaining, #arena_expire - .@current;
+	.@remaining = #arena_remaining;
+	.@hours = .@remaining / 3600;
+	.@minutes = (.@remaining % 3600) / 60;
+	
+	// Show warnings at different intervals
+	if (.@remaining <= 60) {
+		dispbottom "Account arena time: " + .@remaining + " seconds remaining - EXPIRING VERY SOON!";
+	} else if (.@remaining <= 300) {
+		dispbottom "Account arena time: " + .@minutes + "m remaining - Time running out!";
+	} else if (.@hours > 0) {
+		dispbottom "Account arena time: " + .@hours + "h " + .@minutes + "m remaining";
+	} else if (.@minutes > 5) {
+		dispbottom "Account arena time: " + .@minutes + "m remaining";
+	}
+	
+	// Continue timer only if still in arena
+	if (strcharinfo(3) == "rockrdg1") {
+		addtimer 30000, "ArenaTimer::OnTimeCheck";
+	}
+	end;
+
+// Enhanced cleanup events
+OnPCLogoutEvent:
+	deltimer "ArenaTimer::OnTimeCheck";
+	// Pause timer when logging out from arena
+	if (strcharinfo(3) == "rockrdg1" && #arena_expire > 0) {
+		.@current = gettimetick(2);
+		if (#arena_expire > .@current) {
+			set #arena_remaining, #arena_expire - .@current;
+		}
+		set #arena_expire, 0; // Clear active timer
+	}
+	end;
+
+OnPCMapLoadEvent:
+	if (strcharinfo(3) != "rockrdg1") {
+		deltimer "ArenaTimer::OnTimeCheck";
+		// Pause timer when leaving arena
+		if (#arena_expire > 0) {
+			.@current = gettimetick(2);
+			if (#arena_expire > .@current) {
+				set #arena_remaining, #arena_expire - .@current;
+			}
+			set #arena_expire, 0; // Clear active timer
+		}
+	}
+	end;
+
+OnPCDieEvent:
+	if (strcharinfo(3) == "rockrdg1") {
+		.@current = gettimetick(2);
+		if (#arena_expire <= .@current) {
+			dispbottom "Your account's arena time has expired!";
+			set #arena_expire, 0;
+			set #arena_remaining, 0;
+			deltimer "ArenaTimer::OnTimeCheck";
+			sleep2 1000;
+			warp "SavePoint",0,0;
+		}
+	}
+	end;
+
+// Additional safety check on server restart/reload
+OnInit:
+	// Clean up any orphaned timers - only announce to players in Monster Arena
+	if (getmapusers("rockrdg1") > 0) {
+		mapannounce "rockrdg1", "Arena Timer System initialized. All arena players will be checked.", bc_map;
+	}
+	end;
+}
+
+//====================================================
+// Arena Time Command - PAUSE/RESUME VERSION
+//====================================================
+-	script	arenatime	-1,{
+
+OnInit:
+	bindatcmd("arenatime", "arenatime::OnAtcommand");
+	end;
+
+OnAtcommand:
+	if (strcharinfo(3) != "rockrdg1") {
+		// Show paused time when outside arena
+		if (#arena_remaining > 0) {
+			.@hours = #arena_remaining / 3600;
+			.@minutes = (#arena_remaining % 3600) / 60;
+			.@seconds = #arena_remaining % 60;
+			
+			dispbottom "Arena time is PAUSED (outside arena):";
+			if (.@hours > 0) {
+				dispbottom "Paused time: " + .@hours + "h " + .@minutes + "m " + .@seconds + "s";
+			} else if (.@minutes > 0) {
+				dispbottom "Paused time: " + .@minutes + "m " + .@seconds + "s";
+			} else {
+				dispbottom "Paused time: " + .@seconds + "s";
+			}
+			dispbottom "^00FF00Timer will resume when you enter the arena^000000";
+		} else {
+			dispbottom "You don't have any arena time remaining.";
+		}
+		end;
+	}
+	
+	.@current = gettimetick(2);
+	if (#arena_expire <= .@current) {
+		dispbottom "Your account's arena time has expired!";
+		set #arena_expire, 0;
+		set #arena_remaining, 0;
+		deltimer "ArenaTimer::OnTimeCheck";
+		sleep2 1000;
+		warp "SavePoint",0,0;
+		end;
+	}
+	
+	.@remaining = #arena_expire - .@current;
+	.@hours = .@remaining / 3600;
+	.@minutes = (.@remaining % 3600) / 60;
+	.@seconds = .@remaining % 60;
+	
+	if (.@hours > 0) {
+		dispbottom "Account exact time: " + .@hours + "h " + .@minutes + "m " + .@seconds + "s";
+	} else if (.@minutes > 0) {
+		dispbottom "Account exact time: " + .@minutes + "m " + .@seconds + "s";
+	} else {
+		dispbottom "Account exact time: " + .@seconds + "s - EXPIRING VERY SOON!";
+	}
+	dispbottom "^0000FF(All characters on this account share this timer)^000000";
+	dispbottom "^00FF00Timer only runs while inside the arena^000000";
+	end;
+}
+
+//====================================================
+// Monster Arena Spawns (rockrdg1)
+//====================================================
+rockrdg1,0,0,0,0	monster	A013 - Bellare			20350,200,2000,0,0
+rockrdg1,0,0,0,0	monster	ABR Battle Warrior		20834,200,2000,0,0
+rockrdg1,0,0,0,0	monster	ABR Infinity			20837,200,2000,0,0
+rockrdg1,0,0,0,0	monster	Ancient Tree			2019,200,2000,0,0
+
+//====================================================
+// Enhanced Monster Arena Drops - Dynamic Item Management
+//====================================================
+-	script	MonsterArenaDrops	-1,{
+
+OnInit:
+	// Initialize default settings
+	set .points_boost, 100;       // 1.0x boost (no boost)
+	set .miss_chance, 20;         // 20% chance of 0 points per kill
+	set .item_count, 3;
+	set .item_ids[0], 909;   set .item_rates[0], 3;   // 3 points
+	set .item_ids[1], 958;   set .item_rates[1], 2;   // 2 points
+	set .item_ids[2], 957;   set .item_rates[2], 1;   // 1 point
+
+	// Clear other slots
+	for (.@i = 3; .@i < 50; .@i++) {
+		set .item_ids[.@i], 0;
+		set .item_rates[.@i], 0;
+	}
+
+	// Try to load saved settings (overrides defaults above if found)
+	callsub LoadSavedSettings;
+	end;
+
+LoadSavedSettings:
+	// Check if saved settings exist
+	query_sql("SELECT `setting_value` FROM `arena_drop_settings` WHERE `setting_type` = 'system' AND `setting_key` = 'item_count'", .@saved_count);
+
+	if (getarraysize(.@saved_count) == 0) {
+		// No saved settings, use defaults
+		debugmes "Arena Drops: Using default settings (Arena Token only)";
+		return;
+	}
+
+	query_sql("SELECT `setting_value` FROM `arena_drop_settings` WHERE `setting_type` = 'multiplier' AND `setting_key` = 'points_boost'", .@boost);
+	if (getarraysize(.@boost) > 0) {
+		set .points_boost, .@boost[0];
+	}
+
+	query_sql("SELECT `setting_value` FROM `arena_drop_settings` WHERE `setting_type` = 'system' AND `setting_key` = 'miss_chance'", .@miss);
+	if (getarraysize(.@miss) > 0) {
+		set .miss_chance, .@miss[0];
+	}
+
+	.@count = .@saved_count[0];
+	set .item_count, .@count;
+
+	for (.@i = 0; .@i < 50; .@i++) {
+		set .item_ids[.@i], 0;
+		set .item_rates[.@i], 0;
+	}
+
+	for (.@i = 0; .@i < .@count; .@i++) {
+		query_sql("SELECT `setting_value`, `extra_value` FROM `arena_drop_settings` WHERE `setting_type` = 'item' AND `setting_key` = 'item_" + .@i + "'", .@item_data, .@rate_data);
+		if (getarraysize(.@item_data) > 0) {
+			set .item_ids[.@i], .@item_data[0];
+			set .item_rates[.@i], .@rate_data[0];
+		}
+	}
+
+	debugmes "Arena Drops: Loaded " + .@count + " point slots, boost=" + .points_boost + ", miss=" + .miss_chance;
+	return;
+
+OnNPCKillEvent:
+	if (strcharinfo(3) != "rockrdg1") end;
+
+	switch(killedrid) {
+		case 20350: // A013 - Bellare
+		case 20834: // ABR Battle Warrior
+		case 20837: // ABR Infinity
+		case 2019:  // Ancient Tree
+			.@account_id = getcharid(3);
+			.@char_name$ = strcharinfo(0);
+
+			query_sql("SELECT `kill_count` FROM `arena_rankings` WHERE `account_id` = " + .@account_id, .@current_kills);
+			if (getarraysize(.@current_kills) == 0) {
+				query_sql("INSERT INTO `arena_rankings` (`account_id`, `char_name`, `kill_count`) VALUES (" + .@account_id + ", '" + escape_sql(.@char_name$) + "', 1)");
+			} else {
+				.@new_count = .@current_kills[0] + 1;
+				query_sql("UPDATE `arena_rankings` SET `kill_count` = " + .@new_count + ", `char_name` = '" + escape_sql(.@char_name$) + "' WHERE `account_id` = " + .@account_id);
+			}
+
+			// Miss chance roll
+			if (rand(100) < .miss_chance) {
+				dispbottom "No Arena Points this kill! (Total: " + #ARENA_POINTS + ")";
+				break;
+			}
+
+			// Flat 1 point per kill, scaled by the global points boost
+			.@base_points = 1;
+
+			.@gained = (.@base_points * .points_boost) / 100;
+
+			if (.@gained > 0) {
+				set #ARENA_POINTS, #ARENA_POINTS + .@gained;
+				dispbottom "+" + .@gained + " Arena Points! (Total: " + #ARENA_POINTS + ")";
+			}
+			break;
+	}
+	end;
+}
+
+//====================================================
+// GM Drop Rate Command (Updated)
+//====================================================
+-	script	arenadrop	-1,{
+
+OnInit:
+	bindatcmd("arenadrop", "arenadrop::OnAtcommand", 99);  // GM Level 99 required
+	end;
+
+OnAtcommand:
+	if (getgmlevel() < 99) {
+		dispbottom "Unknown command.";
+		end;
+	}
+
+	dispbottom "=== Arena Points Status ===";
+	.@boost = getvariableofnpc(.points_boost, "MonsterArenaDrops");
+	.@miss = getvariableofnpc(.miss_chance, "MonsterArenaDrops");
+	dispbottom "Points Boost: " + (.@boost/100) + "." + ((.@boost%100)/10) + "x";
+	dispbottom "Miss Chance: " + .@miss + "%";
+
+	.@count = getvariableofnpc(.item_count, "MonsterArenaDrops");
+	dispbottom "Active Point Slots: " + .@count;
+
+	for (.@i = 0; .@i < .@count; .@i++) {
+		.@item_id = getvariableofnpc(.item_ids[.@i], "MonsterArenaDrops");
+		.@rate = getvariableofnpc(.item_rates[.@i], "MonsterArenaDrops");
+		.@item_name$ = getitemname(.@item_id);
+		dispbottom .@item_name$ + ": " + .@rate + " pts";
+	}
+	dispbottom "Use the NPC for detailed management.";
+	end;
+}
+
+//====================================================
+// Arena Stats Command - Shows personal statistics
+//====================================================
+-	script	arenastats	-1,{
+
+OnInit:
+	bindatcmd("arenastats", "arenastats::OnAtcommand");
+	end;
+
+OnAtcommand:
+	.@account_id = getcharid(3);
+	
+	query_sql("SELECT `kill_count` FROM `arena_rankings` WHERE `account_id` = " + .@account_id, .@kills);
+	
+	dispbottom "=== Arena Statistics ===";
+	
+	if (getarraysize(.@kills) == 0) {
+		dispbottom "Total Kills: 0";
+		dispbottom "Ranking: Unranked";
+	} else {
+		dispbottom "Total Kills: " + .@kills[0];
+		
+		// Calculate ranking
+		query_sql("SELECT COUNT(*) FROM `arena_rankings` WHERE `kill_count` > " + .@kills[0], .@better);
+		.@rank = .@better[0] + 1;
+		dispbottom "Ranking: #" + .@rank;
+	}
+
+	dispbottom "Arena Points: " + #ARENA_POINTS;
+	dispbottom "Use the Arena NPC to view full rankings!";
+	end;
+}
+
+//====================================================
+// Auto-Create SQL Tables on Server Start
+//====================================================
+-	script	ArenaSQL	-1,{
+
+OnInit:
+	// Create rankings table
+	query_sql("CREATE TABLE IF NOT EXISTS `arena_rankings` (`account_id` int(11) NOT NULL, `char_name` varchar(30) NOT NULL, `kill_count` int(11) NOT NULL DEFAULT '0', `last_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (`account_id`), KEY `kill_count` (`kill_count`)) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+	
+	// Create drop settings table for permanent storage
+	query_sql("CREATE TABLE IF NOT EXISTS `arena_drop_settings` (`id` int(11) NOT NULL AUTO_INCREMENT, `setting_type` varchar(20) NOT NULL, `setting_key` varchar(50) NOT NULL, `setting_value` int(11) NOT NULL, `extra_value` int(11) DEFAULT NULL, `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (`id`), UNIQUE KEY `unique_setting` (`setting_type`,`setting_key`)) ENGINE=MyISAM DEFAULT CHARSET=utf8");
+	
+	// Log successful creation
+	debugmes "Arena System: SQL tables verified/created successfully";
+	end;
+}
+
+//====================================================
+// Mapflags
+//====================================================
+rockrdg1	mapflag	nosave	SavePoint
+rockrdg1	mapflag	nomemo
+rockrdg1	mapflag	nobranch
+rockrdg1	mapflag	noexp
+rockrdg1	mapflag	novending
+rockrdg1	mapflag	nowarpto
+rockrdg1	mapflag	nowarp
+rockrdg1	mapflag	nopenalty
+rockrdg1	mapflag	loadevent
