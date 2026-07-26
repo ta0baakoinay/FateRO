@@ -20082,17 +20082,14 @@ struct s_skill_condition skill_get_requirement(map_session_data* sd, uint16 skil
 
 				// Check requirement for gemstone.
 				if (itemdb_group.item_exists(IG_GEMSTONE, req.itemid[i])) {
-					if( sd->special_state.no_gemstone == 2 ) // Remove all Magic Stone required for all skills for VIP.
-						req.itemid[i] = req.amount[i] = 0;
-					else {
-						if( sd->special_state.no_gemstone || (sc && sc->getSCE(SC_INTOABYSS)) )
-						{	// All gem skills except Hocus Pocus and Ganbantein can cast for free with Mistress card -helvetica
-							if (skill_id != SA_ABRACADABRA && skill_id != HW_GANBANTEIN)
-		 						req.itemid[i] = req.amount[i] = 0;
-							else if( --req.amount[i] < 1 )
-								req.amount[i] = 1; // Hocus Pocus always use at least 1 gem
-						}
-					}
+				    if( sd->special_state.no_gemstone == 2 ) // Remove all Magic Stone required for all skills for VIP.
+				        req.itemid[i] = req.amount[i] = 0;
+				    else {
+				        if( sd->special_state.no_gemstone || (sc && sc->getSCE(SC_INTOABYSS)) )
+				        {	// All gem skills including Hocus Pocus and Ganbantein can cast for free with Mistress card -helvetica
+				            req.itemid[i] = req.amount[i] = 0;
+				        }
+				    }
 				}
 				// Check requirement for Magic Gear Fuel
 				if (req.itemid[i] == ITEMID_MAGIC_GEAR_FUEL && sd->special_state.no_mado_fuel)
