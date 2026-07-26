@@ -14756,6 +14756,8 @@ int32 skill_castend_pos2(block_list* src, int32 x, int32 y, uint16 skill_id, uin
 		return 0; // not to consume item.
 
 	case MO_BODYRELOCATION:
+			if(sc && (sc->getSCE(SC_SPIDERWEB) || sc->getSCE(SC_ANKLE)))
+				break;		
 		if (unit_movepos(src, x, y, 2, 1)) {
 #if PACKETVER >= 20111005
 			clif_snap(src, src->x, src->y);
