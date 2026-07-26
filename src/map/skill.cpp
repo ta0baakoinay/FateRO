@@ -507,6 +507,14 @@ bool skill_pos_maxcount_check(block_list *src, int16 x, int16 y, uint16 skill_id
 			return false;
 		}
 	}
+	if (battle_config.traps_skill_limit > 0) {
+		maxcount = battle_config.traps_skill_limit;
+		unit_skillunit_traps_maxcount(*ud, skill_id, maxcount);
+
+		if (maxcount == 0) {
+			unit_skillunit_traps_delete(*ud);
+		}
+	}
 
 	return true;
 }

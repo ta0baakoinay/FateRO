@@ -3523,6 +3523,113 @@ void unit_skillunit_maxcount(unit_data& ud, uint16 skill_id, int& maxcount) {
 }
 
 /**
+ * Returns the remaining max amount of skill traps units per object for a specific skill
+ * @param ud: Unit data
+ * @param skill_id: Skill to search for
+ * @param maxcount: Maximum amount of placeable units
+ */
+void unit_skillunit_traps_maxcount(unit_data& ud, uint16 skill_id, int& maxcount) {
+	int count = maxcount;
+	for (const auto su : ud.skillunits) {
+		switch(skill_id){
+			case HT_SKIDTRAP:
+			case MA_SKIDTRAP:
+			case HT_LANDMINE:
+			case MA_LANDMINE:
+			case HT_ANKLESNARE:
+			case HT_SHOCKWAVE:
+			case HT_SANDMAN:
+			case MA_SANDMAN:
+			case HT_FLASHER:
+			case HT_FREEZINGTRAP:
+			case MA_FREEZINGTRAP:
+			case HT_BLASTMINE:
+#ifndef RENEWAL
+			case HT_CLAYMORETRAP:
+#endif
+			case HT_TALKIEBOX:
+			case RA_ELECTRICSHOCKER:
+			case RA_CLUSTERBOMB:
+			case RA_MAGENTATRAP:
+			case RA_COBALTTRAP:
+			case RA_MAIZETRAP:
+			case RA_VERDURETRAP:
+			case RA_FIRINGTRAP:
+			case RA_ICEBOUNDTRAP:
+			case SC_DIMENSIONDOOR:
+			case SC_BLOODYLUST:
+			case GN_THORNS_TRAP:
+			case RL_B_TRAP:
+			case SC_ESCAPE:
+				switch (su->unit_id){
+					case UNT_BLASTMINE:
+					case UNT_ANKLESNARE:
+					case UNT_ELECTRICSHOCKER:
+					case UNT_SKIDTRAP:
+					case UNT_LANDMINE:
+					case UNT_SHOCKWAVE:
+					case UNT_SANDMAN:
+					case UNT_FLASHER:
+					case UNT_FREEZINGTRAP:
+#ifndef RENEWAL
+					case UNT_CLAYMORETRAP:
+#endif
+					case UNT_TALKIEBOX:
+					case UNT_CLUSTERBOMB:
+					case UNT_MAGENTATRAP:
+					case UNT_COBALTTRAP:
+					case UNT_MAIZETRAP:
+					case UNT_VERDURETRAP:
+					case UNT_FIRINGTRAP:
+					case UNT_ICEBOUNDTRAP:
+					case UNT_B_TRAP:
+						if(--maxcount == 0){
+							return;
+						}
+						break;
+				}
+				break;
+		}
+	}
+}
+
+/**
+ * Delete the first trap in the list
+ * @param ud: Unit data
+ * @param skill_id: Skill to search for
+ * @param maxcount: Maximum amount of placeable units
+ */
+void unit_skillunit_traps_delete(unit_data& ud) {
+	for (const auto su : ud.skillunits) {
+		switch (su->unit_id){
+			case UNT_BLASTMINE:
+			case UNT_ANKLESNARE:
+			case UNT_ELECTRICSHOCKER:
+			case UNT_SKIDTRAP:
+			case UNT_LANDMINE:
+			case UNT_SHOCKWAVE:
+			case UNT_SANDMAN:
+			case UNT_FLASHER:
+			case UNT_FREEZINGTRAP:
+#ifndef RENEWAL
+			case UNT_CLAYMORETRAP:
+#endif
+			case UNT_TALKIEBOX:
+			case UNT_CLUSTERBOMB:
+			case UNT_MAGENTATRAP:
+			case UNT_COBALTTRAP:
+			case UNT_MAIZETRAP:
+			case UNT_VERDURETRAP:
+			case UNT_FIRINGTRAP:
+			case UNT_ICEBOUNDTRAP:
+			case UNT_B_TRAP:
+				skill_delunit(su->unit);
+				return;
+		}
+	}
+}
+
+/**
  * Gets the number of units attacking another unit
  * @param bl: Object to check amount of targets
  * @return number of targets or 0

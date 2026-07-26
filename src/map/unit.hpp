@@ -183,6 +183,9 @@ int32 unit_set_target(struct unit_data* ud, int32 target_id);
 // unit_data
 void unit_dataset(block_list *bl);
 void unit_skillunit_maxcount(unit_data& ud, uint16 skill_id, int& maxcount);
+void unit_skillunit_traps_maxcount(unit_data& ud, uint16 skill_id, int& maxcount);
+void unit_skillunit_traps_delete(unit_data& ud);
+
 
 // Remove unit
 struct unit_data* unit_bl2ud(block_list *bl);

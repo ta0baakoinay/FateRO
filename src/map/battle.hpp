@@ -338,6 +338,7 @@ struct Battle_Config
 	int32 mob_changetarget_byskill;
 	int32 attack_direction_change;
 	int32 land_skill_limit;
+	int32 traps_skill_limit;
 	int32 monster_class_change_recover;
 	int32 produce_item_name_input;
 	int32 display_skill_fail;
