@@ -23,10 +23,21 @@
 //= npc\guild2\agit_start_se.txt
 //= npc\re\guild3\agit_start_te.txt
 //============================================================
+//===== Updated By: ==================================================
+//= BeWan
+//= https://rathena.org/board/profile/62232-bewan/
+//===== Current Update Version: =====================================
+//= 1.4
+//===== Additional Function: =================================
+//== You can now use @woe command to warp in active castle
+//== Disable @woe command in PVP and GVG map
+//== Multiple Active Castle Added
+//== @woetime to check woe schedule
+//============================================================
 
 // Information NPC
 //============================================================
-prontera,149,193,4	script	WOE Information	835,{
+prontera,139,182,4	script	WOE Information	835,{
 	doevent "WOE_CONTROL::OnMenu";
 	end;
 OnAgitStart:
@@ -54,6 +65,8 @@ OnInit:
 	set .NoOwner,0; 		// Automatically kick players from unconquered castles outside of WOE? (1:yes / 0:no)
 	set .ExitWarp,0;		// Warp all players from castles when WOE ends? (1:yes / 0:no)
 	set .GMAccess,99;		// GM level required to access Session Manager.
+	bindatcmd "woe", strnpcinfo(0)+"::OnWoeStart";
+	bindatcmd "woetime", strnpcinfo(0)+"::OnWoeTime";
 
 // -----------------------------------------------------------
 //  Reward options.
@@ -260,6 +273,56 @@ function Region {
 	.current_region = .total_region;
 	.total_region++;
 	return;
+}
+
+function OnWoeTime {
+	mes "[BeWan WoE Schedule]";
+		if (.Size) {
+			freeloop(1);
+			for(set .@i,0; .@i<.Size; set .@i,.@i+4) {
+				mes "> ^FF0000"+.Days$[$WOE_CONTROL[.@i]]+" ("+Add_Zero($WOE_CONTROL[.@i+1])+"-"+Add_Zero($WOE_CONTROL[.@i+2])+")^000000";
+				for(set .@j,0; .@j<30; set .@j,.@j+1)
+					if ($WOE_CONTROL[.@i+3]&(1<<.@j)) mes "  ~ "+getcastlename(.Castles$[.@j])+" ^777777("+.Castles$[.@j]+")^000000";
+				if (.@i+4 < .Size) mes " ";
+			}
+			freeloop(0);
+		} else
+			mes "No times are configured.";
+			close;
+
+}
+
+function OnWoeStart {
+	if( agitcheck() == 0 || agitcheck2() == 0 ){
+		mes "[BeWan WoE Master]";
+		mes "The War of Emperium is ^FF0000inactive^000000.";
+		close;
+	}else{
+	.@map$ = strcharinfo(3);
+	if ( getmapflag( .@map$,mf_pvp ) ) || getmapflag( .@map$,mf_gvg ) {
+		dispbottom .@atcmd_command$+" failed in PVP/GVG maps";
+		end;
+	}else{
+		set .@menu$,"";
+		for(set .@i,0; .@i < .total_region; set .@i,.@i+1) {
+			if (.CastleWarp || .Active[1]&(1<<.@i))
+				set .@menu$, .@menu$+" ~ "+((.Active[1]&(1<<.@i))?.@clr$:"^777777")+.Regions$[.@i]+" Castles^000000";
+			set .@menu$, .@menu$+":";
+		}
+		set .@i, select(.@menu$)-1;
+		set .@menu$,"";
+		for(set .@j,0; .@j < .size_region[.@i]; set .@j,.@j+1) {
+			.@index = getd( ".castle_index_in_region_" + .@i + "[" + .@j + "]" );
+			if (.CastleWarp || .Active[0]&(1<<.@index))
+				set .@menu$, .@menu$+" ~ "+((.Active[0]&(1<<.@index))?.@clr$:"^777777")+getcastlename(.Castles$[.@index])+"^000000";
+			set .@menu$, .@menu$+":";
+		}
+		set .@j, select(.@menu$)-1;
+		.@index = getd( ".castle_index_in_region_" + .@i + "[" + .@j + "]" );
+		warp .Map$[.@index],.MapX[.@index],.MapY[.@index];
+		close2;
+	}
+	}
 }
 
 OnReward:
