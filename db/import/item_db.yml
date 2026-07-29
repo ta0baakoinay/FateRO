@@ -1771,7 +1771,1657 @@ Body:
       Shadow_Weapon: true
     EquipLevelMin: 1
     Script: |
-      bonus bDex,3;      
+      bonus bDex,3;
+
+  - Id: 120018
+    AegisName: Costume_DRAKESWORD
+    Name: Costume Drake Sword
+    Type: Shadowgear
+    Jobs:
+      Knight: true
+    Locations:
+      Shadow_Weapon: true
+    EquipLevelMin: 1
+    Script: |
+      bonus bStr,3;
+
+  - Id: 120019
+    AegisName: JobSuit_2nd_14
+    Name: Crusader Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Jobs:
+      Crusader: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;         
+    EquipScript: |
+      changebase 14;
+      setlook LOOK_BODY2,14;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;    
+  - Id: 120020
+    AegisName: JobSuit_2nd
+    Name: Monk Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Jobs:
+      Monk: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;         
+    EquipScript: |
+      changebase 15;
+      setlook LOOK_BODY2,15;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120021
+    AegisName: JobSuit_2nd9
+    Name: Wizard Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Jobs:
+      High_Wizard: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      changebase 9;
+      setlook LOOK_BODY2,9;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120022
+    AegisName: JobSuit_2nd7
+    Name: Knight Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Jobs:
+      Knight: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      changebase 7;
+      setlook LOOK_BODY2,7;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120023
+    AegisName: JobSuit_2nd18
+    Name: Alchemist Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Alchemist: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      changebase 18;
+      setlook LOOK_BODY2,18;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;  
+  - Id: 120024
+    AegisName: JobSuit_2nd11
+    Name: Hunter Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Hunter: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      changebase 11;
+      setlook LOOK_BODY2,11;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120025
+    AegisName: JobSuit_2nd12
+    Name: Assassin Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Assassin: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      changebase 12;
+      setlook LOOK_BODY2,12;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120026
+    AegisName: JobSuit_2nd8
+    Name: Priest Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Priest: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      changebase 8;
+      setlook LOOK_BODY2,8;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120027
+    AegisName: JobSuit_2nd10
+    Name: Blacksmith Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Blacksmith: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      changebase 10;
+      setlook LOOK_BODY2,10;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120028
+    AegisName: JobSuit_2nd16
+    Name: Sage Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Sage: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      changebase 16;
+      setlook LOOK_BODY2,16;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120029
+    AegisName: JobSuit_2nd17
+    Name: Rogue Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Rogue: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      changebase 17;
+      setlook LOOK_BODY2,17;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120030
+    AegisName: JobSuit_2nd19
+    Name: BardDancer Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      BardDancer: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      if (Class == Job_Bard || Class == Job_Dancer ||
+          Class == Job_Clown || Class == Job_Gypsy ||
+          Class == Job_Minstrel || Class == Job_Wanderer) {
+          set @suitlook, (Sex == 0 ? 20 : 19);
+          changebase @suitlook;
+          setlook LOOK_BODY2, @suitlook;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120031
+    AegisName: JobSuit_2nd4030
+    Name: Baby Knight Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Knight: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      if (Class == Job_Knight || Class == Job_Lord_Knight) {
+          set @suitlook, 4030; // Baby Knight
+          changebase @suitlook;
+          setlook LOOK_BODY2, @suitlook;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120032
+    AegisName: JobSuit_2nd4034
+    Name: Baby Hunter Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Hunter: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      if (Class == Job_Hunter || Class == Job_Sniper) {
+          set @suitlook, 4034; // Baby Hunter
+          changebase @suitlook;
+          setlook LOOK_BODY2, @suitlook;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120033
+    AegisName: JobSuit_2nd4035
+    Name: Baby Assassin Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Assassin: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      if (Class == Job_Assassin || Class == Job_Assassin_Cross) {
+          set @suitlook, 4035; // Baby Assassin
+          changebase @suitlook;
+          setlook LOOK_BODY2, @suitlook;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120034
+    AegisName: JobSuit_2nd4031
+    Name: Baby Priest Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Priest: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      if (Class == Job_Priest || Class == Job_High_Priest) {
+          set @suitlook, 4031; // Baby Priest
+          changebase @suitlook;
+          setlook LOOK_BODY2, @suitlook;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120035
+    AegisName: JobSuit_2nd4033
+    Name: Baby Blacksmith Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Blacksmith: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      if (Class == Job_Blacksmith || Class == Job_Whitesmith) {
+          set @suitlook, 4033; // Baby Blacksmith
+          changebase @suitlook;
+          setlook LOOK_BODY2, @suitlook;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120036
+    AegisName: JobSuit_2nd4039
+    Name: Baby Sage Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Sage: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      if (Class == Job_Sage || Class == Job_Professor) {
+          set @suitlook, 4039; // Baby Sage
+          changebase @suitlook;
+          setlook LOOK_BODY2, @suitlook;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120037
+    AegisName: JobSuit_2nd4040
+    Name: Baby Rogue Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Rogue: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      if (Class == Job_Rogue || Class == Job_Stalker) {
+          set @suitlook, 4040; // Baby Rogue
+          changebase @suitlook;
+          setlook LOOK_BODY2, @suitlook;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120038
+    AegisName: JobSuit_2nd4041
+    Name: Baby Alchemist Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Alchemist: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      if (Class == Job_Alchemist || Class == Job_Creator) {
+          set @suitlook, 4041; // Baby Alchemist
+          changebase @suitlook;
+          setlook LOOK_BODY2, @suitlook;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120039
+    AegisName: JobSuit_2nd4032
+    Name: Baby Wizard Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Wizard: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      if (Class == Job_Wizard || Class == Job_High_Wizard) {
+          set @suitlook, 4032; // Baby Wizard
+          changebase @suitlook;
+          setlook LOOK_BODY2, @suitlook;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120040
+    AegisName: JobSuit_2nd4038
+    Name: Baby Monk Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Monk: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      if (Class == Job_Monk || Class == Job_Champion) {
+          set @suitlook, 4038; // Baby Monk
+          changebase @suitlook;
+          setlook LOOK_BODY2, @suitlook;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120041
+    AegisName: JobSuit_2nd4042
+    Name: Baby BardDancer Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      BardDancer: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bAddMaxWeight,3000;
+    EquipScript: |
+      if (Class == Job_Bard || Class == Job_Dancer ||
+          Class == Job_Clown || Class == Job_Gypsy ||
+          Class == Job_Minstrel || Class == Job_Wanderer) {
+          set @suitlook, (Sex == 0 ? 4043 : 4042); // Baby Dancer / Baby Bard
+          changebase @suitlook;
+          setlook LOOK_BODY2, @suitlook;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120042
+    AegisName: JobSuit_3rd_4060
+    Name: RuneKnight Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Knight: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      set @suitlook, roclass(eaclass()|EAJL_THIRD);
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120043
+    AegisName: JobSuit_3rd_4073
+    Name: RoyalGuard Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Crusader: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      set @suitlook, roclass(eaclass()|EAJL_THIRD);
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120044
+    AegisName: JobSuit_3rd_4062
+    Name: Ranger Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Hunter: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      set @suitlook, roclass(eaclass()|EAJL_THIRD);
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120045
+    AegisName: JobSuit_3rd_4064
+    Name: Mechanic Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Blacksmith: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      set @suitlook, roclass(eaclass()|EAJL_THIRD);
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120046
+    AegisName: JobSuit_3rd_4061
+    Name: Warlock Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Wizard: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      set @suitlook, roclass(eaclass()|EAJL_THIRD);
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120047
+    AegisName: JobSuit_3rd_4074
+    Name: Sorcerer Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Sage: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      set @suitlook, roclass(eaclass()|EAJL_THIRD);
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120048
+    AegisName: JobSuit_3rd_4065
+    Name: GuillotineCross Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Assassin: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      set @suitlook, roclass(eaclass()|EAJL_THIRD);
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120049
+    AegisName: JobSuit_3rd_4079
+    Name: ShadowChaser Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Rogue: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      set @suitlook, roclass(eaclass()|EAJL_THIRD);
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120050
+    AegisName: JobSuit_3rd_4063
+    Name: ArchBishop Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Priest: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      set @suitlook, roclass(eaclass()|EAJL_THIRD);
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120051
+    AegisName: JobSuit_3rd_4077
+    Name: Sura Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Monk: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      set @suitlook, roclass(eaclass()|EAJL_THIRD);
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120052
+    AegisName: JobSuit_3rd_4078
+    Name: Genetic Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Alchemist: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      set @suitlook, roclass(eaclass()|EAJL_THIRD);
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120053
+    AegisName: JobSuit_3rd_4075
+    Name: MinstrelWanderer Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      BardDancer: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      set @suitlook, roclass(eaclass()|EAJL_THIRD);
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+  - Id: 120054
+    AegisName: JobSuit_3rd_4096
+    Name: Baby RuneKnight Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Knight: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      changebase 4096;
+      setlook LOOK_BODY2,4096;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2,Class;
+  - Id: 120055
+    AegisName: JobSuit_3rd_4102
+    Name: Baby RoyalGuard Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Crusader: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      changebase 4102;
+      setlook LOOK_BODY2,4102;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2,Class;
+  - Id: 120056
+    AegisName: JobSuit_3rd_4098
+    Name: Baby Ranger Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Hunter: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      changebase 4098;
+      setlook LOOK_BODY2,4098;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2,Class;
+  - Id: 120057
+    AegisName: JobSuit_3rd_4100
+    Name: Baby Mechanic Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Blacksmith: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      changebase 4100;
+      setlook LOOK_BODY2,4100;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2,Class;
+  - Id: 120058
+    AegisName: JobSuit_3rd_4097
+    Name: Baby Warlock Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Wizard: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      changebase 4097;
+      setlook LOOK_BODY2,4097;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2,Class;
+  - Id: 120059
+    AegisName: JobSuit_3rd_4103
+    Name: Baby Sorcerer Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Sage: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      changebase 4103;
+      setlook LOOK_BODY2,4103;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2,Class;
+  - Id: 120060
+    AegisName: JobSuit_3rd_4101
+    Name: Baby GuillotineCross Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Assassin: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      changebase 4101;
+      setlook LOOK_BODY2,4101;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2,Class;
+  - Id: 120061
+    AegisName: JobSuit_3rd_4108
+    Name: Baby ShadowChaser Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Rogue: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      changebase 4108;
+      setlook LOOK_BODY2,4108;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2,Class;
+  - Id: 120062
+    AegisName: JobSuit_3rd_4099
+    Name: Baby ArchBishop Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Priest: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      changebase 4099;
+      setlook LOOK_BODY2,4099;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2,Class;
+  - Id: 120063
+    AegisName: JobSuit_3rd_4106
+    Name: Baby Sura Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Monk: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      changebase 4106;
+      setlook LOOK_BODY2,4106;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2,Class;
+  - Id: 120064
+    AegisName: JobSuit_3rd_4107
+    Name: Baby Genetic Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Alchemist: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      changebase 4107;
+      setlook LOOK_BODY2,4107;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2,Class;
+  - Id: 120065
+    AegisName: JobSuit_3rd_40752
+    Name: Baby MinstrelWanderer Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      BardDancer: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,2;
+      bonus bAddMaxWeight,5000;
+    EquipScript: |
+      if (Sex == 1) { // Female = Dancer
+        changebase 4104;
+        setlook LOOK_BODY2,4104;
+      }
+      else { // Male = Bard
+        changebase 4105;
+        setlook LOOK_BODY2,4105;
+      }
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2,Class;
+
+
+  - Id: 120066
+    AegisName: JobSuit_4th4252
+    Name: DragonKnight Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Knight: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+      bonus2 bAddRace,RC_DemiHuman,2;
+      bonus2 bAddRace,RC_Player_Human,2;
+    EquipScript: |
+      set @suitlook, 4252;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120067
+    AegisName: JobSuit_4th4258
+    Name: ImperialGuard Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Crusader: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+      bonus2 bAddRace,RC_DemiHuman,2;
+      bonus2 bAddRace,RC_Player_Human,2;
+    EquipScript: |
+      set @suitlook, 4258;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120068
+    AegisName: JobSuit_4th4257
+    Name: WindHawk Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Hunter: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+      bonus2 bAddRace,RC_DemiHuman,2;
+      bonus2 bAddRace,RC_Player_Human,2;
+    EquipScript: |
+      set @suitlook, 4257;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120069
+    AegisName: JobSuit_4th4253
+    Name: Meister Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Blacksmith: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+      bonus2 bAddRace,RC_DemiHuman,2;
+      bonus2 bAddRace,RC_Player_Human,2;
+    EquipScript: |
+      set @suitlook, 4253;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120070
+    AegisName: JobSuit_4th4255
+    Name: ArchMage Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Wizard: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+      bonus2 bAddRace,RC_DemiHuman,2;
+      bonus2 bAddRace,RC_Player_Human,2;
+    EquipScript: |
+      set @suitlook, 4255;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120071
+    AegisName: JobSuit_4th4261
+    Name: ElementalMaster Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Sage: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+      bonus2 bAddRace,RC_DemiHuman,2;
+      bonus2 bAddRace,RC_Player_Human,2;
+    EquipScript: |
+      set @suitlook, 4261;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120072
+    AegisName: JobSuit_4th4254
+    Name: ShadowCross Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Assassin: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+      bonus2 bAddRace,RC_DemiHuman,2;
+      bonus2 bAddRace,RC_Player_Human,2;
+    EquipScript: |
+      set @suitlook, 4254;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120073
+    AegisName: JobSuit_4th4260
+    Name: AbyssChaser Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Rogue: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+      bonus2 bAddRace,RC_DemiHuman,2;
+      bonus2 bAddRace,RC_Player_Human,2;
+    EquipScript: |
+      set @suitlook, 4260;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120074
+    AegisName: JobSuit_4th4256
+    Name: Cardinal Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Priest: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+      bonus2 bAddRace,RC_DemiHuman,2;
+      bonus2 bAddRace,RC_Player_Human,2;
+    EquipScript: |
+      set @suitlook, 4256;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120075
+    AegisName: JobSuit_4th4262
+    Name: Inquisitor Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Monk: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+      bonus2 bAddRace,RC_DemiHuman,2;
+      bonus2 bAddRace,RC_Player_Human,2;
+    EquipScript: |
+      set @suitlook, 4262;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120076
+    AegisName: JobSuit_4th4259
+    Name: Biolo Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Alchemist: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+      bonus2 bAddRace,RC_DemiHuman,2;
+      bonus2 bAddRace,RC_Player_Human,2;
+    EquipScript: |
+      set @suitlook, 4259;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120077
+    AegisName: JobSuit_4th4264
+    Name: TroubadourTrouvere Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      BardDancer: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+      bonus2 bAddRace,RC_DemiHuman,2;
+      bonus2 bAddRace,RC_Player_Human,2;
+    EquipScript: |
+      if (Sex == 0) { // Female = Trouvere
+          set @suitlook, 4264;
+      }
+      else { // Male = Troubadour
+          set @suitlook, 4263;
+      }
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+
+  - Id: 120078
+    AegisName: JobSuit_JRO4332
+    Name: JRO LK Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Knight: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2;      
+    EquipScript: |
+      setlook LOOK_BODY2,2;
+    UnEquipScript: |
+      setlook LOOK_BODY2,0;
+
+  - Id: 120079
+    AegisName: JobSuit_JRO4338
+    Name: JRO Paladin Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Crusader: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+    EquipScript: |
+      set @suitlook, 4338;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120080
+    AegisName: JobSuit_JRO4337
+    Name: JRO Sniper Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Hunter: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+    EquipScript: |
+      set @suitlook, 4337;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120081
+    AegisName: JobSuit_JRO4333
+    Name: JRO WS Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Blacksmith: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+    EquipScript: |
+      set @suitlook, 4333;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120082
+    AegisName: JobSuit_JRO4335
+    Name: JRO HW Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Wizard: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+    EquipScript: |
+      set @suitlook, 4335;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120083
+    AegisName: JobSuit_JRO4341
+    Name: JRO Professor Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Sage: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+    EquipScript: |
+      set @suitlook, 4341;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120084
+    AegisName: JobSuit_JRO4334
+    Name: JRO SinX Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Assassin: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+    EquipScript: |
+      set @suitlook, 4334;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120085
+    AegisName: JobSuit_JRO4340
+    Name: JRO Stalker Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Rogue: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+    EquipScript: |
+      set @suitlook, 4340;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120086
+    AegisName: JobSuit_JRO4336
+    Name: JRO HP Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Priest: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+    EquipScript: |
+      set @suitlook, 4336;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120087
+    AegisName: JobSuit_JRO4342
+    Name: JRO Champion Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Monk: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+    EquipScript: |
+      set @suitlook, 4342;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120088
+    AegisName: JobSuit_JRO4339
+    Name: JRO Creator Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      Alchemist: true
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+    EquipScript: |
+      set @suitlook, 4339;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120089
+    AegisName: JobSuit_JROClown   # ⚠ placeholder — see note above, confirm real ID
+    Name: JRO Clown Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      BardDancer: true
+    Gender: Male
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2; 
+    EquipScript: |
+      set @suitlook, 4344; // ⚠ CONFIRM: placeholder, adjust to real Clown sprite ID
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
+  - Id: 120090
+    AegisName: JobSuit_JRO4343
+    Name: JRO Gypsy Job Suit
+    Type: ShadowGear
+    Buy: 8000
+    Weight: 100
+    Defense: 0
+    Jobs:
+      BardDancer: true
+    Gender: Female
+    Locations:
+      Shadow_Armor: true
+    Script: |
+      bonus bAllStats,3;
+      bonus bAddMaxWeight,10000;
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2;
+    EquipScript: |
+      set @suitlook, 4343;
+      changebase @suitlook;
+      setlook LOOK_BODY2, @suitlook;
+    UnEquipScript: |
+      changebase Class;
+      setlook LOOK_BODY2, Class;
+
 #Body:
 # THQ Quest Items
 #=============================================================
