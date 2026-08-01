@@ -3422,6 +3422,568 @@ Body:
       changebase Class;
       setlook LOOK_BODY2, Class;
 
+  - Id: 120091
+    AegisName: Ensign Helm
+    Name: Ensign Helm
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2734
+    Script: |
+      bonus bStr,0;
+  - Id: 120092
+    AegisName: Mizukage Hat
+    Name: Mizukage Hat
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2735
+    Script: |
+      bonus bStr,0;
+  - Id: 120093
+    AegisName: Tsuchikage Hat
+    Name: Tsuchikage Hat
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2736
+    Script: |
+      bonus bStr,0;
+  - Id: 120094
+    AegisName: Kazekage Hat
+    Name: Kazekage Hat
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2737
+    Script: |
+      bonus bStr,0;
+  - Id: 120095
+    AegisName: Hoshikage Hat
+    Name: Hoshikage Hat
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2738
+    Script: |
+      bonus bStr,0;
+  - Id: 120096
+    AegisName: Hokage Hat
+    Name: Hokage Hat
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2739
+    Script: |
+      bonus bStr,0;
+  - Id: 120097
+    AegisName: Raikage Hat
+    Name: Raikage Hat
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2740
+    Script: |
+      bonus bStr,0;
+  - Id: 120098
+    AegisName: Cygnus Helm
+    Name: Cygnus Helm
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2741
+    Script: |
+      bonus bStr,0;
+  - Id: 120099
+    AegisName: Traveler's Hat
+    Name: Traveler's Hat
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2742
+    Script: |
+      bonus bStr,0;
+  - Id: 120100
+    AegisName: Earth Headprotector
+    Name: Earth Headprotector
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2743
+    Script: |
+      bonus bStr,0;
+  - Id: 120101
+    AegisName: Fire Headprotector
+    Name: Fire Headprotector
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2744
+    Script: |
+      bonus bStr,0;
+  - Id: 120102
+    AegisName: Lightning Headprotector
+    Name: Lightning Headprotector
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2745
+    Script: |
+      bonus bStr,0;
+  - Id: 120103
+    AegisName: Sound Headprotector
+    Name: Sound Headprotector
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2746
+    Script: |
+      bonus bStr,0;
+  - Id: 120104
+    AegisName: Water Headprotector
+    Name: Water Headprotector
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2747
+    Script: |
+      bonus bStr,0;
+  - Id: 120105
+    AegisName: Wind Headprotector
+    Name: Wind Headprotector
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2748
+    Script: |
+      bonus bStr,0;
+      
+  - Id: 120106
+    AegisName: Kakashi Headprotector
+    Name: Kakashi Headprotector
+    Type: Armor
+    Weight: 500
+    Defense: 2
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2749
+    Script: |
+      bonus bStr,0;
+
+  - Id: 120107
+    AegisName: Flame Aura
+    Name: Flame Aura
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2750
+    Script: |
+      bonus bStr,0;
+  - Id: 120108
+    AegisName: Phoenix Wings
+    Name: Phoenix Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2751
+    Script: |
+      bonus bStr,0;
+  - Id: 120109
+    AegisName: Torn Wings
+    Name: Torn Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2752
+    Script: |
+      bonus bStr,0;
+  - Id: 120110
+    AegisName: Arctic Wings
+    Name: Arctic Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2753
+    Script: |
+      bonus bStr,0;
+  - Id: 120111
+    AegisName: Black Butterfly Wings
+    Name: Black Butterfly Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2754
+    Script: |
+      bonus bStr,0;
+  - Id: 120112
+    AegisName: Demon Wings
+    Name: Demon Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2755
+    Script: |
+      bonus bStr,0;
+  - Id: 120113
+    AegisName: Black Dragon Wing
+    Name: Black Dragon Wing
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2756
+    Script: |
+      bonus bStr,0;
+  - Id: 120114
+    AegisName: Dragon Wings
+    Name: Dragon Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2757
+    Script: |
+      bonus bStr,0;
+  - Id: 120115
+    AegisName: Cyan Dragon Wings
+    Name: Cyan Dragon Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2758
+    Script: |
+      bonus bStr,0;
+  - Id: 120116
+    AegisName: Gold Dragon Wings
+    Name: Gold Dragon Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2759
+    Script: |
+      bonus bStr,0;
+  - Id: 120117
+    AegisName: Green Dragon Wings
+    Name: Green Dragon Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2760
+    Script: |
+      bonus bStr,0;
+  - Id: 120118
+    AegisName: Red Wings
+    Name: Red Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2761
+    Script: |
+      bonus bStr,0;
+  - Id: 120119
+    AegisName: Gargoyle Wings
+    Name: Gargoyle Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2762
+    Script: |
+      bonus bStr,0;
+  - Id: 120120
+    AegisName: Icarus Wings
+    Name: Icarus Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2763
+    Script: |
+      bonus bStr,0;
+  - Id: 120121
+    AegisName: White Butterfly Wings
+    Name: White Butterfly Wings
+    Type: Armor
+    Weight: 500
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2764
+    Script: |
+      bonus bStr,0;
+
+  - Id: 120122
+    AegisName: Black Cyclop's Eye
+    Name: Black Cyclop's Eye
+    Type: Armor
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2765
+    Script: |
+      bonus bStr,0;
+  - Id: 120123
+    AegisName: Cyan Cyclop's Eye
+    Name: Cyan Cyclop's Eye
+    Type: Armor
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2766
+    Script: |
+      bonus bStr,0;
+  - Id: 120124
+    AegisName: Gold Cyclop's Eye
+    Name: Gold Cyclop's Eye
+    Type: Armor
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2767
+    Script: |
+      bonus bStr,0;
+  - Id: 120125
+    AegisName: Green Cyclop's Eye
+    Name: Green Cyclop's Eye
+    Type: Armor
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2768
+    Script: |
+      bonus bStr,0;
+  - Id: 120126
+    AegisName: Red Cyclop's Eye
+    Name: Red Cyclop's Eye
+    Type: Armor
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2769
+    Script: |
+      bonus bStr,0;
+  - Id: 120127
+    AegisName: Blue Shiny Angel
+    Name: Blue Shiny Angel
+    Type: Armor
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2770
+    Script: |
+      bonus bStr,0;
+  - Id: 120128
+    AegisName: Green Shiny Angel
+    Name: Green Shiny Angel
+    Type: Armor
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2771
+    Script: |
+      bonus bStr,0;
+  - Id: 120129
+    AegisName: Orange Shiny Angel
+    Name: Orange Shiny Angel
+    Type: Armor
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2772
+    Script: |
+      bonus bStr,0;
+  - Id: 120130
+    AegisName: Red Shiny Angel
+    Name: Red Shiny Angel
+    Type: Armor
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2773
+    Script: |
+      bonus bStr,0;
+  - Id: 120131
+    AegisName: White Shiny Angel
+    Name: White Shiny Angel
+    Type: Armor
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2774
+    Script: |
+      bonus bStr,0;
+  - Id: 120132
+    AegisName: Yellow Shiny Angel
+    Name: Yellow Shiny Angel
+    Type: Armor
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2775
+    Script: |
+      bonus bStr,0;
+
+  - Id: 2646
+    AegisName: Bunch_Of_Carnation
+    Name: Bunch of Carnations
+    Type: Armor
+    Buy: 2
+    Weight: 100
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    Script: |
+      bonus bAllStats,3;
+
+  - Id: 2647
+    AegisName: Nile_Rose
+    Name: Nile Rose
+    Type: Armor
+    Buy: 2
+    Weight: 100
+    Slots: 1
+    Locations:
+      Both_Accessory: true
+    ArmorLevel: 1
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoSell: true
+      NoCart: true
+      NoStorage: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
+    Script: |
+      bonus bMaxHP,10;      
 #Body:
 # THQ Quest Items
 #=============================================================
