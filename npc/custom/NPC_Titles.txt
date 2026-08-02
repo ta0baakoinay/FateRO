@@ -10,10 +10,12 @@ prontera,155,181,4	script	ItemShopBubble#helper	-1,{
 OnInit:
 	setarray .@npc_name$[0],
 		"Donation Shop#custom",
+		"Quest Shop#qshop",
 		"Monster Arena";
 
 	setarray .@bubble_text$[0],
 		"Donation Shop",
+		"Quest Shop",
 		"Monster Arena";
 
 	.@size = getarraysize(.@npc_name$);

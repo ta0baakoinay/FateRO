@@ -172,6 +172,7 @@ Body:
     Items:
       - Index: 0
         Item: Mizukage Hat
+        Zeny: 200000000
         RequiredItems:
           - Index: 0
             Item: Jellopy
@@ -181,9 +182,10 @@ Body:
             Amount: 30
           - Index: 2
             Item: Oridecon
-            Amount: 30
+            Amount: 30    
       - Index: 1
         Item: Tsuchikage Hat
+        Zeny: 200000000
         RequiredItems:
           - Index: 0
             Item: Jellopy
@@ -196,6 +198,7 @@ Body:
             Amount: 30
       - Index: 2
         Item: Kazekage Hat
+        Zeny: 200000000
         RequiredItems:
           - Index: 0
             Item: Jellopy
@@ -208,6 +211,7 @@ Body:
             Amount: 30
       - Index: 3
         Item: Hoshikage Hat
+        Zeny: 200000000
         RequiredItems:
           - Index: 0
             Item: Jellopy
@@ -220,6 +224,7 @@ Body:
             Amount: 30
       - Index: 4
         Item: Hokage Hat
+        Zeny: 200000000
         RequiredItems:
           - Index: 0
             Item: Jellopy
@@ -232,6 +237,7 @@ Body:
             Amount: 30
       - Index: 5
         Item: Raikage Hat
+        Zeny: 200000000
         RequiredItems:
           - Index: 0
             Item: Jellopy
