@@ -95,7 +95,7 @@ Body:
         RequiredItems:
           - Index: 0
             Item: Donation_Card
-            Amount: 15            
+            Amount: 15
       - Index: 7
         Item: "Black Cyclop's Eye"
         RequiredItems:
@@ -161,4 +161,84 @@ Body:
         RequiredItems:
           - Index: 0
             Item: Donation_Card
+            Amount: 30
+
+  - Name: Quest Shop#qshop
+    Map: prontera
+    X: 158
+    Y: 168
+    Direction: South
+    Sprite: 4_M_ROKI2
+    Items:
+      - Index: 0
+        Item: Mizukage Hat
+        RequiredItems:
+          - Index: 0
+            Item: Jellopy
+            Amount: 30
+          - Index: 1
+            Item: Gold
+            Amount: 30
+          - Index: 2
+            Item: Oridecon
+            Amount: 30
+      - Index: 1
+        Item: Tsuchikage Hat
+        RequiredItems:
+          - Index: 0
+            Item: Jellopy
+            Amount: 30
+          - Index: 1
+            Item: Gold
+            Amount: 30
+          - Index: 2
+            Item: Oridecon
+            Amount: 30
+      - Index: 2
+        Item: Kazekage Hat
+        RequiredItems:
+          - Index: 0
+            Item: Jellopy
+            Amount: 30
+          - Index: 1
+            Item: Gold
+            Amount: 30
+          - Index: 2
+            Item: Oridecon
+            Amount: 30
+      - Index: 3
+        Item: Hoshikage Hat
+        RequiredItems:
+          - Index: 0
+            Item: Jellopy
+            Amount: 30
+          - Index: 1
+            Item: Gold
+            Amount: 30
+          - Index: 2
+            Item: Oridecon
+            Amount: 30
+      - Index: 4
+        Item: Hokage Hat
+        RequiredItems:
+          - Index: 0
+            Item: Jellopy
+            Amount: 30
+          - Index: 1
+            Item: Gold
+            Amount: 30
+          - Index: 2
+            Item: Oridecon
+            Amount: 30
+      - Index: 5
+        Item: Raikage Hat
+        RequiredItems:
+          - Index: 0
+            Item: Jellopy
+            Amount: 30
+          - Index: 1
+            Item: Gold
+            Amount: 30
+          - Index: 2
+            Item: Oridecon
             Amount: 30
