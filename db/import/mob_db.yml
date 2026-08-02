@@ -206,6 +206,107 @@ Body:
     Ai: Abr_Offensive
     Mode:
       IgnoreMagic: true
+
+  - Id: 23002
+    AegisName: 20TH_EVENT_HEMEL
+    Name: Hemel
+    Level: 144
+    Hp: 10000000
+    BaseExp: 4750
+    JobExp: 3616
+    Attack: 10000
+    Attack2: 10000
+    Defense: 20
+    MagicDefense: 37
+    Str: 444
+    Agi: 216
+    Vit: 279
+    Int: 174
+    Dex: 447
+    Luk: 90
+    AttackRange: 1
+    SkillRange: 10
+    ChaseRange: 12
+    Size: Large
+    Race: Plant
+    Element: Earth
+    ElementLevel: 3
+    WalkSpeed: 290
+    AttackDelay: 504
+    AttackMotion: 960
+    ClientAttackMotion: 480
+    DamageMotion: 576
+    Ai: Abr_Offensive
+    Mode:
+      IgnoreMagic: true
+
+  - Id: 22489
+    AegisName: CP_CH1_ABYSS_KNIGHT
+    Name: Toothless
+    Level: 144
+    Hp: 10000000
+    BaseExp: 4750
+    JobExp: 3616
+    Attack: 10000
+    Attack2: 10000
+    Defense: 20
+    MagicDefense: 37
+    Str: 444
+    Agi: 216
+    Vit: 279
+    Int: 174
+    Dex: 447
+    Luk: 90
+    AttackRange: 1
+    SkillRange: 10
+    ChaseRange: 12
+    Size: Large
+    Race: Plant
+    Element: Earth
+    ElementLevel: 3
+    WalkSpeed: 290
+    AttackDelay: 504
+    AttackMotion: 960
+    ClientAttackMotion: 480
+    DamageMotion: 576
+    Ai: Abr_Offensive
+    Mode:
+      IgnoreMagic: true
+
+
+  - Id: 23003
+    AegisName: 20TH_EVENT_LOLI_RURI
+    Name: 20th Anniv Loli Ruri
+    Level: 144
+    Hp: 10000000
+    BaseExp: 4750
+    JobExp: 3616
+    Attack: 10000
+    Attack2: 10000
+    Defense: 20
+    MagicDefense: 37
+    Str: 444
+    Agi: 216
+    Vit: 279
+    Int: 174
+    Dex: 447
+    Luk: 90
+    AttackRange: 1
+    SkillRange: 10
+    ChaseRange: 12
+    Size: Large
+    Race: Plant
+    Element: Earth
+    ElementLevel: 3
+    WalkSpeed: 290
+    AttackDelay: 504
+    AttackMotion: 960
+    ClientAttackMotion: 480
+    DamageMotion: 576
+    Ai: Abr_Offensive
+    Mode:
+      IgnoreMagic: true
+
 #Body:
 # eAthena Dev Team
 #=============================================================

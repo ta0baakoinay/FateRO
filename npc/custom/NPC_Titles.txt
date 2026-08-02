@@ -1,0 +1,30 @@
+//===== rAthena/Hercules Script =======================================
+//= Companion NPC: floating bubble text for multiple NPCs
+//===== Description ====================================================
+//= Add more targets by adding a matching entry to both .@npc_name$[]
+//= and .@bubble_text$[] (same index = same NPC).
+//=======================================================================
+prontera,155,181,4	script	ItemShopBubble#helper	-1,{
+	end;
+
+OnInit:
+	setarray .@npc_name$[0],
+		"Donation Shop#custom",
+		"Monster Arena";
+
+	setarray .@bubble_text$[0],
+		"Donation Shop",
+		"Monster Arena";
+
+	.@size = getarraysize(.@npc_name$);
+
+	while (1) {
+		for (.@i = 0; .@i < .@size; .@i++) {
+			.@gid = getnpcid(0, .@npc_name$[.@i]);
+			if (.@gid > 0)
+				showscript .@bubble_text$[.@i], .@gid;
+		}
+		sleep(1000);
+	}
+	end;
+}

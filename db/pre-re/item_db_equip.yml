@@ -26944,22 +26944,22 @@ Body:
     View: 206
     Script: |
       bonus2 bSubRace,RC_Demon,5;
-  - Id: 5135
-    AegisName: Cyclops_Visor
-    Name: Cyclop's Eye
-    Type: Armor
-    Weight: 200
-    Jobs:
-      All: true
-      Novice: false
-      SuperNovice: false
-    Locations:
-      Head_Mid: true
-    ArmorLevel: 1
-    EquipLevelMin: 75
-    View: 207
-    Script: |
-      bonus bMaxSP,50;
+#  - Id: 5135
+#    AegisName: Cyclops_Visor
+#    Name: Cyclop's Eye
+#    Type: Armor
+#    Weight: 200
+#    Jobs:
+#      All: true
+#      Novice: false
+#      SuperNovice: false
+#    Locations:
+#      Head_Mid: true
+#    ArmorLevel: 1
+#    EquipLevelMin: 75
+#    View: 207
+#    Script: |
+#      bonus bMaxSP,50;
   - Id: 5136
     AegisName: Santa's_Hat_
     Name: Antonio's Santa Hat
