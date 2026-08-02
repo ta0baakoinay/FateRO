@@ -1,0 +1,1 @@
+prontera,155,181,4	itemshop	Item Shop#custom	909,909,120134:20,5135:15,120114:30

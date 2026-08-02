@@ -1,10 +1,10 @@
-prontera,150,172,3	script	Quest Manager#WP1z	691,{
+prontera,150,172,3	script	Monster Arena Shop#WP1z	23002,{
     callfunc "MAShop",1;
     end;
 
 OnInit:
 	while (1){
-		 showscript ("Quest NPC");
+		 showscript ("Monster Arena Shop");
 		 sleep(1000); 
 	}	
 	end;
@@ -26,14 +26,14 @@ OnInit:
 //  Basic shop settings.
 // -----------------------------------------------------------
 
-	set .Announce,1;	// Announce quest completion? (1: yes / 0: no)
+	set .Announce,1;	// Announce Monster Arena completion? (1: yes / 0: no)
 	set .ShowSlot,1;	// Show item slots? (2: all equipment / 1: if slots > 0 / 0: never)
 	set .ShowID,1;  	// Show item IDs? (1: yes / 0: no)
 	set .ShowZeny,0;	// Show Zeny cost, if any? (1: yes / 0: no)
-	set .MaxStack,100;	// Max number of quest items purchased at one time.
+	set .MaxStack,100;	// Max number of Monster Arena items purchased at one time.
 
 // -----------------------------------------------------------
-//  Points variable -- optional quest requirement.
+//  Points variable -- optional Monster Arena requirement.
 //	setarray .Points$[0],"<variable name>","<display name>";
 // -----------------------------------------------------------
 
@@ -50,16 +50,16 @@ OnInit:
 // -----------------------------------------------------------
 
 	setarray .Shops$[1],
-		"Quest Arena Rewards";				// Shop Named 1
+		"Monster Arena Arena Rewards";				// Shop Named 1
 
 // -----------------------------------------------------------
-//  Quest items -- do NOT use a reward item more than once!
+//  Monster Arena items -- do NOT use a reward item more than once!
 //	Add(<shop ID>,<reward ID>,<reward amount>,
 //	    <Zeny cost>,<point cost>,
 //	    <required item ID>,<required item amount>{,...});
 // -----------------------------------------------------------
 
-// Quest Arena Rewards -- #ARENA_POINTS only, no item/zeny cost
+// Monster Arena Arena Rewards -- #ARENA_POINTS only, no item/zeny cost
 Add(1,120091,1,0,30000);
 Add(1,120106,1,0,30000);
 Add(1,120107,1,0,30000);
@@ -105,7 +105,7 @@ OnBuyItem:
 		message strcharinfo(0),"You can't purchase that many "+getitemname(.@q[0])+".";
 		end;
 	}
-	mes "[ ^FF9300Quest Master^000000 ]";
+	mes "[ ^FF9300Monster Arena Master^000000 ]";
 	mes "Reward: ^336699"+((.@q[2] > 1)?.@q[2]+"x ":"")+Slot(.@q[0])+"^000000";
 	mes "Requirements:";
 	disable_items;
@@ -135,12 +135,12 @@ OnBuyItem:
 		switch(select(" ~ Craft ^0055FF"+getitemname(.@q[0])+"^000000:"+((.@preview && !@qe[7])?" ~ Preview...":"")+": ~ ^30bfbfGet Autoloot Requirements^000000: ~ ^777777Cancel^000000")) {
 		case 1:
 			if (@qe[0]) {
-				mes "[ ^FF9300Quest Master^000000 ]";
+				mes "[ ^FF9300Monster Arena Master^000000 ]";
 				mes "You're missing one or more crating requirements.";
 				close;
 			}
 			if (!checkweight(.@q[0],.@q[2])) {
-				mes "[ ^FF9300Quest Master^000000 ]";
+				mes "[ ^FF9300Monster Arena Master^000000 ]";
 				mes "^FF0000You need "+(((.@q[2]*getiteminfo(.@q[0], ITEMINFO_WEIGHT))+Weight-MaxWeight)/10)+" additional weight capacity to complete this trade.^000000";
 				close;
 			}
@@ -168,7 +168,7 @@ OnBuyItem:
         }
     }
 
-    mes "[ ^FF9300Quest Master^000000 ]";
+    mes "[ ^FF9300Monster Arena Master^000000 ]";
     mes "You are now autolooting all the requirements for ^0055FF"+getitemname(.@q[0])+"^000000.";
     close;
 		case 4:
@@ -188,13 +188,13 @@ OnEnd:
 
 function Add {
 	if (getitemname(getarg(1)) == "null") {
-		debugmes "Quest reward #"+getarg(1)+" invalid (skipped).";
+		debugmes "Monster Arena reward #"+getarg(1)+" invalid (skipped).";
 		return;
 	}
 	setarray .@j[0],getarg(2),getarg(3),getarg(4);
 	for(set .@i,5; .@i<getargcount(); set .@i,.@i+2) {
 		if (getitemname(getarg(.@i)) == "null") {
-			debugmes "Quest requirement #"+getarg(.@i)+" invalid (skipped).";
+			debugmes "Monster Arena requirement #"+getarg(.@i)+" invalid (skipped).";
 			return;
 		} else
 			setarray .@j[.@i-2],getarg(.@i),getarg(.@i+1);

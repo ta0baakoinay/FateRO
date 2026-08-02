@@ -319,72 +319,6 @@ Body:
     ArmorLevel: 1
     View: 2715
    
-  - Id: 30016
-    AegisName: Wings_Dragon_Black
-    Name: Black Dragon Wing
-    Type: Armor
-    Weight: 10
-    Defense: 3
-    Locations:
-      Head_Low: true
-    ArmorLevel: 1
-    View: 2716
-   
-  - Id: 30017
-    AegisName: Wings_Dragon_Blue
-    Name: Blue Dragon Wing
-    Type: Armor
-    Weight: 10
-    Defense: 3
-    Locations:
-      Head_Low: true
-    ArmorLevel: 1
-    View: 2717
-   
-  - Id: 30018
-    AegisName: Wings_Dragon_Gold
-    Name: Gold Dragon Wing
-    Type: Armor
-    Weight: 10
-    Defense: 3
-    Locations:
-      Head_Low: true
-    ArmorLevel: 1
-    View: 2718
-   
-  - Id: 30019
-    AegisName: Wings_Dragon_Green
-    Name: Green Dragon Wing
-    Type: Armor
-    Weight: 10
-    Defense: 3
-    Locations:
-      Head_Low: true
-    ArmorLevel: 1
-    View: 2719
-   
-  - Id: 30020
-    AegisName: Wings_Dragon_Red
-    Name: Red Dragon Wing
-    Type: Armor
-    Weight: 10
-    Defense: 3
-    Locations:
-      Head_Low: true
-    ArmorLevel: 1
-    View: 2720
-   
-  - Id: 30021
-    AegisName: Wings_Dragon_Violet
-    Name: Violet Dragon Wing
-    Type: Armor
-    Weight: 10
-    Defense: 3
-    Locations:
-      Head_Low: true
-    ArmorLevel: 1
-    View: 2721
-   
   - Id: 30022
     AegisName: Costume Blue Belial Wings
     Name: Costume Blue Belial Wings
@@ -3781,8 +3715,8 @@ Body:
     Script: |
       bonus bStr,0;
   - Id: 120118
-    AegisName: Red Wings
-    Name: Red Wings
+    AegisName: Red Dragon Wings
+    Name: Red Dragon Wings
     Type: Armor
     Weight: 500
     Defense: 1
@@ -3956,7 +3890,8 @@ Body:
     Name: Bunch of Carnations
     Type: Armor
     Buy: 2
-    Weight: 100
+    Weight: 500
+    Slots: 1
     Locations:
       Both_Accessory: true
     ArmorLevel: 1
@@ -3983,7 +3918,130 @@ Body:
       NoMail: true
       NoAuction: true
     Script: |
-      bonus bMaxHP,10;      
+      bonus bMaxHP,10;
+
+  - Id: 120133
+    AegisName: Black Valkyrie Helm
+    Name: Black Valkyrie Helm
+    Type: Armor
+    Weight: 500
+    Defense: 3
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2776
+    Script: |
+      bonus bStr,0;
+  - Id: 120134
+    AegisName: Valkyrie Helm
+    Name: Valkyrie Helm
+    Type: Armor
+    Weight: 500
+    Defense: 3
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2777
+    Script: |
+      bonus bStr,0;
+  - Id: 120135
+    AegisName: Cyan Valkyrie Helm
+    Name: Cyan Valkyrie Helm
+    Type: Armor
+    Weight: 500
+    Defense: 3
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2778
+    Script: |
+      bonus bStr,0;
+  - Id: 120136
+    AegisName: Gold Valkyrie Helm
+    Name: Gold Valkyrie Helm
+    Type: Armor
+    Weight: 500
+    Defense: 3
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2779
+    Script: |
+      bonus bStr,0;
+  - Id: 120137
+    AegisName: Green Valkyrie Helm
+    Name: Green Valkyrie Helm
+    Type: Armor
+    Weight: 500
+    Defense: 3
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2780
+    Script: |
+      bonus bStr,0;
+  - Id: 120138
+    AegisName: Red Valkyrie Helm
+    Name: Red Valkyrie Helm
+    Type: Armor
+    Weight: 500
+    Defense: 3
+    Slots: 1
+    Locations:
+      Head_Top: true
+    Refineable: true
+    ArmorLevel: 1
+    View: 2781
+    Script: |
+      bonus bStr,0;
+
+  - Id: 5135
+    AegisName: Cyclops_Visor
+    Name: Cyclop's Eye
+    Type: Armor
+    Weight: 500
+    Defense: 3
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    EquipLevelMin: 75
+    View: 207
+    Script: |
+      bonus bMaxSP,50;
+
+  - Id: 120139
+    AegisName: Banryu
+    Name: Banryu
+    Type: Weapon
+    SubType: 1hSword
+    Buy: 24000
+    Weight: 900
+    Attack: 100
+    Range: 1
+    Slots: 2
+    Jobs:
+      Crusader: true
+      Knight: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 3
+    EquipLevelMin: 14
+    Refineable: true
 #Body:
 # THQ Quest Items
 #=============================================================

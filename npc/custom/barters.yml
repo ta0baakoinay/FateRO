@@ -45,3 +45,120 @@
 Header:
   Type: BARTER_DB
   Version: 2
+
+Body:
+  - Name: Donation Shop#custom
+    Map: prontera
+    X: 155
+    Y: 168
+    Direction: South
+    Sprite: 4_M_MAYOR
+    Items:
+      - Index: 0
+        Item: "Valkyrie Helm"
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 20
+      - Index: 1
+        Item: "Black Valkyrie Helm"
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 20
+      - Index: 2
+        Item: "Cyan Valkyrie Helm"
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 20
+      - Index: 3
+        Item: "Gold Valkyrie Helm"
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 20
+      - Index: 4
+        Item: "Green Valkyrie Helm"
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 20
+      - Index: 5
+        Item: "Red Valkyrie Helm"
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 20
+      - Index: 6
+        Item: "Cyclops_Visor"
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 15            
+      - Index: 7
+        Item: "Black Cyclop's Eye"
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 15
+      - Index: 8
+        Item: "Cyan Cyclop's Eye"
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 15
+      - Index: 9
+        Item: "Gold Cyclop's Eye"
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 15
+      - Index: 10
+        Item: "Green Cyclop's Eye"
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 15
+      - Index: 11
+        Item: "Red Cyclop's Eye"
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 15
+      - Index: 12
+        Item: Black Dragon Wing
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 30
+      - Index: 13
+        Item: Dragon Wings
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 30
+      - Index: 14
+        Item: Cyan Dragon Wings
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 30
+      - Index: 15
+        Item: Gold Dragon Wings
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 30
+      - Index: 16
+        Item: Green Dragon Wings
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 30
+      - Index: 17
+        Item: Red Dragon Wings
+        RequiredItems:
+          - Index: 0
+            Item: Donation_Card
+            Amount: 30
