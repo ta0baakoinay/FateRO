@@ -28,7 +28,7 @@ ra_fild01,0,0	monster	Gryphon	1259,3,3600000
 ra_fild02,0,0	monster	Muscipular	1780,60
 ra_fild02,0,0	monster	Drosera	1781,20
 ra_fild02,0,0	monster	Galion	1783,15
-ra_fild02,0,0,0,0	boss_monster	Atroce	1785,1,14400000,600000,1
+//ra_fild02,0,0,0,0	boss_monster	Atroce	1785,1,14400000,600000,1
 
 //==================================================
 // ra_fild03 - Rachel Field

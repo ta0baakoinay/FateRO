@@ -1,0 +1,54 @@
+//===== rAthena Script ======================================
+// MVP Alive/Dead Broadcaster - Full Server List
+//===== Description: ========================================
+// Spawns every MVP on server start and announces it as alive.
+// When any of them dies, OnNPCKillEvent catches it (works for
+// any monster killed WITHOUT a custom event label), matches it
+// by mob ID + map, announces the kill, waits the respawn time,
+// then respawns and announces it again. Loops forever.
+//
+// IMPORTANT: You must remove/comment out the original spawn
+// lines listed in mvp_removal_list.txt first, or these MVPs
+// will spawn twice.
+//============================================================
+
+-	script	MVPAnnounce	-1,{
+OnInit:
+	setarray .Map$[0],"prt_sewb4","bra_dun02","abbey02","abbey03","gl_chyard","moc_pryd04","moc_pryd06","gld_dun01","gld_dun02","gld_dun03","gld_dun04","lhz_dun02","ra_san05","abyss_03","thor_v03","jupe_core","mosk_dun03","kh_dun02","tur_dun04","xmas_dun02","lou_dun03","ama_dun03","anthell02","treasure02","in_sphinx5","pay_dun04","gef_dun01","gef_dun02","beach_dun","gon_dun03","ein_dun02","ayo_dun02","odin_tem03","prt_maze03","moc_fild17","moc_fild22","mjolnir_04","xmas_fild01","pay_fild11","ve_fild01","ve_fild02","gef_fild02","gef_fild10","gef_fild14","ra_fild02","ra_fild03","ra_fild04";
+	setarray .MobID[0],1086,2068,1871,1873,1272,1038,1511,1115,1046,1147,1272,1658,1768,1719,1832,1685,1885,1734,1312,1251,1630,1492,1147,1112,1157,1150,1389,1046,1583,1418,1623,1688,1751,1039,1159,1917,1059,1252,1115,1785,1785,1087,1190,1087,1785,1785,1785;
+	setarray .RespawnMS[0],3600000,7200000,7200000,43200000,3600000,3600000,3600000,28800000,28800000,28800000,28800000,7200000,18000000,10800000,39600000,7200000,7200000,7200000,3600000,3600000,7000000,5460000,7200000,7200000,3600000,3600000,3600000,7200000,18000000,5650000,7500000,25200000,28800000,7200000,7200000,43200000,7200000,7200000,7200000,10800000,21600000,86400000,7200000,3600000,14400000,10800000,18000000;
+	setarray .MobName$[0],"Golden Thief Bug","Boitata","Fallen Bishop Hibram","Beelzebub","Dark Lord","Osiris","Amon Ra","Eddga","Doppelganger","Maya","Dark Lord","Egnigem Cenia","Gloom Under Night","Detardeurus","Ifrit","Vesper","Gopinich","Kiel D-01","Turtle General","Stormy Knight","White Lady","Samurai Specter","Maya","Drake","Pharaoh","Moonlight Flower","Dracula","Doppelganger","Tao Gunka","Evil Snake Lord","RSX-0806","Lady Tanee","Valkyrie Randgris","Baphomet","Phreeoni","Wounded Morocc","Mistress","Garm","Eddga","Atroce","Atroce","Orc Hero","Orc Lord","Orc Hero","Atroce","Atroce","Atroce";
+	setarray .MapLabel$[0],"Prontera Sewers B4","Brasilis Dungeon 2F","Abbey 2F","Abbey 3F","Glast Heim Churchyard","Pyramid 4F (Comodo)","Pyramid Basement (Comodo)","Guild Dungeon - Baldur","Guild Dungeon - Luina","Guild Dungeon - Valkyrie","Guild Dungeon - Britoniah","Lighthalzen Biolab 2F","Rachel Sanctuary 5F","Abyss Lake 3F","Thor Volcano 3F","Juperos Core","Moscovia Dungeon 3F","Kiel Hyre Dungeon 2F","Turtle Island Dungeon 4F","Christmas Dungeon 2F","Louyang Dungeon 3F","Amatsu Dungeon 3F","Ant Hell 2F","Treasure Island Dungeon 2F","Sphinx Dungeon 5F","Payon Dungeon 4F","Geffen Dungeon 1F","Geffen Dungeon 2F","Beach Dungeon","Gonryun Dungeon 3F","Einbroch Dungeon 2F","Ayothaya Dungeon 2F","Odin Temple 3F","Prontera Maze Dungeon 3F","Morocc Field 17","Morocc Field 22","Mjolnir Field 4","Lutie Field 1","Payon Field 11","Veins Field 1","Veins Field 2","Geffen Field 2","Geffen Field 10","Geffen Field 14","Rachel Field 2","Rachel Field 3","Rachel Field 4";
+	.Size = getarraysize(.MobID);
+	for( .@i = 0; .@i < .Size; .@i++ )
+		callsub OnSpawnMVP,.@i;
+	end;
+
+OnSpawnMVP:
+	.@i = getarg(0);
+	monster .Map$[.@i],0,0,.MobName$[.@i],.MobID[.@i],1;
+	announce "[MVP] "+.MobName$[.@i]+" has spawned in "+.MapLabel$[.@i]+"!",bc_all;
+	return;
+
+OnNPCKillEvent:
+	// Fires for ANY unlabeled monster killed anywhere on the server.
+	// killedrid = mob class ID of what just died.
+	// strcharinfo(3) = map of the killer, used to tell apart MVPs
+	// that share the same mob ID on different maps (e.g. Atroce).
+	for( .@i = 0; .@i < .Size; .@i++ ) {
+		if( killedrid == .MobID[.@i] && strcharinfo(3) == .Map$[.@i] ) {
+			.@gid = getcharid(2);
+			.@pid = getcharid(1);
+			.@tag$ = "";
+			if( .@gid ) .@tag$ = .@tag$ + " ["+getguildname(.@gid)+"]";
+			if( .@pid ) .@tag$ = .@tag$ + " of Party "+getpartyname(.@pid);
+			announce "[MVP] "+.MobName$[.@i]+" has been slain by "+strcharinfo(0)+.@tag$+" in "+.MapLabel$[.@i]+"! It will respawn soon.",bc_all;
+			.@delay = .RespawnMS[.@i];
+			.@idx = .@i;
+			sleep .@delay;
+			callsub OnSpawnMVP,.@idx;
+			break;
+		}
+	}
+	end;
+}

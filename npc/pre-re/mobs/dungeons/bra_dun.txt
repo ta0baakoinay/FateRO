@@ -35,7 +35,7 @@ bra_dun02	monster	Hydra	1068,20,5000
 bra_dun02	monster	Plankton	1161,20,5000
 bra_dun02	monster	Marina	1141,10,5000
 bra_dun02	monster	Black Mushroom	1084,10,180000,90000
-bra_dun02	boss_monster	Boitata	2068,1,7200000,600000,1
+//bra_dun02	boss_monster	Boitata	2068,1,7200000,600000,1
 
 
 //jRO Pre-Renewal spawns
