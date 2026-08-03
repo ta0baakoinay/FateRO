@@ -484,3 +484,23 @@ BUILDIN_FUNC(getskillname) {
 
 	return SCRIPT_CMD_SUCCESS;
 }
+
+BUILDIN_FUNC(getspbstate) { // getspbstate() -> 0/1
+	map_session_data *sd;
+	if (!script_rid2sd(sd)) {
+		ShowError("buildin_getspbstate: No player attached!\n");
+		return SCRIPT_CMD_FAILURE;
+	}
+	script_pushint(st, sd->state.spb);
+	return SCRIPT_CMD_SUCCESS;
+}
+
+BUILDIN_FUNC(getbattleinfostate) { // getbattleinfostate() -> 0-15 bitmask
+	map_session_data *sd;
+	if (!script_rid2sd(sd)) {
+		ShowError("buildin_getbattleinfostate: No player attached!\n");
+		return SCRIPT_CMD_FAILURE;
+	}
+	script_pushint(st, sd->state.battleinfo);
+	return SCRIPT_CMD_SUCCESS;
+}

@@ -9,7 +9,7 @@
  **/
 
 //ACMD_DEF(newcommand),
-ACMD_DEF(battleinfo),
-ACMD_DEF(spb),
+ACMD_DEFR(battlestats, ATCMD_NOCONSOLE|ATCMD_NOAUTOTRADE),
+ACMD_DEF(battleinfo),ACMD_DEF(spb),
 ACMD_DEF(packetfilter),
 ACMD_DEF(reloadequipmentskin),

@@ -1,0 +1,180 @@
+//===== rAthena Script ======================================
+//= Personal Settings Hub
+//===== By: ===================================================
+//= Custom
+//===== Description: =========================================
+//= Central @settings menu that ties together:
+//=   @spb           (Show Party Buffs)
+//=   @battleinfo    (Battle Information)
+//=   @packetfilter  (Packet Filter)
+//= and gives quick access to @acstart (Auto Combat).
+//=
+//= Requires two new script commands (see script.inc / script_def.inc
+//= snippets provided alongside this file):
+//=   getspbstate()        -> returns 0/1
+//=   getbattleinfostate() -> returns 0-15 bitmask
+//= @packetfilter's state is read directly from the account
+//= variable it already saves to (#BLOCK_), no patch needed.
+//============================================================
+-	script	PersonalSettings	FAKE_NPC,{
+
+OnInit:
+	bindatcmd "settings", strnpcinfo(3)+"::OnSettingsStart";
+
+	//===== DO NOT TOUCH BELOW ==================================
+	.on$  = "^007000On^000000";
+	.off$ = "^FF0000Off^000000";
+	end;
+
+OnSettingsStart:
+	while (true) {
+		mes "Choose which personal setting you want to change.";
+		mes " ";
+		mes "^0000FFSee Party Buffs^000000 : " + (getspbstate() ? .on$ : .off$);
+		mes "^0000FFBattle Information^000000 : " + (getbattleinfostate() ? .on$ : .off$);
+		mes "^0000FFPacket Filter^000000 : " + (#BLOCK_ ? .on$ : .off$);
+		mes "^0000FFAuto Combat^000000 : " + (getstatus(SC_AUTOCOMBAT) ? .on$ : .off$);
+		next;
+
+		switch (select("Battle Information Settings:Packet Filter Settings:Show Party Buffs Settings:Auto Combat:Battle Stats / Character Resistance:Available Commands:Close")) {
+		case 1:
+			callsub OnBattleInfoMenu;
+			break;
+		case 2:
+			callsub OnPacketFilterMenu;
+			break;
+		case 3:
+			callsub OnSPBMenu;
+			break;
+		case 4:
+			close2;
+			doevent "AutoCombat::OnAutoCombatStart";
+			end;
+		case 5:
+			close2;
+			atcommand "@battlestats";
+			end;
+		case 6:        
+			callsub OnCommandsList;
+			break;
+		case 7:
+			close;
+		}
+	}
+
+OnSPBMenu:
+	while (true) {
+		mes "Show Party Buffs is currently: " + (getspbstate() ? .on$ : .off$);
+		mes " ";
+		mes "When enabled, party members' key buffs (Blessing, Agi Up, Full Chemical Protection, Spirit, Devotion) show next to their name in the party window.";
+		next;
+
+		switch (select((getspbstate() ? "Turn Off" : "Turn On") + ":Back")) {
+		case 1:
+			atcommand "@spb";
+			break;
+		case 2:
+			return;
+		}
+	}
+
+OnBattleInfoMenu:
+	while (true) {
+		.@state = getbattleinfostate();
+		mes "Battle Information Display: " + (.@state ? .on$ : .off$);
+		mes " ";
+		mes "Toggle which combat events show up in your chat window.";
+		mes "^0000FFKill/Death^000000    : " + ((.@state & 1) ? .on$ : .off$);
+		mes "^0000FFDispell^000000       : " + ((.@state & 2) ? .on$ : .off$);
+		mes "^0000FFProvoke^000000       : " + ((.@state & 4) ? .on$ : .off$);
+		mes "^0000FFMindbreaker^000000   : " + ((.@state & 8) ? .on$ : .off$);
+		next;
+
+		.@menu$ = ((.@state & 1) ? "[X] Kill/Death" : "[ ] Kill/Death") + ":" +
+			((.@state & 2) ? "[X] Dispell" : "[ ] Dispell") + ":" +
+			((.@state & 4) ? "[X] Provoke" : "[ ] Provoke") + ":" +
+			((.@state & 8) ? "[X] Mindbreaker" : "[ ] Mindbreaker") + ":" +
+			"Turn All Off:Back";
+
+		switch (select(.@menu$)) {
+		case 1:
+			atcommand "@battleinfo " + (.@state ^ 1);
+			break;
+		case 2:
+			atcommand "@battleinfo " + (.@state ^ 2);
+			break;
+		case 3:
+			atcommand "@battleinfo " + (.@state ^ 4);
+			break;
+		case 4:
+			atcommand "@battleinfo " + (.@state ^ 8);
+			break;
+		case 5:
+			atcommand "@battleinfo 0";
+			break;
+		case 6:
+			return;
+		}
+	}
+
+OnPacketFilterMenu:
+	mes "Packet Filter is currently: " + (#BLOCK_ ? .on$ : .off$);
+	mes " ";
+	mes "Packet Filter blocks chat, emotions, item effects, attack/skill animations, status icons, songs, and direction updates from chosen sources (self/party/guild/etc).";
+	mes " ";
+	mes "Because each filter type has its own set of sources, this is configured with the same text string @packetfilter already uses.";
+	next;
+
+	switch (select("View Current Filters:Enter New Filter String:Turn Off:Back")) {
+	case 1:
+		close2;
+		atcommand "@packetfilter";
+		end;
+	case 2:
+		mes "Enter your filter string exactly as you would type it after @packetfilter.";
+		mes "Example: COHM EOHM";
+		next;
+		input .@filter$;
+		if (.@filter$ != "") {
+			close2;
+			atcommand "@packetfilter " + .@filter$;
+			end;
+		}
+		return;
+	case 3:
+		atcommand "@packetfilter off";
+		return;
+	case 4:
+		return;
+	}
+	return;
+
+OnCommandsList:
+	.@line_count = 22; // title + blank + section header + 18 commands
+	mes "[ Available Commands ]";
+	setdialogalign(DIALOG_ALIGN_CENTER);
+	setdialogsize(500, callfunc("CalcDialogHeight", .@line_count));
+	mes " ";
+	mes "^FF8000Player / General^000000";
+	mes "^0000FF@settings^000000 - Open personal settings, filters, and utility shortcuts.";
+	mes "^0000FF@rates^000000 - Show Finest server rates.";
+	mes "^0000FF@vip^000000 - Show VIP status, bonuses, and VIP command access.";
+	mes "^0000FF@resist^000000 - Show element, damage-type, and status resistances.";
+    mes "^0000FF@battlestats^000000 - Show your current battle status (ATK, MATK, DEF, etc).";
+	mes "^0000FF@monsterinfo <monster>^000000 | ^0000FF@mobinfo <monster>^000000 - Show monster data and drops.";
+	mes "^0000FF@whodrops <item/card>^000000 - Show monsters with the best drop rates for an item.";
+	mes "^0000FF@iteminfo <item>^000000 - Show item information.";
+	mes "^0000FF@whereis <monster>^000000 - Locate a monster map.";
+	mes "^0000FF@time^000000 - Show server time.";
+	mes "^0000FF@uptime^000000 - Show server uptime.";
+	mes "^0000FF@showexp^000000 - Toggle EXP gain display.";
+	mes "^0000FF@showzeny^000000 - Toggle zeny gain display.";
+	mes "^0000FF@refresh^000000 - Refresh your client view.";
+	mes "^0000FF@go <town>^000000 - Warp to an allowed town.";
+	mes "^0000FF@storage^000000 - Open storage.";
+	mes "^0000FF@alootsave^000000 - Allows you to save a specific list of items you want to pick up automatically.";
+	mes "^0000FF@whosell <item>^000000 - Search vending shops.";
+	mes "^0000FF@whobuy <item>^000000 - Search buying stores.";
+	mes "^0000FF@autoloot <rate>^000000 - Set autoloot percentage.";
+	close;
+}
