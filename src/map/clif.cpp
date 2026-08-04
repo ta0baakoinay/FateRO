@@ -77,6 +77,51 @@ static inline int32 client_exp(t_exp exp) {
 }
 #endif
 
+
+/**
+ * Skill Animation Hack for Sonic Blow and Vulcan Arrow
+ **/
+struct s_skill_anim_data {
+	uint16 skill_id;
+	int32 start;
+	int32 interval;
+	int32 motion_speed;
+	int32 motion_count;
+	bool spin;
+};
+
+struct s_skill_anim_data sad_list[] = {
+	{ AS_SONICBLOW, -1, 175, 175, 8, true },
+	{ CG_ARROWVULCAN, -1, 100, 100, 9, false }
+};
+
+struct s_skill_environment_data {
+	struct s_skill_anim_data* anim_data;
+	int32 target_id;
+	int32 dir;
+};
+
+static struct s_skill_anim_data *get_animation_info(uint16 skill_id);
+
+static struct s_skill_anim_data* get_animation_info(uint16 skill_id) {
+	for (int32 i = 0; i < ARRAYLENGTH(sad_list); i++) {
+		if (sad_list[i].skill_id == skill_id)
+			return &sad_list[i];
+	}
+	return nullptr;
+}
+
+static int32 calc_dir_counter_clockwise(int32 dir);
+static int32 calc_dir_counter_clockwise(int32 dir) {
+	dir += 2;
+	if (dir >= DIR_MAX)
+		dir = dir - DIR_MAX;
+	return dir;
+}
+
+
+
+
 /* for clif_clearunit_delayed */
 static struct eri *delay_clearunit_ers;
 
@@ -5573,6 +5618,48 @@ void clif_takeitem(block_list& src, block_list& dst){
 	clif_send(&p, sizeof(p), &src, AREA);
 }
 
+void clif_send_attack_packet(const block_list& bl, int32 motion_speed) {
+	unsigned char buf[32];
+
+	WBUFW(buf, 0) = 0x8a;
+	WBUFL(buf, 2) = bl.id;
+	WBUFL(buf, 14) = motion_speed;
+	WBUFB(buf, 26) = DMG_CRITICAL; // BDT_CRIT should display that star-like multicolored hit effect, but doesn't
+
+	clif_send(buf, 29, const_cast<block_list*>(&bl), AREA);
+}
+
+void clif_send_simple_dir(const block_list& src, int32 target_id, int32 dir) {
+	unsigned char buf[64];
+	WBUFW(buf, 0) = 0x9c;
+	WBUFL(buf, 2) = target_id;
+	WBUFW(buf, 6) = 0;
+	WBUFB(buf, 8) = dir;
+
+	clif_send(buf, 9, const_cast<block_list*>(&src), AREA);
+}
+
+static TIMER_FUNC(clif_use_animation_timer) {
+	block_list* bl = map_id2bl(id);
+	struct s_skill_environment_data *skill_env = (struct s_skill_environment_data*)data;
+
+	if (bl == nullptr) {
+		aFree(skill_env);
+		return 0;
+	}
+
+	struct s_skill_anim_data* anim_data = skill_env->anim_data;
+
+	clif_send_attack_packet(*bl, anim_data->motion_speed);
+	if (anim_data->spin && skill_env->dir != -1)
+		clif_send_simple_dir(*bl, skill_env->target_id, skill_env->dir);
+
+	aFree(skill_env);
+
+	return 0;
+}
+
+
 /*==========================================
  * inform clients in area that `bl` is sitting
  *------------------------------------------*/
@@ -6285,6 +6372,29 @@ void clif_skill_cooldown( map_session_data &sd, uint16 skill_id, t_tick tick ){
 /// 0114 <skill id>.W <src id>.L <dst id>.L <tick>.L <src delay>.L <dst delay>.L <damage>.W <level>.W <div>.W <type>.B (ZC_NOTIFY_SKILL)
 /// 01de <skill id>.W <src id>.L <dst id>.L <tick>.L <src delay>.L <dst delay>.L <damage>.L <level>.W <div>.W <type>.B (ZC_NOTIFY_SKILL2)
 void clif_skill_damage( block_list& src, block_list& dst, t_tick tick, int32 sdelay, int32 ddelay, int64 sdamage, int16 div, uint16 skill_id, uint16 skill_lv, e_damage_type type ){
+
+#if PACKETVER >= 20181128
+	struct s_skill_anim_data *anim_data = get_animation_info(skill_id);
+
+	if (anim_data != nullptr) {
+		int32 start_time = anim_data->start == -1 ? sdelay : anim_data->start;
+		int32 target_id = dst.id;
+		int32 dir = sdamage != 0 ? unit_getdir(&dst) : -1;
+
+		for (int32 n = 0; n < anim_data->motion_count; n++) {
+			struct s_skill_environment_data *skill_env = (struct s_skill_environment_data *)aMalloc(sizeof(struct s_skill_environment_data));
+			skill_env->anim_data = anim_data;
+			skill_env->target_id = target_id;
+			if (anim_data->spin && dir != -1)
+				dir = calc_dir_counter_clockwise(dir);
+			skill_env->dir = dir;
+
+			add_timer(tick + start_time + anim_data->interval * n, clif_use_animation_timer, src.id, (intptr_t)skill_env);
+		}
+	}
+#endif
+
+
 	type = clif_calc_delay(dst, type, div, sdamage, ddelay, tick);
 	sdamage = clif_hallucination_damage( dst, sdamage );
 

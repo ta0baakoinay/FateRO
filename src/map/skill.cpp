@@ -2366,12 +2366,12 @@ int32 skill_additional_effect( block_list* src, block_list *bl, uint16 skill_id,
 
 			if (skill == PF_SPIDERWEB) //Special case, due to its nature of coding.
 				type = CAST_GROUND;
-#ifndef RENEWAL
-			else if( skill == AS_SONICBLOW ){
-				// Special case, Sonic Blow autospell should stop the player attacking.
-				unit_stop_attack( sd );
-			}
-#endif
+//#ifndef RENEWAL
+//			else if( skill == AS_SONICBLOW ){
+//				// Special case, Sonic Blow autospell should stop the player attacking.
+//				unit_stop_attack( sd );
+//			}
+//#endif
 
 			sd->state.autocast = 1;
 			skill_consume_requirement(sd,skill,autospl_skill_lv,1);

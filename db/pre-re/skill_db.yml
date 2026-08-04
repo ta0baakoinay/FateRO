@@ -4749,7 +4749,7 @@ Body:
     HitCount: -8
     Element: Weapon
     AfterCastActDelay: 2000
-    AfterCastWalkDelay: 2000
+    AfterCastWalkDelay: 800
     Duration2: 5000
     CastDelayFlags:
       IgnoreStatus: true
@@ -31949,7 +31949,7 @@ Body:
     HitCount: 1
     Element: Fire
     SplashArea: 2
-    Knockback: 2
+#    Knockback: 2
     AfterCastWalkDelay: 2000
     Duration1: 2000
     Duration2: 10000
