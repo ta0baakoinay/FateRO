@@ -17,6 +17,7 @@
 //= variable it already saves to (#BLOCK_), no patch needed.
 //============================================================
 -	script	PersonalSettings	FAKE_NPC,{
+function pf_subletters;
 
 OnInit:
 	bindatcmd "settings", strnpcinfo(3)+"::OnSettingsStart";
@@ -36,7 +37,7 @@ OnSettingsStart:
 		mes "^0000FFAuto Combat^000000 : " + (getstatus(SC_AUTOCOMBAT) ? .on$ : .off$);
 		next;
 
-		switch (select("Battle Information Settings:Packet Filter Settings:Show Party Buffs Settings:Auto Combat:Battle Stats / Character Resistance:Available Commands:Close")) {
+		switch (select("Battle Information Settings:Packet Filter Settings:Show Party Buffs Settings:Auto Combat:Available FRO Commands:Close")) {
 		case 1:
 			callsub OnBattleInfoMenu;
 			break;
@@ -51,13 +52,9 @@ OnSettingsStart:
 			doevent "AutoCombat::OnAutoCombatStart";
 			end;
 		case 5:
-			close2;
-			atcommand "@battlestats";
-			end;
-		case 6:        
 			callsub OnCommandsList;
 			break;
-		case 7:
+		case 6:
 			close;
 		}
 	}
@@ -118,40 +115,103 @@ OnBattleInfoMenu:
 	}
 
 OnPacketFilterMenu:
-	mes "Packet Filter is currently: " + (#BLOCK_ ? .on$ : .off$);
-	mes " ";
-	mes "Packet Filter blocks chat, emotions, item effects, attack/skill animations, status icons, songs, and direction updates from chosen sources (self/party/guild/etc).";
-	mes " ";
-	mes "Because each filter type has its own set of sources, this is configured with the same text string @packetfilter already uses.";
-	next;
+	@pf_filter[0] = #BLOCK_CHAT;
+	@pf_filter[1] = #BLOCK_EMOTION;
+	@pf_filter[2] = #BLOCK_ITEM;
+	@pf_filter[3] = #BLOCK_ATTACK;
+	@pf_filter[4] = #BLOCK_BUFF;
+	@pf_filter[5] = #BLOCK_STATUS;
+	@pf_filter[6] = #BLOCK_TARGET_SPELL;
+	@pf_filter[7] = #BLOCK_AOE_SPELL;
+	@pf_filter[8] = #BLOCK_MUSIC;
+	@pf_filter[9] = #BLOCK_DIRECTION;
 
-	switch (select("View Current Filters:Enter New Filter String:Turn Off:Back")) {
-	case 1:
-		close2;
-		atcommand "@packetfilter";
-		end;
-	case 2:
-		mes "Enter your filter string exactly as you would type it after @packetfilter.";
-		mes "Example: COHM EOHM";
+	while (true) {
+		mes "Packet Filter is currently: " + (#BLOCK_ ? .on$ : .off$);
+		mes " ";
+		mes "Pick a category to choose who it's blocked from. Changes save immediately.";
 		next;
-		input .@filter$;
-		if (.@filter$ != "") {
+
+		.@menu$ = (@pf_filter[0] ? "[X] Chat" : "[ ] Chat") + ":" +
+			(@pf_filter[1] ? "[X] Emotions" : "[ ] Emotions") + ":" +
+			(@pf_filter[2] ? "[X] Item Use Effects" : "[ ] Item Use Effects") + ":" +
+			(@pf_filter[3] ? "[X] Attack Animations" : "[ ] Attack Animations") + ":" +
+			(@pf_filter[4] ? "[X] Buff Effects" : "[ ] Buff Effects") + ":" +
+			(@pf_filter[5] ? "[X] Status Icons" : "[ ] Status Icons") + ":" +
+			(@pf_filter[6] ? "[X] Target Skill Effects" : "[ ] Target Skill Effects") + ":" +
+			(@pf_filter[7] ? "[X] Ground/AoE Skill Effects" : "[ ] Ground/AoE Skill Effects") + ":" +
+			(@pf_filter[8] ? "[X] Music (Bard/Dancer Songs)" : "[ ] Music (Bard/Dancer Songs)") + ":" +
+			(@pf_filter[9] ? "[X] Direction" : "[ ] Direction") + ":" +
+			"View Current Filters:Turn Off Entirely:Back";
+
+		.@sel = select(.@menu$);
+		if (.@sel >= 1 && .@sel <= 10) {
+			@pf_cat = .@sel - 1;
+			callsub OnPacketFilterSourceMenu;
+		} else if (.@sel == 11) { // View Current Filters
 			close2;
-			atcommand "@packetfilter " + .@filter$;
+			atcommand "@packetfilter";
+			deletearray @pf_filter[0], 10;
 			end;
+		} else if (.@sel == 12) { // Turn Off Entirely
+			atcommand "@packetfilter off";
+			deletearray @pf_filter[0], 10;
+		} else { // Back
+			deletearray @pf_filter[0], 10;
+			return;
 		}
-		return;
-	case 3:
-		atcommand "@packetfilter off";
-		return;
-	case 4:
-		return;
 	}
+
+OnPacketFilterApply:
+	.@cmd$ = "";
+	if (@pf_filter[0]) .@cmd$ += "C" + pf_subletters(@pf_filter[0]) + " ";
+	if (@pf_filter[1]) .@cmd$ += "E" + pf_subletters(@pf_filter[1]) + " ";
+	if (@pf_filter[2]) .@cmd$ += "I" + pf_subletters(@pf_filter[2]) + " ";
+	if (@pf_filter[3]) .@cmd$ += "A" + pf_subletters(@pf_filter[3]) + " ";
+	if (@pf_filter[4]) .@cmd$ += "B" + pf_subletters(@pf_filter[4]) + " ";
+	if (@pf_filter[5]) .@cmd$ += "S" + pf_subletters(@pf_filter[5]) + " ";
+	if (@pf_filter[6]) .@cmd$ += "T" + pf_subletters(@pf_filter[6]) + " ";
+	if (@pf_filter[7]) .@cmd$ += "G" + pf_subletters(@pf_filter[7]) + " ";
+	if (@pf_filter[8]) .@cmd$ += "M" + pf_subletters(@pf_filter[8]) + " ";
+	if (@pf_filter[9]) .@cmd$ += "D" + pf_subletters(@pf_filter[9]) + " ";
+
+	if (.@cmd$ == "")
+		atcommand "@packetfilter off";
+	else
+		atcommand "@packetfilter " + .@cmd$;
 	return;
 
+OnPacketFilterSourceMenu:
+	// Self is stripped server-side for these types (see packetfilter's set_flag warnings)
+	.@self_ok = (@pf_cat == 4 || @pf_cat == 7 || @pf_cat == 8);
+
+	while (true) {
+		.@v = @pf_filter[@pf_cat];
+		.@menu$ = (.@self_ok ? ((.@v & 1) ? "[X] Self" : "[ ] Self") : "[--] Self (not supported for this type)") + ":" +
+			((.@v & 2) ? "[X] Party" : "[ ] Party") + ":" +
+			((.@v & 4) ? "[X] Guild" : "[ ] Guild") + ":" +
+			((.@v & 8) ? "[X] Battleground" : "[ ] Battleground") + ":" +
+			((.@v & 16) ? "[X] Clan" : "[ ] Clan") + ":" +
+			((.@v & 32) ? "[X] Other Players" : "[ ] Other Players") + ":" +
+			((.@v & 64) ? "[X] Homun/Pet/Merc/Elemental" : "[ ] Homun/Pet/Merc/Elemental") + ":" +
+			((.@v & 128) ? "[X] Monsters" : "[ ] Monsters") + ":" +
+			"Back";
+		next;
+
+		.@t = select(.@menu$);
+		if (.@t == 9)
+			return;
+		if (.@t == 1 && !.@self_ok) {
+			message strcharinfo(0), "This filter type can't block your own actions - pick another source.";
+			continue;
+		}
+		@pf_filter[@pf_cat] ^= (1 << (.@t - 1));
+		callsub OnPacketFilterApply;
+	}
+
 OnCommandsList:
-	.@line_count = 22; // title + blank + section header + 18 commands
-	mes "[ Available Commands ]";
+	.@line_count = 21; // title + blank + section header + 18 commands
+	mes "[ Available FRO Commands ]";
 	setdialogalign(DIALOG_ALIGN_CENTER);
 	setdialogsize(500, callfunc("CalcDialogHeight", .@line_count));
 	mes " ";
@@ -160,7 +220,6 @@ OnCommandsList:
 	mes "^0000FF@rates^000000 - Show Finest server rates.";
 	mes "^0000FF@vip^000000 - Show VIP status, bonuses, and VIP command access.";
 	mes "^0000FF@resist^000000 - Show element, damage-type, and status resistances.";
-    mes "^0000FF@battlestats^000000 - Show your current battle status (ATK, MATK, DEF, etc).";
 	mes "^0000FF@monsterinfo <monster>^000000 | ^0000FF@mobinfo <monster>^000000 - Show monster data and drops.";
 	mes "^0000FF@whodrops <item/card>^000000 - Show monsters with the best drop rates for an item.";
 	mes "^0000FF@iteminfo <item>^000000 - Show item information.";
@@ -177,4 +236,18 @@ OnCommandsList:
 	mes "^0000FF@whobuy <item>^000000 - Search buying stores.";
 	mes "^0000FF@autoloot <rate>^000000 - Set autoloot percentage.";
 	close;
+
+function	pf_subletters	{
+	.@v = getarg(0);
+	.@s$ = "";
+	if (.@v & 1)   .@s$ += "S";
+	if (.@v & 2)   .@s$ += "P";
+	if (.@v & 4)   .@s$ += "G";
+	if (.@v & 8)   .@s$ += "B";
+	if (.@v & 16)  .@s$ += "C";
+	if (.@v & 32)  .@s$ += "O";
+	if (.@v & 64)  .@s$ += "H";
+	if (.@v & 128) .@s$ += "M";
+	return .@s$;
+}
 }
