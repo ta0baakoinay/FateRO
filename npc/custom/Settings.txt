@@ -37,7 +37,7 @@ OnSettingsStart:
 		mes "^0000FFAuto Combat^000000 : " + (getstatus(SC_AUTOCOMBAT) ? .on$ : .off$);
 		next;
 
-		switch (select("Battle Information Settings:Packet Filter Settings:Show Party Buffs Settings:Auto Combat:Available FRO Commands:Close")) {
+		switch (select("Battle Information Settings:Packet Filter Settings:Show Party Buffs Settings:Auto Combat:Battle Stats / Character Resistance:Available FRO Commands:Close")) {
 		case 1:
 			callsub OnBattleInfoMenu;
 			break;
@@ -52,9 +52,13 @@ OnSettingsStart:
 			doevent "AutoCombat::OnAutoCombatStart";
 			end;
 		case 5:
+			close2;
+			atcommand "@battlestats";
+			end;
+		case 6:
 			callsub OnCommandsList;
 			break;
-		case 6:
+		case 7:
 			close;
 		}
 	}
@@ -87,10 +91,10 @@ OnBattleInfoMenu:
 		mes "^0000FFMindbreaker^000000   : " + ((.@state & 8) ? .on$ : .off$);
 		next;
 
-		.@menu$ = ((.@state & 1) ? "[X] Kill/Death" : "[ ] Kill/Death") + ":" +
-			((.@state & 2) ? "[X] Dispell" : "[ ] Dispell") + ":" +
-			((.@state & 4) ? "[X] Provoke" : "[ ] Provoke") + ":" +
-			((.@state & 8) ? "[X] Mindbreaker" : "[ ] Mindbreaker") + ":" +
+		.@menu$ = ((.@state & 1) ? "[  X  ] Kill/Death" : "[     ] Kill/Death") + ":" +
+			((.@state & 2) ? "[  X  ] Dispell" : "[     ] Dispell") + ":" +
+			((.@state & 4) ? "[  X  ] Provoke" : "[     ] Provoke") + ":" +
+			((.@state & 8) ? "[  X  ] Mindbreaker" : "[     ] Mindbreaker") + ":" +
 			"Turn All Off:Back";
 
 		switch (select(.@menu$)) {
@@ -132,16 +136,16 @@ OnPacketFilterMenu:
 		mes "Pick a category to choose who it's blocked from. Changes save immediately.";
 		next;
 
-		.@menu$ = (@pf_filter[0] ? "[X] Chat" : "[ ] Chat") + ":" +
-			(@pf_filter[1] ? "[X] Emotions" : "[ ] Emotions") + ":" +
-			(@pf_filter[2] ? "[X] Item Use Effects" : "[ ] Item Use Effects") + ":" +
-			(@pf_filter[3] ? "[X] Attack Animations" : "[ ] Attack Animations") + ":" +
-			(@pf_filter[4] ? "[X] Buff Effects" : "[ ] Buff Effects") + ":" +
-			(@pf_filter[5] ? "[X] Status Icons" : "[ ] Status Icons") + ":" +
-			(@pf_filter[6] ? "[X] Target Skill Effects" : "[ ] Target Skill Effects") + ":" +
-			(@pf_filter[7] ? "[X] Ground/AoE Skill Effects" : "[ ] Ground/AoE Skill Effects") + ":" +
-			(@pf_filter[8] ? "[X] Music (Bard/Dancer Songs)" : "[ ] Music (Bard/Dancer Songs)") + ":" +
-			(@pf_filter[9] ? "[X] Direction" : "[ ] Direction") + ":" +
+		.@menu$ = (@pf_filter[0] ? "[  X  ] Chat" : "[     ] Chat") + ":" +
+			(@pf_filter[1] ? "[  X  ] Emotions" : "[     ] Emotions") + ":" +
+			(@pf_filter[2] ? "[  X  ] Item Use Effects" : "[     ] Item Use Effects") + ":" +
+			(@pf_filter[3] ? "[  X  ] Attack Animations" : "[     ] Attack Animations") + ":" +
+			(@pf_filter[4] ? "[  X  ] Buff Effects" : "[     ] Buff Effects") + ":" +
+			(@pf_filter[5] ? "[  X  ] Status Icons" : "[     ] Status Icons") + ":" +
+			(@pf_filter[6] ? "[  X  ] Target Skill Effects" : "[     ] Target Skill Effects") + ":" +
+			(@pf_filter[7] ? "[  X  ] Ground/AoE Skill Effects" : "[     ] Ground/AoE Skill Effects") + ":" +
+			(@pf_filter[8] ? "[  X  ] Music (Bard/Dancer Songs)" : "[     ] Music (Bard/Dancer Songs)") + ":" +
+			(@pf_filter[9] ? "[  X  ] Direction" : "[     ] Direction") + ":" +
 			"View Current Filters:Turn Off Entirely:Back";
 
 		.@sel = select(.@menu$);
@@ -187,14 +191,14 @@ OnPacketFilterSourceMenu:
 
 	while (true) {
 		.@v = @pf_filter[@pf_cat];
-		.@menu$ = (.@self_ok ? ((.@v & 1) ? "[X] Self" : "[ ] Self") : "[--] Self (not supported for this type)") + ":" +
-			((.@v & 2) ? "[X] Party" : "[ ] Party") + ":" +
-			((.@v & 4) ? "[X] Guild" : "[ ] Guild") + ":" +
-			((.@v & 8) ? "[X] Battleground" : "[ ] Battleground") + ":" +
-			((.@v & 16) ? "[X] Clan" : "[ ] Clan") + ":" +
-			((.@v & 32) ? "[X] Other Players" : "[ ] Other Players") + ":" +
-			((.@v & 64) ? "[X] Homun/Pet/Merc/Elemental" : "[ ] Homun/Pet/Merc/Elemental") + ":" +
-			((.@v & 128) ? "[X] Monsters" : "[ ] Monsters") + ":" +
+		.@menu$ = (.@self_ok ? ((.@v & 1) ? "[  X  ] Self" : "[     ] Self") : "[--] Self (not supported for this type)") + ":" +
+			((.@v & 2) ? "[  X  ] Party" : "[     ] Party") + ":" +
+			((.@v & 4) ? "[  X  ] Guild" : "[     ] Guild") + ":" +
+			((.@v & 8) ? "[  X  ] Battleground" : "[     ] Battleground") + ":" +
+			((.@v & 16) ? "[  X  ] Clan" : "[     ] Clan") + ":" +
+			((.@v & 32) ? "[  X  ] Other Players" : "[     ] Other Players") + ":" +
+			((.@v & 64) ? "[  X  ] Homun/Pet/Merc/Elemental" : "[     ] Homun/Pet/Merc/Elemental") + ":" +
+			((.@v & 128) ? "[  X  ] Monsters" : "[     ] Monsters") + ":" +
 			"Back";
 		next;
 
@@ -210,16 +214,17 @@ OnPacketFilterSourceMenu:
 	}
 
 OnCommandsList:
-	.@line_count = 21; // title + blank + section header + 18 commands
-	mes "[ Available FRO Commands ]";
+	.@line_count = 22; // title + blank + section header + 19 commands
+	mes "[ Available Commands ]";
 	setdialogalign(DIALOG_ALIGN_CENTER);
 	setdialogsize(500, callfunc("CalcDialogHeight", .@line_count));
 	mes " ";
 	mes "^FF8000Player / General^000000";
 	mes "^0000FF@settings^000000 - Open personal settings, filters, and utility shortcuts.";
-	mes "^0000FF@rates^000000 - Show Finest server rates.";
+	mes "^0000FF@rates^000000 - Show server rates.";
 	mes "^0000FF@vip^000000 - Show VIP status, bonuses, and VIP command access.";
 	mes "^0000FF@resist^000000 - Show element, damage-type, and status resistances.";
+	mes "^0000FF@battlestats^000000 - Show your current battle status (ATK, MATK, DEF, etc).";
 	mes "^0000FF@monsterinfo <monster>^000000 | ^0000FF@mobinfo <monster>^000000 - Show monster data and drops.";
 	mes "^0000FF@whodrops <item/card>^000000 - Show monsters with the best drop rates for an item.";
 	mes "^0000FF@iteminfo <item>^000000 - Show item information.";
