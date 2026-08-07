@@ -11,10 +11,12 @@ OnInit:
 	setarray .@npc_name$[0],
 		"Donation Shop#custom",
 		"Quest Shop#qshop",
+		"Quest Shop#aioqshop",
 		"Monster Arena";
 
 	setarray .@bubble_text$[0],
 		"Donation Shop",
+		"Quest Shop",
 		"Quest Shop",
 		"Monster Arena";
 

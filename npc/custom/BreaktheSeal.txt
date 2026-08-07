@@ -1,0 +1,650 @@
+//=============================================================================
+// Valkyrie Quest - MERGED SINGLE NPC VERSION (FIXED)
+//=============================================================================
+// All 8 original NPCs (Valkyrie, Valkyrie Amor, Radgrid, Alvitr, Vali, Asgard,
+// Lydia, Bryan/Sleipnir) have been merged into ONE clickable NPC.
+// The NPC "role-plays" each character in sequence as the player progresses
+// through the quest chain.
+//
+// Quest progression is tracked with the SAME variables as the original
+// scripts, so existing player save data is not broken:
+//   ron_ron -> Seal broken (Valkyrie Armor unlocked)
+//   kim_kim -> Armor obtained (Manteau unlocked)
+//   jhe_jhe -> Manteau obtained (Shoes unlocked)
+//   alv_alv -> Shoes obtained (Shield unlocked)
+//   jmk_jmk -> Shield obtained (Bunch of Carnation unlocked)
+//   asg_asg -> BOTH Bunch of Carnation deliveries complete (Sleipnir unlocked)
+//   bry_bry -> Sleipnir obtained (quest fully complete / Mega-Warrior)
+//
+// NOTE ON fra_fra: the standalone "Lydia - Bunch of Carnation" stage has
+// been merged into the Asgard stage (Asgard now crafts the Bunch of
+// Carnation directly, using the correct item ID 2646, instead of a
+// separate "Nile Rose" placeholder item). The fra_fra variable and the
+// Lydia NPC dialogue are no longer used.
+//
+// NOTE ON hen_hen: the original 'Valkyrie' script checked a variable
+// 'hen_hen' that was never actually set anywhere in the quest chain (a
+// leftover/dead check). It has been dropped here in favor of 'ron_ron',
+// which correctly reflects "has the seal been broken yet".
+//
+// FIXES APPLIED (vs original):
+//   1) setdialogsize(...) crashed the client because in Stage 0 it was
+//      called AFTER other mes lines had already been shown on the same
+//      page (mes "These are what I need:"; setdialogsize(...); mes item;).
+//      Resizing a page that has already started rendering content
+//      crashes the client. Fixed by always calling setdialogsize as the
+//      very FIRST line right after next; (before any mes on that page),
+//      and resetting it to (0,0) on its own next; immediately after the
+//      item list so it doesn't leak into later pages. All other stages
+//      already followed this pattern correctly, which is why only
+//      Stage 0 crashed.
+//   2) The loot roll in Stage 0 (.@gamble1 1-500) had a gap at exactly
+//      401 that matched no branch, leaving .@item at 0 and causing
+//      getitem .@item,1; to hand out item ID 0. Range fixed so every
+//      value 1-500 is covered, plus a safety fallback.
+//   3) ICON UPDATE: each stage's reward hand-off message now also shows
+//      the item icon sprite for the piece just received (via
+//      mesitemicon()), matching the way the material requirement lists
+//      already showed icons. No dialogsize calls were touched, and no
+//      existing lines were removed/reordered, so this cannot reintroduce
+//      the Stage 0 crash bug.
+//   4) ICON PLACEMENT FIX: on each character's introductory "I craft
+//      this item" line, mesitemicon() was glued to the front of the
+//      whole sentence (icon, then "I am X, the Crafter of the Item").
+//      Moved so the icon sits directly in front of the item name
+//      instead, e.g. "I am the crafter of [icon] Item Name".
+//   5) ASGARD / BUNCH OF CARNATION REWORK: replaced the old "[1/2]" /
+//      "[2/2]" placeholder-item combine mechanic with two independent,
+//      full Bunch of Carnation (2646) turn-ins. Each delivery hands the
+//      player a real Bunch of Carnation on the spot -- no placeholder
+//      items, no combine step. Progress between the two deliveries is
+//      tracked by countitem(2646) (0 -> first delivery pending, 1 ->
+//      second delivery pending, 2 -> both done), and asg_asg is only
+//      set to 1 once the second delivery is turned in, which is what
+//      unlocks Bryan/Sleipnir.
+//   6) OVERWEIGHT SAFETY: every reward hand-off is now gated behind a
+//      checkweight(itemid,1) check performed BEFORE any delitem/Zeny
+//      deduction. If the player can't carry the reward item, nothing is
+//      taken from them -- they get a "you're carrying too much" message
+//      and can simply come back once they've freed up weight, with all
+//      of their turn-in materials and zeny intact. In Stage 0 the random
+//      reward item is now rolled up front (before materials are touched)
+//      specifically so it can be weight-checked ahead of the delitem
+//      call; the "Your Welcome" select is kept purely for flavor and no
+//      longer drives any branching logic.
+//=============================================================================
+
+prontera,150,166,4	script	Valkyrie	811,{
+
+	// ---------------------------------------------------------------
+	// Main dispatcher: figure out which "chapter" of the quest the
+	// player is on and jump straight to that character's dialogue.
+	// ---------------------------------------------------------------
+	if (bry_bry >= 1) goto L_Stage8_Done;
+	if (asg_asg >= 1) goto L_Stage7_Bryan;
+	if (jmk_jmk >= 1) goto L_Stage5_Asgard;
+	if (alv_alv >= 1) goto L_Stage4_Vali;
+	if (jhe_jhe >= 1) goto L_Stage3_Alvitr;
+	if (kim_kim >= 1) goto L_Stage2_Radgrid;
+	if (ron_ron >= 1) goto L_Stage1_ValkyrieAmor;
+	goto L_Stage0_Valkyrie;
+
+//=============================================================================
+// STAGE 0 : Valkyrie - Breaking the Seal
+//=============================================================================
+L_Stage0_Valkyrie:
+	mes "[ Valkyrie ]";
+	mes "I will foretell you about Breaking the Seal Quest";
+	mes "I am the guardian of the seal, break it and recieve my treasure.";
+	next;
+	mes "[ Valkyrie ]";
+	mes "These are what I need:";
+	next;
+	setdialogsize(300, 600);
+	mes "[ Valkyrie ]";
+	mes mesitemicon(7442) + " 300 Cursed Seal";
+	mes mesitemicon(1009) + " 200 Hand of God";
+	mes mesitemicon(1054) + " 100 Ancient Lips";
+	mes mesitemicon(7289) + " 20 Peridot";
+	mes mesitemicon(7296) + " 10 Pyroxene";
+	mes mesitemicon(7292) + " 10 Muscovite";
+	mes mesitemicon(7297) + " 10 Biotite";
+	mes mesitemicon(7048) + " 10 Talon of Griffon";
+	mes mesitemicon(7293) + " 10 Rose Quartz";
+	mes mesitemicon(7291) + " 10 Agate";
+	mes mesitemicon(7018) + " 10 Young Twig";
+	mes mesitemicon(7211) + " 10 Fragment of Rossata Stone";
+	mes mesitemicon(7020) + " 10 Mother's Nightmare";
+	mes mesitemicon(7035) + " 10 Matchstick";
+	mes mesitemicon(7290) + " 10 Phlogopite";
+	mes mesitemicon(7450) + " 10 Skeletal Armor Piece";
+	mes mesitemicon(30035) + " 50 Credits";
+	next;
+    setdialogsize(300, 200);
+	mes "[ Valkyrie ]";
+	mes "So, are you up to my quest dear child?";
+	if (select("Yes!.:No, I'm sorry.") == 2) {
+		mes "[ Valkyrie ]";
+		mes "Well too bad";
+		mes "Child, I don't like to call you a coward, but you are.";
+		close;
+	}
+
+	mes "[ Valkyrie ]";
+	mes "Are the items ready? Let me check.";
+	next;
+	if (countitem(7442) < 300 || countitem(1009) < 200 || countitem(1054) < 100 || countitem(7289) < 20 || countitem(7296) < 10 || countitem(7292) < 10 || countitem(7297) < 10 || countitem(7048) < 10 || countitem(7293) < 10 || countitem(7291) < 10 || countitem(7018) < 10 || countitem(7211) < 10 || countitem(7020) < 10 || countitem(7035) < 10 || countitem(7290) < 10 || countitem(7450) < 10 || countitem(30035) < 50) {
+		mes "[ Valkyrie ]";
+		mes "*piff*";
+		mes "You lack some items.";
+		mes "I do not accept cowardice, come back to me when you're brave enough.";
+		close;
+	}
+
+	// Roll the reward item first so we know what it is BEFORE touching the
+	// player's materials -- this lets us weight-check it up front.
+	set .@item,0;
+	set .@gamble1,rand(1,500);
+	if ((.@gamble1 > 200) && (.@gamble1 < 205)) {
+		set .@gamble2,rand(1,10);
+		if      ((.@gamble2 > 0) && (.@gamble2 <  3)) set .@item,7086; // esg
+		else if ((.@gamble2 > 2) && (.@gamble2 <  5)) set .@item,7090; // ripple
+		else if ((.@gamble2 > 4) && (.@gamble2 <  7)) set .@item,7091; // billow
+		else if ((.@gamble2 > 6) && (.@gamble2 <  9)) set .@item,7077; // silver
+		else                                            set .@item,7078; // wov (covers 9-10)
+	}
+	else if ((.@gamble1 >   0) && (.@gamble1 <= 200)) set .@item,7086; // esg
+	else if ((.@gamble1 >= 205) && (.@gamble1 <= 300)) set .@item,7090; // ripple
+	else if ((.@gamble1 >  300) && (.@gamble1 <= 400)) set .@item,7091; // billow
+	else if ((.@gamble1 >  400) && (.@gamble1 <= 480)) set .@item,7077; // silver
+	else if ((.@gamble1 >  480) && (.@gamble1 <= 500)) set .@item,7078; // wov
+	if (.@item == 0) set .@item,7086; // safety fallback, should never trigger
+
+	// SAFETY: don't touch materials at all if the player can't carry the
+	// reward -- let them come back once they've made room.
+	if (checkweight(.@item,1) == 0) {
+		mes "[ Valkyrie ]";
+		mes "You are carrying too much for me to hand over your reward!";
+		mes "Lighten your load and come speak to me again -- your materials are safe with you for now.";
+		close;
+	}
+
+	delitem 7442,300;
+	delitem 1009,200;
+	delitem 1054,100;
+	delitem 7289,20;
+	delitem 7296,10;
+	delitem 7292,10;
+	delitem 7297,10;
+	delitem 7048,10;
+	delitem 7293,10;
+	delitem 7291,10;
+	delitem 7018,10;
+	delitem 7211,10;
+	delitem 7020,10;
+	delitem 7035,10;
+	delitem 7290,10;
+	delitem 7450,10;
+	delitem 30035,50;
+
+	mes "[ Valkyrie ]";
+	mes "Another brave one succeded.";
+	set ron_ron,1;
+	next;
+
+	select("Your Welcome");
+
+	getitem .@item,1;
+	mes "[ Valkyrie ]";
+	mes "Ah, you have out done your self!";
+	mes "Thank you for your aid.";
+	mes "Now start your journey to find my Nephews who hold the Valkyries";
+	mes "First, seek Valkyrie Amor to craft the Valkyrie Armor!";
+	announce "Wow! The Seal has been annihilated by "+strcharinfo(0)+" He has just broken the seal and will start the quest of Valkyrie!",0x33FF66;
+	close2;
+	end;
+
+//=============================================================================
+// STAGE 1 : Valkyrie Amor - Valkyrie Armor
+//=============================================================================
+L_Stage1_ValkyrieAmor:
+	mes "[ Valkyrie Amor ]";
+	mes "Oh Grasya Santisimo!!";
+	mes "You have spoken to Uncle Valkyrie!?";
+	next;
+	mes "[ Valkyrie Amor ]";
+	mes "By the way I am the crafter of " + mesitemicon(2357) + " Valkyrie Armor";
+	mes "Would you like to possess it?";
+	if (select("Yes, I deserve it!:No, I'm not good enough.") == 2) {
+		mes "[ Valkyrie Amor ]";
+		mes "Wacha Wachi Wacho... Go! Shoooo";
+		mes "Just speak to me if you want it already";
+		close;
+	}
+	next;
+	mes "[ Valkyrie Amor ]";
+	mes "This Great Armor is very complicated, it needs very rare materials to craft it. If you really want to possess it gather these items for me";
+	next;
+	setdialogsize(300, 230);
+	mes mesitemicon(7090) + " 4 Ripple";
+	mes mesitemicon(7077) + " 4 Silver Ornament";
+	mes mesitemicon(7443) + " 100 Head of Three Headed Dragon";
+	mes mesitemicon(7444) + " 100 Treasure Box";
+    mes "^FFFFFF ^000000";
+	mes "300,000,000 zeny";
+	next;
+	setdialogsize(300, 200);
+	mes "[ Valkyrie Amor ]";
+	mes "I will be waiting for you chosen one!";
+	next;
+	if (countitem(7090) < 4 || countitem(7077) < 4 || countitem(7443) < 100 || countitem(7444) < 100 || Zeny < 300000000) {
+		mes "[ Valkyrie Amor ]";
+		mes "As I said, one missing material and all the others go to waste";
+		close;
+	}
+	if (checkweight(2357,1) == 0) {
+		mes "[ Valkyrie Amor ]";
+		mes "You are carrying too much for me to hand over the Valkyrie Armor!";
+		mes "Lighten your load and come speak to me again -- your materials are safe with you for now.";
+		close;
+	}
+
+	mes "[ Valkyrie Amor ]";
+	mes "Very well done my friend you have finished the quest and acquired the Valkyrie Armor.";
+	mes mesitemicon(2357) + " Valkyrie Armor";
+	delitem 7090,4;
+	delitem 7077,4;
+	delitem 7443,100;
+	delitem 7444,100;
+	set Zeny, Zeny - 300000000;
+	getitem 2357,1;
+	set kim_kim,1;
+	next;
+	mes "[ Valkyrie Amor ]";
+	mes "Good Job! Enjoy your precious item.";
+	mes "Now, go ahead and seek Radgrid to craft the Valkyrie Manteau";
+	announce "Wow!"+strcharinfo(0)+" has just acquired the mystical Valkyrie Armor.",bc_all;
+	close;
+
+//=============================================================================
+// STAGE 2 : Radgrid - Valkyrie Manteau
+//=============================================================================
+L_Stage2_Radgrid:
+	mes "[ Radgrid ]";
+	mes "Oh, you have the Valkyrie Armor?";
+	mes "Well, nice to meet you. I'm Radgrid";
+	mes "I am the crafter of " + mesitemicon(2524) + " Valkyrie Manteau";
+	mes "Would you like me to craft the said manteau for you?";
+	if (select("Okay:Nope") == 2) {
+		mes "[ Radgrid ]";
+		mes "Okay, talk to me later.";
+		close;
+	}
+	next;
+
+	mes "[ Radgrid ]";
+	mes "The Valkyrie Manteau is a very difficult item to craft and the materials are rare. Well if you're sure you want to make it..";
+	mes "Then these are the items I need.";
+	next;
+	setdialogsize(300, 230);
+	mes mesitemicon(7089) + " 4 Omen of Tempest";
+	mes mesitemicon(7086) + " 4 Emblem of Sun God";
+	mes mesitemicon(7035) + " 50 Matchstick";
+	mes mesitemicon(7444) + " 100 Treasure Box";
+    mes "^FFFFFF ^000000";  
+	mes "300,000,000 zeny";
+	next;
+	setdialogsize(300, 200);
+	if (countitem(7089) < 4 || countitem(7086) < 4 || countitem(7035) < 50 || countitem(7444) < 100 || Zeny < 300000000) {
+		mes "[ Radgrid ]";
+		mes "You don't have the items!";
+		close;
+	}
+	if (checkweight(2524,1) == 0) {
+		mes "[ Radgrid ]";
+		mes "You are carrying too much for me to hand over the Valkyrie Manteau!";
+		mes "Lighten your load and come speak to me again -- your materials are safe with you for now.";
+		close;
+	}
+
+	mes "[ Radgrid ]";
+	mes "Wow, thanks!";
+	mes mesitemicon(2524) + " Valkyrie Manteau";
+	delitem 7089,4;
+	delitem 7086,4;
+	delitem 7035,50;
+	delitem 7444,100;
+	set Zeny, Zeny - 300000000;
+	getitem 2524,1;
+	set jhe_jhe,1;
+	next;
+	mes "[ Radgrid ]";
+	mes "Nicely done isn't? Enjoy the manteau";
+	mes "So now, seek Alvitr to craft the Valkyrie Shoes";
+	announce "Wow! "+strcharinfo(0)+" has just acquired the mystical Valkyrie Manteau.",bc_all;
+	close;
+
+//=============================================================================
+// STAGE 3 : Alvitr - Valkyrie Shoes
+//=============================================================================
+L_Stage3_Alvitr:
+	mes "[ Alvitr ]";
+	mes "You have the Valkyrie Manteau?";
+	mes "I can make " + mesitemicon(2421) + " Valkyrie Shoes for you!";
+	mes "Want them?";
+	if (select("Yes:No") == 2) {
+		mes "[ Alvitr ]";
+		mes "Come back when ready!";
+		close;
+	}
+	next;
+	mes "[ Alvitr ]";
+	mes "Bring me these items!";
+	next;
+	setdialogsize(300, 230);
+	mes mesitemicon(7083) + " 4 Spirit of Fish";
+	mes mesitemicon(7092) + " 4 Drifting Air";
+	mes mesitemicon(7450) + " 20 Skeletal Armor Piece";
+	mes mesitemicon(7444) + " 100 Treasure Box";
+    mes "^FFFFFF ^000000";
+	mes "300,000,000 zeny";
+	next;
+	setdialogsize(300, 200);
+	mes "[ Alvitr ]";
+	mes "I'll be waiting.";
+	next;
+	if (countitem(7083) < 4 || countitem(7092) < 4 || countitem(7450) < 20 || countitem(7444) < 100 || Zeny < 300000000) {
+		mes "[ Alvitr ]";
+		mes "Missing items!";
+		close;
+	}
+	if (checkweight(2421,1) == 0) {
+		mes "[ Alvitr ]";
+		mes "You are carrying too much for me to hand over the Valkyrie Shoes!";
+		mes "Lighten your load and come speak to me again -- your materials are safe with you for now.";
+		close;
+	}
+
+	mes "[ Alvitr ]";
+	mes "Excellent work!";
+	mes mesitemicon(2421) + " Valkyrie Shoes";
+	delitem 7083,4;
+	delitem 7092,4;
+	delitem 7450,20;
+	delitem 7444,100;
+	set Zeny, Zeny - 300000000;
+	getitem 2421,1;
+	set alv_alv,1;
+	next;
+	mes "[ Alvitr ]";
+	mes "Take these Valkyrie Shoes!";
+	mes "Now seek Vali to craft the Valkyrie Shield";
+	announce "Wow! "+strcharinfo(0)+" has just acquired the mystical Valkyrie Shoes.",bc_all;
+	close;
+
+//=============================================================================
+// STAGE 4 : Vali - Valkyrie Shield
+//=============================================================================
+L_Stage4_Vali:
+	mes "[ Vali ]";
+	mes "So you have the Valkyrie Shoes? Wow that's great!";
+	mes "I can make " + mesitemicon(2115) + " Valkyrie Shield for you!";
+	mes "You surely want it?";
+	if (select("Yes:Nevermind, thanks.") == 2) {
+		mes "[ Vali ]";
+		mes "Huhu *sob*! You've wasted my time! Get lost!";
+		close;
+	}
+	next;
+	mes "[ Vali ]";
+	mes "Oh, holy! Give me these items right away!";
+	next;
+	setdialogsize(300, 230);
+	mes mesitemicon(7078) + " 4 Wrath of Valkyrie";
+	mes mesitemicon(7088) + " 4 Snow Crystal";
+	mes mesitemicon(7451) + " 50 Scale of Fire Dragon";
+	mes mesitemicon(7444) + " 100 Treasure Box";
+    mes "^FFFFFF ^000000";
+	mes "300,000,000 zeny";
+	next;
+	setdialogsize(300, 200);
+	mes "[ Vali ]";
+	mes "Don't miss your chance, I will be waiting for you.";
+	next;
+	if (countitem(7078) < 4 || countitem(7088) < 4 || countitem(7451) < 50 || countitem(7444) < 100 || Zeny < 300000000) {
+		mes "[ Vali ]";
+		mes "Incomplete items!";
+		close;
+	}
+	if (checkweight(2115,1) == 0) {
+		mes "[ Vali ]";
+		mes "You are carrying too much for me to hand over the Valkyrie Shield!";
+		mes "Lighten your load and come speak to me again -- your materials are safe with you for now.";
+		close;
+	}
+
+	mes "[ Vali ]";
+	mes "I see, you're a trustworthy one.";
+	mes mesitemicon(2115) + " Valkyrie Shield";
+	delitem 7078,4;
+	delitem 7088,4;
+	delitem 7451,50;
+	delitem 7444,100;
+	set Zeny, Zeny - 300000000;
+	getitem 2115,1;
+	set jmk_jmk,1;
+	next;
+	mes "[ Vali ]";
+	mes "Rawr! Take this shield!";
+	mes "Now seek Asgard to craft the Bunch of Carnation";
+	announce "Wow! "+strcharinfo(0)+" has just acquired the mystical Valkyrie Shield.",bc_all;
+	close;
+
+//=============================================================================
+// STAGE 5 : Asgard - Bunch of Carnation (TWO full, independent turn-ins)
+//=============================================================================
+// Asgard now crafts the real Bunch of Carnation (2646) itself, twice.
+// There are no placeholder "[1/2]"/"[2/2]" items and no combine step --
+// each successful delivery hands over one complete Bunch of Carnation.
+// Progress is tracked purely by how many Bunch of Carnation the player is
+// currently holding (countitem(2646)): 0 means the first delivery is
+// still pending, 1 means the second delivery is pending, and asg_asg is
+// only set to 1 (unlocking Bryan) once the second delivery is turned in.
+L_Stage5_Asgard:
+	if (countitem(2646) < 1) goto L_Stage5_Asgard_First;
+	goto L_Stage5_Asgard_Second;
+
+L_Stage5_Asgard_First:
+	mes "[ Asgard ]";
+	mes "So you have the Valkyrie Shield? Excellent!";
+	mes "I can make " + mesitemicon(2646) + " Bunch of Carnation for you! I will need you to bring me materials twice, though -- I craft it one bunch at a time.";
+	mes "Ready to start on the first one?";
+	if (select("Yes:No thanks") == 2) {
+		mes "[ Asgard ]";
+		mes "Fine! Come back when you're ready!";
+		close;
+	}
+	next;
+	mes "[ Asgard ]";
+	mes "Bring me these items for the first Bunch of Carnation.";
+	next;
+	setdialogsize(300, 230);
+	mes mesitemicon(7073) + " 2 Freya's Jewel";
+	mes mesitemicon(7091) + " 2 Billow";
+	mes mesitemicon(7211) + " 15 Fragment of Rossata";
+	mes mesitemicon(7444) + " 50 Treasure Box";
+    mes "^FFFFFF ^000000";
+	mes "150,000,000 zeny";
+	next;
+	setdialogsize(300, 200);
+	mes "[ Asgard ]";
+	mes "I'll be waiting for you.";
+	next;
+	if (countitem(7073) < 2 || countitem(7091) < 2 || countitem(7211) < 15 || countitem(7444) < 50 || Zeny < 150000000) {
+		mes "[ Asgard ]";
+		mes "You don't have everything I need!";
+		close;
+	}
+	if (checkweight(2646,1) == 0) {
+		mes "[ Asgard ]";
+		mes "You are carrying too much for me to hand over the Bunch of Carnation!";
+		mes "Lighten your load and come speak to me again -- your materials are safe with you for now.";
+		close;
+	}
+
+	mes "[ Asgard ]";
+	mes "Perfect! Here is your first Bunch of Carnation.";
+	mes mesitemicon(2646) + " Bunch of Carnation";
+	delitem 7073,2;
+	delitem 7091,2;
+	delitem 7211,15;
+	delitem 7444,50;
+	set Zeny, Zeny - 150000000;
+	getitem 2646,1;
+	next;
+	mes "[ Asgard ]";
+	mes "That's one down. Come back and I'll craft you a second Bunch of Carnation -- you'll need both for what comes next.";
+	announce "Wow! "+strcharinfo(0)+" has just acquired the mystical Bunch of Carnation.",bc_all;
+	close;
+
+L_Stage5_Asgard_Second:
+	mes "[ Asgard ]";
+	mes "You already have one Bunch of Carnation. Ready for the second?";
+	if (select("Yes:No thanks") == 2) {
+		mes "[ Asgard ]";
+		mes "Fine! Come back when you're ready!";
+		close;
+	}
+	next;
+	mes "[ Asgard ]";
+	mes "Bring me these items for the second Bunch of Carnation.";
+	next;
+	setdialogsize(300, 230);
+	mes mesitemicon(7073) + " 2 Freya's Jewel";
+	mes mesitemicon(7091) + " 2 Billow";
+	mes mesitemicon(7211) + " 15 Fragment of Rossata";
+	mes mesitemicon(7444) + " 50 Treasure Box";
+    mes "^FFFFFF ^000000";
+	mes "150,000,000 zeny";
+	next;
+	setdialogsize(300, 200);
+	mes "[ Asgard ]";
+	mes "I'll be waiting for you.";
+	next;
+	if (countitem(7073) < 2 || countitem(7091) < 2 || countitem(7211) < 15 || countitem(7444) < 50 || Zeny < 150000000) {
+		mes "[ Asgard ]";
+		mes "You don't have everything I need!";
+		close;
+	}
+	if (checkweight(2646,1) == 0) {
+		mes "[ Asgard ]";
+		mes "You are carrying too much for me to hand over the Bunch of Carnation!";
+		mes "Lighten your load and come speak to me again -- your materials are safe with you for now.";
+		close;
+	}
+
+	mes "[ Asgard ]";
+	mes "Perfect! Here is your second Bunch of Carnation.";
+	mes mesitemicon(2646) + " Bunch of Carnation";
+	delitem 7073,2;
+	delitem 7091,2;
+	delitem 7211,15;
+	delitem 7444,50;
+	set Zeny, Zeny - 150000000;
+	getitem 2646,1;
+	set asg_asg,1;
+	next;
+	mes "[ Asgard ]";
+	mes "You now hold both Bunch of Carnation.";
+	mes "Now, for the final piece, seek Bryan in Valkyrie to craft the Sleipnir!";
+	announce "Wow! "+strcharinfo(0)+" has just acquired the mystical Bunch of Carnation.",bc_all;
+	close;
+
+//=============================================================================
+// STAGE 7 : Bryan - Sleipnir (Final)
+//=============================================================================
+L_Stage7_Bryan:
+	mes "[ Bryan ]";
+	mes "Hello there child, I am Bryan.";
+	next;
+	if (countitem(2357) < 1 || countitem(2524) < 1 || countitem(2115) < 1 || countitem(2421) < 1 || countitem(2646) < 2) {
+		mes "[ Bryan ]";
+		mes "You haven't completed the full Valkyrie Set yet.";
+		mes "You need all the pieces: Armor, Manteau, Shoes, Shield, and two Bunch of Carnation.";
+		mes "Start by breaking the seal with Valkyrie in Prontera!";
+		close;
+	}
+
+	mes "[ Bryan ]";
+	mes "Good you have the complete Valkyrie Set if you must know I am the crafter of the Sleipnir.";
+	next;
+	mes "[ Bryan ]";
+	mes "I see, You really have completed the entire quest chain.";
+	mes "Very well then!";
+	next;
+	mes "[ Bryan ]";
+	mes "By the way I am Bryan of the Valkyries and you already know what I make.";
+	mes "Do you desire to have the Sleipnir?";
+	if (select("Yes:No") == 2) {
+		mes "[ Bryan ]";
+		mes "Go away! If you don't want it. You're wasting my time already.";
+		mes "Just speak to me if you're ready.";
+		close;
+	}
+	next;
+	mes "[ Bryan ]";
+	mes "The Great Sleipnir named after Odin's trustee";
+	mes "Steed, is the most powerful shoe in the land";
+	mes "Gather these items so I may craft it";
+	next;
+	setdialogsize(300, 230);
+	mes mesitemicon(7345) + " 300 Handcuffs";
+	mes mesitemicon(7086) + " 9 Emblem of Sun God";
+	mes mesitemicon(7035) + " 10 Matchstick";
+	mes mesitemicon(969) + " 100 Gold";
+	next;
+	setdialogsize(300, 200);
+	mes "[ Bryan ]";
+	mes "I will be waiting for you great one.";
+	next;
+	if (countitem(7345) < 300 || countitem(7086) < 9 || countitem(7035) < 10 || countitem(969) < 100) {
+		mes "[ Bryan ]";
+		mes "You lack of items, complete it!";
+		close;
+	}
+	if (checkweight(2410,1) == 0) {
+		mes "[ Bryan ]";
+		mes "You are carrying too much for me to hand over the Sleipnir!";
+		mes "Lighten your load and come speak to me again -- your materials are safe with you for now.";
+		close;
+	}
+
+	mes "[ Bryan ]";
+	mes "Very well done child.";
+	mes "You are very good!";
+	mes mesitemicon(2410) + " Sleipnir";
+	delitem 7345,300;
+	delitem 7086,9;
+	delitem 969,100;
+	delitem 7035,10;
+	getitem 2410,1;
+	set bry_bry,1;
+	next;
+	mes "[ Bryan ]";
+	mes "As for my excellency, take care of that Sleipnir";
+	mes "You are now a Mega-Warrior of Temptation Ragnarok Online";
+	mes "Go wild and free, you noble man";
+	announce "Raise the Roof! "+strcharinfo(0)+" has just become the Mega-Warrior and gained Sleipnir.",bc_all;
+	close;
+
+//=============================================================================
+// STAGE 8 : Quest already fully completed
+//=============================================================================
+L_Stage8_Done:
+	mes "[ Bryan ]";
+	mes "You have already gained Sleipnir";
+	mes "How dare you speak to me again!? Now, I order you to where you belong!";
+	next;
+	warp "SavePoint",0,0;
+	close;
+}

@@ -133,10 +133,10 @@ Body:
             Item: Donation_Card
             Amount: 30
 
-  - Name: Quest Shop#qshop
-    Map: prontera
-    X: 158
-    Y: 168
+  - Name: Quest Shop#qshop40
+    Map: sec_in01
+    X: 160
+    Y: 170
     Direction: South
     Sprite: 4_M_ROKI2
     Items:

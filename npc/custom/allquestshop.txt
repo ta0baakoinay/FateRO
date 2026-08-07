@@ -1,0 +1,17 @@
+prontera,155,172,3	script	Quest Shop#aioqshop	23002,{
+	mes "[Quest Shop]";
+	mes "What would you like to browse?";
+	next;
+	switch(select("Quest Shop:Quest Shop (40% Success):Cancel")) {
+	case 1:
+		close2;
+		callfunc "MAShop",1;
+		end;
+	case 2:
+		close2;
+		callshop "Quest Shop#qshop40",1;
+		end;
+	default:
+		close;
+	}
+}
