@@ -8424,32 +8424,32 @@ Body:
     WeaponLevel: 3
     EquipLevelMin: 78
     Refineable: true
-  - Id: 1530
-    AegisName: Mjolnir
-    Name: Mjolnir
-    Type: Weapon
-    SubType: Mace
-    Buy: 20
-    Weight: 6000
-    Attack: 250
-    Range: 1
-    Jobs:
-      Alchemist: true
-      Blacksmith: true
-      Crusader: true
-      Knight: true
-      Merchant: true
-      Swordman: true
-    Locations:
-      Right_Hand: true
-    WeaponLevel: 4
-    EquipLevelMin: 95
-    Script: |
-      bonus bAtkEle,Ele_Wind;
-      bonus bDex,40;
-      bonus bStr,15;
-      bonus bAspdRate,10;
-      bonus bUnbreakableWeapon;
+#  - Id: 1530
+#    AegisName: Mjolnir
+#    Name: Mjolnir
+#    Type: Weapon
+#    SubType: Mace
+#    Buy: 20
+#    Weight: 6000
+#    Attack: 250
+#    Range: 1
+#    Jobs:
+#      Alchemist: true
+#      Blacksmith: true
+#      Crusader: true
+#      Knight: true
+#      Merchant: true
+#      Swordman: true
+#    Locations:
+#      Right_Hand: true
+#    WeaponLevel: 4
+#    EquipLevelMin: 95
+#    Script: |
+#      bonus bAtkEle,Ele_Wind;
+#      bonus bDex,40;
+#      bonus bStr,15;
+#      bonus bAspdRate,10;
+#      bonus bUnbreakableWeapon;
   - Id: 1531
     AegisName: Spanner
     Name: Wrench

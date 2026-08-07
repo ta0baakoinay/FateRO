@@ -436,6 +436,16 @@ Body:
     Flags:
       BuyingStore: true
 
+  - Id: 30035
+    AegisName: Etc_Credit
+    Name: Etc_Credit
+    Type: Etc
+    Buy: 6
+    Weight: 10
+    Flags:
+      BuyingStore: true
+
+
   - Id: 304236
     AegisName: Amon_Ra_Card2
     Name: Corrupted Amon Ra Card
@@ -3763,127 +3773,155 @@ Body:
     Script: |
       bonus bStr,0;
 
-  - Id: 120122
-    AegisName: Black Cyclop's Eye
-    Name: Black Cyclop's Eye
-    Type: Armor
-    Weight: 200
+  - Id: 1530
+    AegisName: Fist of Fury
+    Name: Fist of Fury
+    Type: Weapon
+    SubType: Mace
+    Buy: 20
+    Weight: 6000
+    Attack: 250
+    Range: 1
+    Slots: 3
+    Jobs:
+      Alchemist: true
+      Blacksmith: true
+      Crusader: true
+      Knight: true
+      Merchant: true
+      Swordman: true
     Locations:
-      Head_Mid: true
-    ArmorLevel: 1
-    View: 2765
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 95
     Script: |
-      bonus bStr,0;
-  - Id: 120123
-    AegisName: Cyan Cyclop's Eye
-    Name: Cyan Cyclop's Eye
-    Type: Armor
-    Weight: 200
-    Locations:
-      Head_Mid: true
-    ArmorLevel: 1
-    View: 2766
-    Script: |
-      bonus bStr,0;
-  - Id: 120124
-    AegisName: Gold Cyclop's Eye
-    Name: Gold Cyclop's Eye
-    Type: Armor
-    Weight: 200
-    Locations:
-      Head_Mid: true
-    ArmorLevel: 1
-    View: 2767
-    Script: |
-      bonus bStr,0;
-  - Id: 120125
-    AegisName: Green Cyclop's Eye
-    Name: Green Cyclop's Eye
-    Type: Armor
-    Weight: 200
-    Locations:
-      Head_Mid: true
-    ArmorLevel: 1
-    View: 2768
-    Script: |
-      bonus bStr,0;
-  - Id: 120126
-    AegisName: Red Cyclop's Eye
-    Name: Red Cyclop's Eye
-    Type: Armor
-    Weight: 200
-    Locations:
-      Head_Mid: true
-    ArmorLevel: 1
-    View: 2769
-    Script: |
-      bonus bStr,0;
-  - Id: 120127
-    AegisName: Blue Shiny Angel
-    Name: Blue Shiny Angel
-    Type: Armor
-    Weight: 200
-    Locations:
-      Head_Mid: true
-    ArmorLevel: 1
-    View: 2770
-    Script: |
-      bonus bStr,0;
-  - Id: 120128
-    AegisName: Green Shiny Angel
-    Name: Green Shiny Angel
-    Type: Armor
-    Weight: 200
-    Locations:
-      Head_Mid: true
-    ArmorLevel: 1
-    View: 2771
-    Script: |
-      bonus bStr,0;
-  - Id: 120129
-    AegisName: Orange Shiny Angel
-    Name: Orange Shiny Angel
-    Type: Armor
-    Weight: 200
-    Locations:
-      Head_Mid: true
-    ArmorLevel: 1
-    View: 2772
-    Script: |
-      bonus bStr,0;
-  - Id: 120130
-    AegisName: Red Shiny Angel
-    Name: Red Shiny Angel
-    Type: Armor
-    Weight: 200
-    Locations:
-      Head_Mid: true
-    ArmorLevel: 1
-    View: 2773
-    Script: |
-      bonus bStr,0;
-  - Id: 120131
-    AegisName: White Shiny Angel
-    Name: White Shiny Angel
-    Type: Armor
-    Weight: 200
-    Locations:
-      Head_Mid: true
-    ArmorLevel: 1
-    View: 2774
-    Script: |
-      bonus bStr,0;
-  - Id: 120132
-    AegisName: Yellow Shiny Angel
-    Name: Yellow Shiny Angel
-    Type: Armor
-    Weight: 200
-    Locations:
-      Head_Mid: true
-    ArmorLevel: 1
-    View: 2775
-    Script: |
-      bonus bStr,0;
+      bonus bAtkEle,Ele_Wind;
+      bonus bDex,40;
+      bonus bStr,15;
+      bonus bAspdRate,10;
+      bonus bUnbreakableWeapon;
+
+#  - Id: 120122
+#    AegisName: Black Cyclop's Eye
+#    Name: Black Cyclop's Eye
+#    Type: Armor
+#    Weight: 200
+#    Locations:
+#      Head_Mid: true
+#    ArmorLevel: 1
+#    View: 2765
+#    Script: |
+#      bonus bStr,0;
+#  - Id: 120123
+#    AegisName: Cyan Cyclop's Eye
+#    Name: Cyan Cyclop's Eye
+#    Type: Armor
+#    Weight: 200
+#    Locations:
+#      Head_Mid: true
+#    ArmorLevel: 1
+#    View: 2766
+#    Script: |
+#      bonus bStr,0;
+#  - Id: 120124
+#    AegisName: Gold Cyclop's Eye
+#    Name: Gold Cyclop's Eye
+#    Type: Armor
+#    Weight: 200
+#    Locations:
+#      Head_Mid: true
+#    ArmorLevel: 1
+#    View: 2767
+#    Script: |
+#      bonus bStr,0;
+#  - Id: 120125
+#    AegisName: Green Cyclop's Eye
+#    Name: Green Cyclop's Eye
+#    Type: Armor
+#    Weight: 200
+#    Locations:
+#      Head_Mid: true
+#    ArmorLevel: 1
+#    View: 2768
+#    Script: |
+#      bonus bStr,0;
+#  - Id: 120126
+#    AegisName: Red Cyclop's Eye
+#    Name: Red Cyclop's Eye
+#    Type: Armor
+#    Weight: 200
+#    Locations:
+#      Head_Mid: true
+#    ArmorLevel: 1
+#    View: 2769
+#    Script: |
+#      bonus bStr,0;
+#  - Id: 120127
+#    AegisName: Blue Shiny Angel
+#    Name: Blue Shiny Angel
+#    Type: Armor
+#    Weight: 200
+#    Locations:
+#      Head_Mid: true
+#    ArmorLevel: 1
+#    View: 2770
+#    Script: |
+#      bonus bStr,0;
+#  - Id: 120128
+#    AegisName: Green Shiny Angel
+#    Name: Green Shiny Angel
+#    Type: Armor
+#    Weight: 200
+#    Locations:
+#      Head_Mid: true
+#    ArmorLevel: 1
+#    View: 2771
+#    Script: |
+#      bonus bStr,0;
+#  - Id: 120129
+#    AegisName: Orange Shiny Angel
+#    Name: Orange Shiny Angel
+#    Type: Armor
+#    Weight: 200
+#    Locations:
+#      Head_Mid: true
+#    ArmorLevel: 1
+#    View: 2772
+#    Script: |
+#      bonus bStr,0;
+#  - Id: 120130
+#    AegisName: Red Shiny Angel
+#    Name: Red Shiny Angel
+#    Type: Armor
+#    Weight: 200
+#    Locations:
+#      Head_Mid: true
+#    ArmorLevel: 1
+#    View: 2773
+#    Script: |
+#      bonus bStr,0;
+#  - Id: 120131
+#    AegisName: White Shiny Angel
+#    Name: White Shiny Angel
+#    Type: Armor
+#    Weight: 200
+#    Locations:
+#      Head_Mid: true
+#    ArmorLevel: 1
+#    View: 2774
+#    Script: |
+#      bonus bStr,0;
+#  - Id: 120132
+#    AegisName: Yellow Shiny Angel
+#    Name: Yellow Shiny Angel
+#    Type: Armor
+#    Weight: 200
+#    Locations:
+#      Head_Mid: true
+#    ArmorLevel: 1
+#    View: 2775
+#    Script: |
+#      bonus bStr,0;
 
   - Id: 2646
     AegisName: Bunch_Of_Carnation
