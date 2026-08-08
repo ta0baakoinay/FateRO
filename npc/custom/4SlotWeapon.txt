@@ -1,0 +1,219 @@
+//===== rAthena Script =======================================
+//= Socket Force NPC
+//===== Description: =========================================
+//= Submits an eligible 3-slot weapon and attempts to force it
+//= into its matching 4-slot version.
+//= - Costs 25,000,000 zeny per attempt (charged only on confirm).
+//= - 15% success rate per attempt.
+//= - Pity system: guaranteed success after a randomized
+//=   12-15 failed attempts (threshold re-rolled each cycle).
+//=   Pity is tracked PER WEAPON TYPE, per character — failures
+//=   on one weapon (e.g. cheap Icarus gear) do NOT carry over
+//=   or count toward pity on a different weapon (e.g. Banryu).
+//= - Failure destroys the submitted weapon (and any cards
+//=   socketed in it), in addition to the zeny cost.
+//= - If the submitted weapon has any refine, success resets
+//=   refine to 0 and permanently destroys its cards.
+//= - Success and failure are both broadcast server-wide.
+//=============================================================
+prontera,155,181,4	script	Socket Specialist#4SForce	123,{
+
+	if (.SourceID[0] == 0) {
+		setarray .SourceID[0],
+			120140, 120141, 120142, 120143, 120147,
+			120148, 120150, 120151, 120153, 120154,
+			120155, 120156, 120139;
+		setarray .TargetID[0],
+			120158, 120168, 120167, 120166, 120165,
+			120164, 120163, 120162, 120161, 120160,
+			120159, 120170, 120169;
+	}
+
+	.@n = getarraysize(.SourceID);
+
+	mes " ";
+	clear;
+	setdialogsize(400, 300);
+	mes "[Socket Specialist]";
+	mes "I handle high-risk socket work for this supported weapon line.";
+	mes "Use the intake window to submit one or more eligible 3-slot weapons directly from your inventory.";
+	mes "I will attempt to force each one into the matching 4-slot version.";
+	mes "------------------------------------";
+    mes "Cost: ^006400" + .Cost + "^000000 zeny";
+	mes "Success Rate: ^006400" + .SuccessRate + "%^000000";
+	mes "Pity System: Guaranteed success after 12-15 failed attempt(s)";
+	mes "^FF0000Pity is tracked separately per weapon type — failures on one weapon do not help another.^000000";
+	mes "Failure Result: the submitted weapon is destroyed";
+	mes "^FF0000Note: refined weapons will have their refine and cards permanently reset on success.^000000";
+	mes "Broadcast: success and failure are both announced server-wide";
+	close2;
+
+L_Main:
+	.@count = 0;
+	getinventorylist();
+	for (.@i = 0; .@i < @inventorylist_count; .@i++) {
+		for (.@j = 0; .@j < .@n; .@j++) {
+			if (@inventorylist_id[.@i] == .SourceID[.@j]) {
+				setarray .@invIdx[.@count], .@i;
+				.@count++;
+				break;
+			}
+		}
+	}
+
+	if (.@count == 0) {
+		mes " ";
+		clear;
+		setdialogsize(400, 150);
+		mes "[Socket Specialist]";
+		mes "You don't have any eligible 3-slot weapons in your inventory right now.";
+		close;
+	}
+
+	.@menu$ = "";
+	for (.@i = 0; .@i < .@count; .@i++) {
+		.@idx = .@invIdx[.@i];
+		.@menu$ += getitemname(@inventorylist_id[.@idx]) + ":";
+	}
+	.@menu$ += "Leave";
+
+	select(.@menu$);
+	.@sel = @menu - 1;
+
+	if (.@sel == .@count) {
+		close;
+	}
+
+	.@idx = .@invIdx[.@sel];
+	.@srcId = @inventorylist_id[.@idx];
+	.@refine = @inventorylist_refine[.@idx];
+	.@identify = @inventorylist_identify[.@idx];
+	.@card1 = @inventorylist_card1[.@idx];
+	.@card2 = @inventorylist_card2[.@idx];
+	.@card3 = @inventorylist_card3[.@idx];
+	.@card4 = @inventorylist_card4[.@idx];
+	.@attribute = @inventorylist_attribute[.@idx];
+
+	.@tgtId = 0;
+	.@srcIdx = -1;
+	for (.@j = 0; .@j < .@n; .@j++) {
+		if (.SourceID[.@j] == .@srcId) {
+			.@tgtId = .TargetID[.@j];
+			.@srcIdx = .@j;
+			break;
+		}
+	}
+
+	if (SocketForce_PityThreshold[.@srcIdx] == 0)
+		SocketForce_PityThreshold[.@srcIdx] = rand(.PityMin, .PityMax);
+
+	.@willReset = (.@refine > 0);
+
+	mes " ";
+	clear;
+	setdialogsize(400, 250);
+	mes "[Socket Specialist]";
+	mes "Submit this weapon for socket forcing?";
+	mes "^FF6600" + getitemname(.@srcId) + "^000000";
+	mes "------------------------------------";
+    mes "Cost: ^006400" + .Cost + "^000000 zeny";
+	mes "Success Rate: ^006400" + .SuccessRate + "%^000000";
+	mes "Current Pity (this weapon only): " + SocketForce_Pity[.@srcIdx] + " / " + SocketForce_PityThreshold[.@srcIdx];
+	if (.@willReset) {
+		mes "------------------------------------";
+		mes "^FF0000Warning: this is a refined weapon.";
+		mes "If forcing succeeds, its refine will be reset to 0 and any socketed cards will be permanently destroyed. They will NOT be returned to you.^000000";
+	}
+	mes "------------------------------------";
+	mes "If this attempt fails, the weapon will be destroyed. The zeny cost is non-refundable either way.";
+	close2;
+
+	if (.@willReset) {
+		select("Yes, I understand refine/cards will be destroyed:Cancel");
+	}
+	else {
+		select("Submit it:Cancel");
+	}
+	if (@menu == 2)
+		goto L_Main;
+
+	if (Zeny < .Cost) {
+		mes " ";
+		clear;
+		setdialogsize(400, 150);
+		mes "[Socket Specialist]";
+		mes "^FF0000You don't have enough zeny for this. You need " + .Cost + " zeny.^000000";
+		next;
+		goto L_Main;
+	}
+
+	mes "[Socket Specialist]";
+	mes "The forging begins...";
+	next;
+
+	progressbar "0xFF6600", 3;
+
+	if (countitem2(.@srcId, .@identify, .@refine, .@attribute, .@card1, .@card2, .@card3, .@card4) < 1) {
+		mes "[Socket Specialist]";
+		mes "^FF0000ERROR: That weapon is no longer in your inventory!^000000";
+		mes "The forging has been interrupted.";
+		next;
+		goto L_Main;
+	}
+
+	if (Zeny < .Cost) {
+		mes "[Socket Specialist]";
+		mes "^FF0000ERROR: You no longer have enough zeny!^000000";
+		mes "The forging has been interrupted.";
+		next;
+		goto L_Main;
+	}
+
+	Zeny -= .Cost;
+	delitem2 .@srcId, 1, .@identify, .@refine, .@attribute, .@card1, .@card2, .@card3, .@card4;
+
+	.@roll = rand(1,100);
+	.@pity = (SocketForce_Pity[.@srcIdx] + 1 >= SocketForce_PityThreshold[.@srcIdx]);
+	.@success = (.@roll <= .SuccessRate || .@pity);
+
+	mes " ";
+	clear;
+	setdialogsize(400, 200);
+	if (.@success) {
+		if (.@willReset) {
+			getitem2 .@tgtId, 1, 1, 0, 0, 0, 0, 0, 0;
+		}
+		else {
+			getitem2 .@tgtId, 1, 1, .@refine, .@attribute, .@card1, .@card2, .@card3, .@card4;
+		}
+		SocketForce_Pity[.@srcIdx] = 0;
+		SocketForce_PityThreshold[.@srcIdx] = rand(.PityMin, .PityMax);
+
+		announce strcharinfo(0) + " successfully forced " + getitemname(.@srcId) + " [3] into " + getitemname(.@tgtId) + " [4]!", bc_all, 0xFF6600;
+
+		mes "[Socket Specialist]";
+		mes "Success! Your weapon has been forced into its 4-slot form.";
+		mes "^FF6600" + getitemname(.@tgtId) + "^000000";
+		if (.@willReset)
+			mes "^FF0000Its refine and cards were permanently reset as warned.^000000";
+	}
+	else {
+		SocketForce_Pity[.@srcIdx]++;
+
+		announce strcharinfo(0) + " failed to force " + getitemname(.@srcId) + " [3]. The weapon was destroyed.", bc_all, 0xFF0000;
+
+		mes "[Socket Specialist]";
+		mes "The attempt failed. The weapon has been destroyed.";
+		mes "Current Pity (this weapon only): " + SocketForce_Pity[.@srcIdx] + " / " + SocketForce_PityThreshold[.@srcIdx];
+	}
+	close2;
+
+	goto L_Main;
+
+OnInit:
+	.SuccessRate = 15;
+	.PityMin = 12;
+	.PityMax = 15;
+	.Cost = 25000000;
+	end;
+}
