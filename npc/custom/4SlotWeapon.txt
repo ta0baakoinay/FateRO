@@ -1,79 +1,152 @@
 //===== rAthena Script =======================================
 //= Socket Force NPC
 //===== Description: =========================================
-//= Submits an eligible 3-slot weapon and attempts to force it
-//= into its matching 4-slot version.
-//= - Costs 25,000,000 zeny per attempt (charged only on confirm).
+//= Submits an eligible +10, 3-slot weapon and attempts to force
+//= it into its matching 4-slot version.
+//= - Costs 30,000,000 zeny + 5x Oridecon + 5x Steel per attempt
+//=   (charged only on confirm).
 //= - 15% success rate per attempt.
 //= - Pity system: guaranteed success after a randomized
 //=   12-15 failed attempts (threshold re-rolled each cycle).
 //=   Pity is tracked PER WEAPON TYPE, per character — failures
 //=   on one weapon (e.g. cheap Icarus gear) do NOT carry over
 //=   or count toward pity on a different weapon (e.g. Banryu).
+//= - Only weapons refined to +10 or higher are eligible.
+//= - Item 120139 additionally requires Card 1108 to be socketed
+//=   in it to be eligible.
 //= - Failure destroys the submitted weapon (and any cards
-//=   socketed in it), in addition to the zeny cost.
-//= - If the submitted weapon has any refine, success resets
-//=   refine to 0 and permanently destroys its cards.
+//=   socketed in it), in addition to the material cost.
+//= - On success, refine is always reset to 0 and cards are
+//=   permanently destroyed (since all eligible weapons are +10
+//=   with sockets used/unused as submitted).
 //= - Success and failure are both broadcast server-wide.
 //=============================================================
 prontera,155,181,4	script	Socket Specialist#4SForce	123,{
 
-	if (.SourceID[0] == 0) {
-		setarray .SourceID[0],
-			120140, 120141, 120142, 120143, 120147,
-			120148, 120150, 120151, 120153, 120154,
-			120155, 120156, 120139;
-		setarray .TargetID[0],
-			120158, 120168, 120167, 120166, 120165,
-			120164, 120163, 120162, 120161, 120160,
-			120159, 120170, 120169;
-	}
-
 	.@n = getarraysize(.SourceID);
 
+L_Start:
 	mes " ";
 	clear;
-	setdialogsize(400, 300);
+	setdialogsize(300, 200);
 	mes "[Socket Specialist]";
 	mes "I handle high-risk socket work for this supported weapon line.";
-	mes "Use the intake window to submit one or more eligible 3-slot weapons directly from your inventory.";
-	mes "I will attempt to force each one into the matching 4-slot version.";
+	mes "Submit an eligible +" + .RequiredRefine + ", 3-slot weapon and I will attempt to force it into its matching 4-slot version.";
+	next;
+
+	select("View Available Socket Enchantments:Submit a Weapon:Leave");
+	if (@menu == 1)
+		goto L_Info;
+	if (@menu == 3)
+		close;
+
+	goto L_Main;
+
+L_Info:
+	mes " ";
+	clear;
+	setdialogsize(420, 420);
+	mes "[Socket Specialist]";
+	mes "Per attempt requirements:";
+	mes mesitemicon(.MatID1) + " " + getitemname(.MatID1) + " x " + .MatAmt1;
+	mes mesitemicon(.MatID2) + " " + getitemname(.MatID2) + " x " + .MatAmt2;
+	mes "^006400" + .Cost + "^000000 Zeny";
 	mes "------------------------------------";
-    mes "Cost: ^006400" + .Cost + "^000000 zeny";
+	mes "Eligible weapons:";
+	for (.@k = 0; .@k < .@n; .@k++) {
+		mes mesitemicon(.SourceID[.@k]) + " [3]  ->  " + mesitemicon(.TargetID[.@k]) + " [4]";
+		if (.SourceID[.@k] == .SpecialSrcID)
+			mes "Need:  +" + .RequiredRefine + " " + getitemname(.SourceID[.@k]) + " [3]  w/ Card [" + getitemname(.SpecialCardID) + "]";
+		else if (.SourceID[.@k] == .SpecialSrcID2)
+			mes "Need:  " + getitemname(.SourceID[.@k]) + " [3]  +  " + mesitemicon(.SpecialReqItemID2) + " +" + .SpecialReqRefine2 + " " + getitemname(.SpecialReqItemID2);
+		else
+			mes "Need:  +" + .RequiredRefine + " " + getitemname(.SourceID[.@k]) + " [3]";
+		mes " ";
+	}
+	mes "------------------------------------";
 	mes "Success Rate: ^006400" + .SuccessRate + "%^000000";
 	mes "Pity System: Guaranteed success after 12-15 failed attempt(s)";
 	mes "^FF0000Pity is tracked separately per weapon type — failures on one weapon do not help another.^000000";
 	mes "Failure Result: the submitted weapon is destroyed";
-	mes "^FF0000Note: refined weapons will have their refine and cards permanently reset on success.^000000";
+	mes "^FF0000On success, refine is reset to 0 and any cards are permanently destroyed.^000000";
 	mes "Broadcast: success and failure are both announced server-wide";
 	close2;
+	goto L_Start;
 
 L_Main:
 	.@count = 0;
 	getinventorylist();
+
+	// Pre-scan for the +10 item 1521 required to submit Fist of Fury (120171)
+	.@reqIdx2 = -1;
 	for (.@i = 0; .@i < @inventorylist_count; .@i++) {
-		for (.@j = 0; .@j < .@n; .@j++) {
-			if (@inventorylist_id[.@i] == .SourceID[.@j]) {
-				setarray .@invIdx[.@count], .@i;
-				.@count++;
-				break;
+		if (@inventorylist_id[.@i] == .SpecialReqItemID2 && @inventorylist_refine[.@i] >= .SpecialReqRefine2) {
+			.@reqIdx2 = .@i;
+			break;
+		}
+	}
+
+	// NOTE: uses inarray() instead of a nested for-loop over .SourceID.
+	// inarray() runs natively in C and does not consume the script
+	// engine's goto/loop budget, unlike a scripted inner for-loop.
+	// With a large inventory, the old O(N x 15) nested loop could
+	// exceed rAthena's check_gotocount safeguard (default 2048),
+	// producing "script:run_script_main: infinity loop !".
+	for (.@i = 0; .@i < @inventorylist_count; .@i++) {
+		.@j = inarray(.SourceID, @inventorylist_id[.@i]);
+		if (.@j == -1)
+			continue;
+
+		.@eligible = 1;
+
+		// Special case: Fist of Fury (120171) — no refine requirement on
+		// itself, but a +10 item 1520 must exist in inventory (consumed on submit)
+		if (@inventorylist_id[.@i] == .SpecialSrcID2) {
+			if (.@reqIdx2 == -1)
+				.@eligible = 0;
+		}
+		else {
+			// Global +10 refine requirement
+			if (@inventorylist_refine[.@i] < .RequiredRefine)
+				.@eligible = 0;
+
+			// Special case: 120139 also needs card 1108 socketed
+			if (.@eligible && @inventorylist_id[.@i] == .SpecialSrcID) {
+				.@hasCard = 0;
+				if (@inventorylist_card1[.@i] == .SpecialCardID) .@hasCard = 1;
+				if (@inventorylist_card2[.@i] == .SpecialCardID) .@hasCard = 1;
+				if (@inventorylist_card3[.@i] == .SpecialCardID) .@hasCard = 1;
+				if (@inventorylist_card4[.@i] == .SpecialCardID) .@hasCard = 1;
+				if (!.@hasCard)
+					.@eligible = 0;
 			}
 		}
+
+		if (!.@eligible)
+			continue;
+
+		setarray .@invIdx[.@count], .@i;
+		.@count++;
 	}
 
 	if (.@count == 0) {
 		mes " ";
 		clear;
-		setdialogsize(400, 150);
+		setdialogsize(300, 200);
 		mes "[Socket Specialist]";
-		mes "You don't have any eligible 3-slot weapons in your inventory right now.";
-		close;
+		mes "You don't have any eligible +" + .RequiredRefine + " 3-slot weapons in your inventory right now.";
+		mes "You're welcome to check what's available for socket enchantment any time.";
+		next;
+		goto L_Start;
 	}
 
 	.@menu$ = "";
 	for (.@i = 0; .@i < .@count; .@i++) {
 		.@idx = .@invIdx[.@i];
-		.@menu$ += getitemname(@inventorylist_id[.@idx]) + ":";
+		if (@inventorylist_refine[.@idx] > 0)
+			.@menu$ += "+" + @inventorylist_refine[.@idx] + " " + getitemname(@inventorylist_id[.@idx]) + ":";
+		else
+			.@menu$ += getitemname(@inventorylist_id[.@idx]) + ":";
 	}
 	.@menu$ += "Leave";
 
@@ -81,7 +154,7 @@ L_Main:
 	.@sel = @menu - 1;
 
 	if (.@sel == .@count) {
-		close;
+		goto L_Start;
 	}
 
 	.@idx = .@invIdx[.@sel];
@@ -107,42 +180,77 @@ L_Main:
 	if (SocketForce_PityThreshold[.@srcIdx] == 0)
 		SocketForce_PityThreshold[.@srcIdx] = rand(.PityMin, .PityMax);
 
-	.@willReset = (.@refine > 0);
+	// Fist of Fury (120171) additionally consumes a +10 item 1521
+	.@reqIdx2 = -1;
+	if (.@srcId == .SpecialSrcID2) {
+		for (.@i = 0; .@i < @inventorylist_count; .@i++) {
+			if (@inventorylist_id[.@i] == .SpecialReqItemID2 && @inventorylist_refine[.@i] >= .SpecialReqRefine2) {
+				.@reqIdx2 = .@i;
+				break;
+			}
+		}
+		if (.@reqIdx2 == -1) {
+			mes " ";
+			clear;
+			setdialogsize(400, 150);
+			mes "[Socket Specialist]";
+			mes "^FF0000You no longer have a +" + .SpecialReqRefine2 + " " + getitemname(.SpecialReqItemID2) + ", which this weapon requires.^000000";
+			next;
+			goto L_Main;
+		}
+		.@reqIdentify2 = @inventorylist_identify[.@reqIdx2];
+		.@reqRefine2 = @inventorylist_refine[.@reqIdx2];
+		.@reqAttribute2 = @inventorylist_attribute[.@reqIdx2];
+		.@reqCard1_2 = @inventorylist_card1[.@reqIdx2];
+		.@reqCard2_2 = @inventorylist_card2[.@reqIdx2];
+		.@reqCard3_2 = @inventorylist_card3[.@reqIdx2];
+		.@reqCard4_2 = @inventorylist_card4[.@reqIdx2];
+	}
 
 	mes " ";
 	clear;
-	setdialogsize(400, 250);
+	setdialogsize(400, 280);
 	mes "[Socket Specialist]";
 	mes "Submit this weapon for socket forcing?";
-	mes "^FF6600" + getitemname(.@srcId) + "^000000";
+	mes mesitemicon(.@srcId) + " [3]  ->  " + mesitemicon(.@tgtId) + " [4]";
+	if (.@refine > 0)
+		mes "^FF6600+" + .@refine + " " + getitemname(.@srcId) + "^000000";
+	else
+		mes "^FF6600" + getitemname(.@srcId) + "^000000";
 	mes "------------------------------------";
-    mes "Cost: ^006400" + .Cost + "^000000 zeny";
+	mes "Cost: ^006400" + .Cost + "^000000 zeny";
+	mes mesitemicon(.MatID1) + " " + getitemname(.MatID1) + " x " + .MatAmt1;
+	mes mesitemicon(.MatID2) + " " + getitemname(.MatID2) + " x " + .MatAmt2;
+	if (.@srcId == .SpecialSrcID2)
+		mes mesitemicon(.SpecialReqItemID2) + " +" + .@reqRefine2 + " " + getitemname(.SpecialReqItemID2) + " x 1";
 	mes "Success Rate: ^006400" + .SuccessRate + "%^000000";
 	mes "Current Pity (this weapon only): " + SocketForce_Pity[.@srcIdx] + " / " + SocketForce_PityThreshold[.@srcIdx];
-	if (.@willReset) {
-		mes "------------------------------------";
-		mes "^FF0000Warning: this is a refined weapon.";
-		mes "If forcing succeeds, its refine will be reset to 0 and any socketed cards will be permanently destroyed. They will NOT be returned to you.^000000";
-	}
 	mes "------------------------------------";
-	mes "If this attempt fails, the weapon will be destroyed. The zeny cost is non-refundable either way.";
+	mes "^FF0000Warning: on success, refine will be reset to 0 and any socketed cards will be permanently destroyed. They will NOT be returned to you.^000000";
+	mes "------------------------------------";
+	mes "If this attempt fails, the weapon will be destroyed. The zeny and material cost are non-refundable either way.";
 	close2;
 
-	if (.@willReset) {
-		select("Yes, I understand refine/cards will be destroyed:Cancel");
-	}
-	else {
-		select("Submit it:Cancel");
-	}
+	select("Yes, I understand refine/cards will be destroyed:Cancel");
 	if (@menu == 2)
 		goto L_Main;
 
-	if (Zeny < .Cost) {
+	if (Zeny < .Cost || countitem(.MatID1) < .MatAmt1 || countitem(.MatID2) < .MatAmt2) {
 		mes " ";
 		clear;
-		setdialogsize(400, 150);
+		setdialogsize(400, 180);
 		mes "[Socket Specialist]";
-		mes "^FF0000You don't have enough zeny for this. You need " + .Cost + " zeny.^000000";
+		mes "^FF0000You don't have enough materials for this. You need " + .Cost + " zeny, " + .MatAmt1 + "x " + getitemname(.MatID1) + ", and " + .MatAmt2 + "x " + getitemname(.MatID2) + ".^000000";
+		next;
+		goto L_Main;
+	}
+
+	if (.@srcId == .SpecialSrcID2 && countitem2(.SpecialReqItemID2, .@reqIdentify2, .@reqRefine2, .@reqAttribute2, .@reqCard1_2, .@reqCard2_2, .@reqCard3_2, .@reqCard4_2) < 1) {
+		mes " ";
+		clear;
+		setdialogsize(400, 180);
+		mes "[Socket Specialist]";
+		mes "^FF0000You no longer have a +" + .SpecialReqRefine2 + " " + getitemname(.SpecialReqItemID2) + ", which this weapon requires.^000000";
 		next;
 		goto L_Main;
 	}
@@ -161,15 +269,27 @@ L_Main:
 		goto L_Main;
 	}
 
-	if (Zeny < .Cost) {
+	if (Zeny < .Cost || countitem(.MatID1) < .MatAmt1 || countitem(.MatID2) < .MatAmt2) {
 		mes "[Socket Specialist]";
-		mes "^FF0000ERROR: You no longer have enough zeny!^000000";
+		mes "^FF0000ERROR: You no longer have enough materials!^000000";
+		mes "The forging has been interrupted.";
+		next;
+		goto L_Main;
+	}
+
+	if (.@srcId == .SpecialSrcID2 && countitem2(.SpecialReqItemID2, .@reqIdentify2, .@reqRefine2, .@reqAttribute2, .@reqCard1_2, .@reqCard2_2, .@reqCard3_2, .@reqCard4_2) < 1) {
+		mes "[Socket Specialist]";
+		mes "^FF0000ERROR: You no longer have the required +" + .SpecialReqRefine2 + " " + getitemname(.SpecialReqItemID2) + "!^000000";
 		mes "The forging has been interrupted.";
 		next;
 		goto L_Main;
 	}
 
 	Zeny -= .Cost;
+	delitem .MatID1, .MatAmt1;
+	delitem .MatID2, .MatAmt2;
+	if (.@srcId == .SpecialSrcID2)
+		delitem2 .SpecialReqItemID2, 1, .@reqIdentify2, .@reqRefine2, .@reqAttribute2, .@reqCard1_2, .@reqCard2_2, .@reqCard3_2, .@reqCard4_2;
 	delitem2 .@srcId, 1, .@identify, .@refine, .@attribute, .@card1, .@card2, .@card3, .@card4;
 
 	.@roll = rand(1,100);
@@ -180,12 +300,8 @@ L_Main:
 	clear;
 	setdialogsize(400, 200);
 	if (.@success) {
-		if (.@willReset) {
-			getitem2 .@tgtId, 1, 1, 0, 0, 0, 0, 0, 0;
-		}
-		else {
-			getitem2 .@tgtId, 1, 1, .@refine, .@attribute, .@card1, .@card2, .@card3, .@card4;
-		}
+		getitem2 .@tgtId, 1, 1, 0, 0, 0, 0, 0, 0;
+
 		SocketForce_Pity[.@srcIdx] = 0;
 		SocketForce_PityThreshold[.@srcIdx] = rand(.PityMin, .PityMax);
 
@@ -193,9 +309,8 @@ L_Main:
 
 		mes "[Socket Specialist]";
 		mes "Success! Your weapon has been forced into its 4-slot form.";
-		mes "^FF6600" + getitemname(.@tgtId) + "^000000";
-		if (.@willReset)
-			mes "^FF0000Its refine and cards were permanently reset as warned.^000000";
+		mes mesitemicon(.@tgtId) + " ^FF6600" + getitemname(.@tgtId) + "^000000";
+		mes "^FF0000Its refine and cards were permanently reset as warned.^000000";
 	}
 	else {
 		SocketForce_Pity[.@srcIdx]++;
@@ -211,9 +326,28 @@ L_Main:
 	goto L_Main;
 
 OnInit:
+	setarray .SourceID[0],
+		120140, 120141, 120142, 120143, 120147,
+		120148, 120150, 120151, 120153, 120154,
+		120155, 120156, 120139, 120171, 120157;
+	setarray .TargetID[0],
+		120158, 120168, 120167, 120166, 120165,
+		120164, 120163, 120162, 120161, 120160,
+		120159, 120170, 120169, 120172, 120173;
+
 	.SuccessRate = 15;
 	.PityMin = 12;
 	.PityMax = 15;
-	.Cost = 25000000;
+	.Cost = 30000000;
+	.MatID1 = 984;   // Oridecon
+	.MatAmt1 = 5;
+	.MatID2 = 999;   // Steel
+	.MatAmt2 = 5;
+	.RequiredRefine = 10;
+	.SpecialSrcID = 120139;
+	.SpecialCardID = 1108;
+	.SpecialSrcID2 = 120171;
+	.SpecialReqItemID2 = 1520;
+	.SpecialReqRefine2 = 10;
 	end;
 }
