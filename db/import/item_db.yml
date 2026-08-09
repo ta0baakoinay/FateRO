@@ -3380,90 +3380,133 @@ Body:
     View: 2734
     Script: |
       bonus bStr,0;
+
   - Id: 120092
     AegisName: Mizukage Hat
     Name: Mizukage Hat
     Type: Armor
-    Weight: 500
-    Defense: 2
+    Weight: 750
+    Defense: 4
     Slots: 1
     Locations:
       Head_Top: true
     Refineable: true
     ArmorLevel: 1
     View: 2735
+    Jobs:
+      All: true
+    EquipLv: 50
     Script: |
-      bonus bStr,0;
+      bonus bInt,20;
+      bonus2 bAddClass,Class_All,(getrefine()/2);
+      bonus2 bSubEle,Ele_Water,50;
+      bonus2 bSubEle,Ele_Fire,-25;
+
   - Id: 120093
     AegisName: Tsuchikage Hat
     Name: Tsuchikage Hat
     Type: Armor
-    Weight: 500
-    Defense: 2
+    Weight: 750
+    Defense: 4
     Slots: 1
     Locations:
       Head_Top: true
     Refineable: true
     ArmorLevel: 1
     View: 2736
+    Jobs:
+      All: true
+    EquipLv: 50
     Script: |
-      bonus bStr,0;
+      bonus bVit,20;
+      bonus2 bAddClass,Class_All,(getrefine()/2);
+      bonus2 bSubEle,Ele_Earth,50;
+      bonus2 bSubEle,Ele_Wind,-25;
+
   - Id: 120094
     AegisName: Kazekage Hat
     Name: Kazekage Hat
     Type: Armor
-    Weight: 500
-    Defense: 2
+    Weight: 750
+    Defense: 4
     Slots: 1
     Locations:
       Head_Top: true
     Refineable: true
     ArmorLevel: 1
     View: 2737
+    Jobs:
+      All: true
+    EquipLv: 50
     Script: |
-      bonus bStr,0;
+      bonus bAgi,20;
+      bonus2 bAddClass,Class_All,(getrefine()/2);
+      bonus2 bSubEle,Ele_Wind,50;
+      bonus2 bSubEle,Ele_Earth,-25;
+
   - Id: 120095
     AegisName: Hoshikage Hat
     Name: Hoshikage Hat
     Type: Armor
-    Weight: 500
-    Defense: 2
+    Weight: 750
+    Defense: 4
     Slots: 1
     Locations:
       Head_Top: true
     Refineable: true
     ArmorLevel: 1
     View: 2738
+    Jobs:
+      All: true
+    EquipLv: 50
     Script: |
-      bonus bStr,0;
+      bonus bDex,20;
+      bonus2 bAddClass,Class_All,(getrefine()/2);
+      bonus2 bResEff,Eff_Silence,5000;
+      bonus2 bSubEle,Ele_Wind,-25;
+
   - Id: 120096
     AegisName: Hokage Hat
     Name: Hokage Hat
     Type: Armor
-    Weight: 500
-    Defense: 2
+    Weight: 750
+    Defense: 4
     Slots: 1
     Locations:
       Head_Top: true
     Refineable: true
     ArmorLevel: 1
     View: 2739
+    Jobs:
+      All: true
+    EquipLv: 50
     Script: |
-      bonus bStr,0;
+      bonus bStr,20;
+      bonus2 bAddClass,Class_All,(getrefine()/2);
+      bonus2 bSubEle,Ele_Fire,50;
+      bonus2 bSubEle,Ele_Water,-25;
+
   - Id: 120097
     AegisName: Raikage Hat
     Name: Raikage Hat
     Type: Armor
-    Weight: 500
-    Defense: 2
+    Weight: 750
+    Defense: 4
     Slots: 1
     Locations:
       Head_Top: true
     Refineable: true
     ArmorLevel: 1
     View: 2740
+    Jobs:
+      All: true
+    EquipLv: 50
     Script: |
-      bonus bStr,0;
+      bonus bLuk,20;
+      bonus2 bAddClass,Class_All,(getrefine()/2);
+      bonus2 bSubEle,Ele_Holy,50;
+      bonus2 bSubEle,Ele_Dark,-25;
+
   - Id: 120098
     AegisName: Cygnus Helm
     Name: Cygnus Helm
@@ -3478,6 +3521,7 @@ Body:
     View: 2741
     Script: |
       bonus bStr,0;
+
   - Id: 120099
     AegisName: Traveler's Hat
     Name: Traveler's Hat
@@ -3491,7 +3535,12 @@ Body:
     ArmorLevel: 1
     View: 2742
     Script: |
-      bonus bStr,0;
+      bonus bLuk,20;
+      bonus bCritAtkRate,getrefine()/2;
+      bonus bCriticalRate,5;
+      bonus bCritAtkRate,10;
+      bonus2 bSubEle,Ele_Earth,-10;
+      
   - Id: 120100
     AegisName: Earth Headprotector
     Name: Earth Headprotector
@@ -3505,7 +3554,11 @@ Body:
     ArmorLevel: 1
     View: 2743
     Script: |
-      bonus bStr,0;
+      bonus bVit,10;
+      bonus bVit,getrefine();
+      bonus2 bSubEle,Ele_Earth,10;
+      bonus2 bSubEle,Ele_Wind,-10;
+
   - Id: 120101
     AegisName: Fire Headprotector
     Name: Fire Headprotector
@@ -3519,7 +3572,11 @@ Body:
     ArmorLevel: 1
     View: 2744
     Script: |
-      bonus bStr,0;
+      bonus bStr,10;
+      bonus bStr,getrefine();
+      bonus2 bSubEle,Ele_Fire,10;
+      bonus2 bSubEle,Ele_Water,-10;
+
   - Id: 120102
     AegisName: Lightning Headprotector
     Name: Lightning Headprotector
@@ -3533,7 +3590,11 @@ Body:
     ArmorLevel: 1
     View: 2745
     Script: |
-      bonus bStr,0;
+      bonus bLuk,10;
+      bonus bLuk,getrefine();
+      bonus2 bSubEle,Ele_Holy,10;
+      bonus2 bSubEle,Ele_Dark,-10;
+
   - Id: 120103
     AegisName: Sound Headprotector
     Name: Sound Headprotector
@@ -3547,7 +3608,11 @@ Body:
     ArmorLevel: 1
     View: 2746
     Script: |
-      bonus bStr,0;
+      bonus bDex,10;
+      bonus bDex,getrefine();
+      bonus2 bResEff,Eff_Silence,1000;
+      bonus2 bSubEle,Ele_Wind,-10;
+
   - Id: 120104
     AegisName: Water Headprotector
     Name: Water Headprotector
@@ -3561,7 +3626,11 @@ Body:
     ArmorLevel: 1
     View: 2747
     Script: |
-      bonus bStr,0;
+      bonus bInt,10;
+      bonus bInt,getrefine();
+      bonus2 bSubEle,Ele_Water,10;
+      bonus2 bSubEle,Ele_Fire,-10;
+
   - Id: 120105
     AegisName: Wind Headprotector
     Name: Wind Headprotector
@@ -3575,7 +3644,10 @@ Body:
     ArmorLevel: 1
     View: 2748
     Script: |
-      bonus bStr,0;
+      bonus bAgi,10;
+      bonus bAgi,getrefine();
+      bonus2 bSubEle,Ele_Wind,10;
+      bonus2 bSubEle,Ele_Earth,-10;
       
   - Id: 120106
     AegisName: Kakashi Headprotector
@@ -3590,7 +3662,10 @@ Body:
     ArmorLevel: 1
     View: 2749
     Script: |
-      bonus bStr,0;
+      bonus bDex,20;
+      bonus bLongAtkRate,10;
+      bonus2 bSubEle,Ele_Fire,50;
+      bonus2 bSubEle,Ele_Water,-10;
 
   - Id: 120107
     AegisName: Flame Aura
@@ -3603,7 +3678,22 @@ Body:
     ArmorLevel: 1
     View: 2750
     Script: |
-      bonus bStr,0;
+      bonus bAllStats,5;
+      bonus bAtkEle,Ele_Fire;
+      bonus2 bAddEff,Eff_Curse,1000;
+      bonus3 bAutoSpellWhenHit,653,5,5;
+      if (Class == Job_Mage || Class == Job_Wizard || Class == Job_High_Wizard ||
+          Class == Job_Sage || Class == Job_Professor || Class == Job_Warlock ||
+          Class == Job_Acolyte || Class == Job_Priest || Class == Job_High_Priest ||
+          Class == Job_Monk || Class == Job_Champion || Class == Job_Archbishop ||
+          Class == Job_Ninja || Class == Job_Kagerou || Class == Job_Oboro ||
+          Class == Job_Soul_Linker ||
+          Class == Job_Rogue || Class == Job_Stalker ||
+          Class == Job_Merchant || Class == Job_Blacksmith || Class == Job_Whitesmith || Class == Job_Mechanic) {
+        bonus bMatk,10;
+        bonus bInt,10;
+      }
+
   - Id: 120108
     AegisName: Phoenix Wings
     Name: Phoenix Wings
@@ -3627,7 +3717,13 @@ Body:
     ArmorLevel: 1
     View: 2752
     Script: |
-      bonus bStr,0;
+      bonus bLuk,10;
+      bonus bCriticalRate,5;
+      bonus bFlee2,50;
+      bonus2 bSubEle,Ele_Wind,10;
+      bonus2 bSubEle,Ele_Earth,-5;
+      bonus2 bAddEff,Eff_Silence,500;
+
   - Id: 120110
     AegisName: Arctic Wings
     Name: Arctic Wings
@@ -3664,6 +3760,7 @@ Body:
     View: 2755
     Script: |
       bonus bStr,0;
+
   - Id: 120113
     AegisName: Black Dragon Wing
     Name: Black Dragon Wing
@@ -3673,9 +3770,14 @@ Body:
     Locations:
       Head_Low: true
     ArmorLevel: 1
+    Refineable: false
     View: 2756
     Script: |
-      bonus bStr,0;
+      bonus bAllStats,5; // All Stats +5
+      bonus2 bAddRace,RC_DemiHuman,10; // +10% physical damage against Demi-Human
+      bonus2 bSubRace,RC_Dragon,30; // -30% damage taken from Dragon race
+      bonus2 bAddEff,Eff_Bleeding,500; // 5% chance to inflict Bleeding on physical damage    
+ 
   - Id: 120114
     AegisName: Dragon Wings
     Name: Dragon Wings
@@ -3685,9 +3787,14 @@ Body:
     Locations:
       Head_Low: true
     ArmorLevel: 1
+    Refineable: false
     View: 2757
     Script: |
-      bonus bStr,0;
+      bonus bAllStats,5; // All Stats +5
+      bonus2 bAddRace,RC_DemiHuman,10; // +10% physical damage against Demi-Human
+      bonus2 bSubRace,RC_Dragon,30; // -30% damage taken from Dragon race
+      bonus2 bAddEff,Eff_Bleeding,500; // 5% chance to inflict Bleeding on physical damage   
+ 
   - Id: 120115
     AegisName: Cyan Dragon Wings
     Name: Cyan Dragon Wings
@@ -3697,9 +3804,14 @@ Body:
     Locations:
       Head_Low: true
     ArmorLevel: 1
+    Refineable: false
     View: 2758
     Script: |
-      bonus bStr,0;
+      bonus bAllStats,5; // All Stats +5
+      bonus2 bAddRace,RC_DemiHuman,10; // +10% physical damage against Demi-Human
+      bonus2 bSubRace,RC_Dragon,30; // -30% damage taken from Dragon race
+      bonus2 bAddEff,Eff_Bleeding,500; // 5% chance to inflict Bleeding on physical damage   
+
   - Id: 120116
     AegisName: Gold Dragon Wings
     Name: Gold Dragon Wings
@@ -3709,9 +3821,14 @@ Body:
     Locations:
       Head_Low: true
     ArmorLevel: 1
+    Refineable: false
     View: 2759
     Script: |
-      bonus bStr,0;
+      bonus bAllStats,5; // All Stats +5
+      bonus2 bAddRace,RC_DemiHuman,10; // +10% physical damage against Demi-Human
+      bonus2 bSubRace,RC_Dragon,30; // -30% damage taken from Dragon race
+      bonus2 bAddEff,Eff_Bleeding,500; // 5% chance to inflict Bleeding on physical damage   
+
   - Id: 120117
     AegisName: Green Dragon Wings
     Name: Green Dragon Wings
@@ -3721,9 +3838,14 @@ Body:
     Locations:
       Head_Low: true
     ArmorLevel: 1
+    Refineable: false
     View: 2760
     Script: |
-      bonus bStr,0;
+      bonus bAllStats,5; // All Stats +5
+      bonus2 bAddRace,RC_DemiHuman,10; // +10% physical damage against Demi-Human
+      bonus2 bSubRace,RC_Dragon,30; // -30% damage taken from Dragon race
+      bonus2 bAddEff,Eff_Bleeding,500; // 5% chance to inflict Bleeding on physical damage   
+
   - Id: 120118
     AegisName: Red Dragon Wings
     Name: Red Dragon Wings
@@ -3733,9 +3855,14 @@ Body:
     Locations:
       Head_Low: true
     ArmorLevel: 1
+    Refineable: false
     View: 2761
     Script: |
-      bonus bStr,0;
+      bonus bAllStats,5; // All Stats +5
+      bonus2 bAddRace,RC_DemiHuman,10; // +10% physical damage against Demi-Human
+      bonus2 bSubRace,RC_Dragon,30; // -30% damage taken from Dragon race
+      bonus2 bAddEff,Eff_Bleeding,500; // 5% chance to inflict Bleeding on physical damage   
+
   - Id: 120119
     AegisName: Gargoyle Wings
     Name: Gargoyle Wings
@@ -3772,34 +3899,6 @@ Body:
     View: 2764
     Script: |
       bonus bStr,0;
-
-  - Id: 1530
-    AegisName: Fist of Fury
-    Name: Fist of Fury
-    Type: Weapon
-    SubType: Mace
-    Buy: 20
-    Weight: 6000
-    Attack: 250
-    Range: 1
-    Slots: 3
-    Jobs:
-      Alchemist: true
-      Blacksmith: true
-      Crusader: true
-      Knight: true
-      Merchant: true
-      Swordman: true
-    Locations:
-      Right_Hand: true
-    WeaponLevel: 4
-    EquipLevelMin: 95
-    Script: |
-      bonus bAtkEle,Ele_Wind;
-      bonus bDex,40;
-      bonus bStr,15;
-      bonus bAspdRate,10;
-      bonus bUnbreakableWeapon;
 
 #  - Id: 120122
 #    AegisName: Black Cyclop's Eye
@@ -4069,9 +4168,751 @@ Body:
     SubType: 1hSword
     Buy: 24000
     Weight: 900
+    Attack: 150
+    Range: 1
+    Slots: 3
+    Jobs:
+      Crusader: true
+      Knight: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 14
+    Refineable: true
+    Script: |
+      .@refine = getrefine();
+      bonus2 bSkillAtk,62,.@refine;
+      bonus2 bSkillAtk,368,.@refine*2;
+      if (.@refine >= 5)
+        bonus bStr,.@refine;
+      if (.@refine >= 7)
+        bonus2 bAddRace,RC_DemiHuman,.@refine*2;
+
+  - Id: 120140
+    AegisName: Wep_Icarus_Dagger
+    Name: Icarus Dagger
+    Type: Weapon
+    SubType: Dagger
+    Buy: 20000
+    Sell: 10000
+    Weight: 400
     Attack: 100
     Range: 1
-    Slots: 2
+    Slots: 3
+    Jobs:
+      Assassin: true
+      Rogue: true
+      Ninja: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 1
+    Refineable: true
+    Script: |
+      bonus bAgi,3;
+      bonus bDex,3;
+      bonus bHit,getrefine();
+      if (Class == Job_Mage || Class == Job_Ninja)
+        bonus bMatkRate,getrefine();
+      else if (Class == Job_Assassin)
+        bonus2 bSkillAtk,379,getrefine();
+
+  - Id: 120141
+    AegisName: Wep_Icarus_Axe
+    Name: Icarus Axe
+    Type: Weapon
+    SubType: 1hAxe
+    Buy: 20000
+    Sell: 10000
+    Weight: 800
+    Attack: 150
+    Range: 1
+    Slots: 3
+    Jobs:
+      Blacksmith: true
+      Alchemist: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 3
+    Refineable: true
+    Script: |
+      bonus bStr,3;
+      bonus bInt,3;
+      if (Class == Job_Creator)
+        bonus2 bSkillAtk,490,getrefine();
+      else if (Class == Job_Whitesmith) {
+        bonus2 bSkillAtk,485,getrefine();
+        bonus2 bSkillAtk,42,getrefine();
+      }
+
+  - Id: 120142
+    AegisName: Wep_Icarus_Book
+    Name: Icarus Book
+    Type: Weapon
+    SubType: Book
+    Buy: 20000
+    Sell: 10000
+    Weight: 600
+    Attack: 100
+    Range: 1
+    Slots: 3
+    Jobs:
+      Priest: true
+      Sage: true
+      StarGladiator: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 14
+    Refineable: true
+    Script: |
+      bonus bStr,3;
+      bonus bInt,3;
+      if (Class == Job_Sage) {
+        bonus bMatkRate,10;
+        bonus2 bSkillAtk,14,getrefine();
+        bonus2 bSkillAtk,19,getrefine();
+        bonus2 bSkillAtk,20,getrefine();
+      }
+      else if (Class == Job_Priest) {
+        bonus bMatkRate,10;
+        bonus2 bSkillAtk,156,getrefine();
+      }
+      else if (Class == Job_Star_Gladiator)
+        bonus bAtkRate,getrefine();
+
+  - Id: 120143
+    AegisName: Wep_Icarus_Bow
+    Name: Icarus Bow
+    Type: Weapon
+    SubType: Bow
+    Buy: 20000
+    Sell: 10000
+    Weight: 500
+    Attack: 100
+    Range: 9
+    Slots: 3
+    Jobs:
+      Archer: true
+      Hunter: true
+      BardDancer: true
+      Rogue: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 4
+    Refineable: true
+    Script: |
+      bonus bDex,5;
+      if (Class == Job_Hunter || Class == Job_Sniper || Class == Job_Baby_Hunter)
+        bonus2 bSkillAtk,382,getrefine();
+      else if (Class == Job_Rogue || Class == Job_Stalker || Class == Job_Baby_Rogue) {
+        bonus2 bSkillAtk,46,getrefine();
+        bonus bLongAtkRate,getrefine();
+      }
+
+  - Id: 120144
+    AegisName: Wep_Icarus_Violin
+    Name: Icarus Violin
+    Type: Weapon
+    SubType: Musical
+    Buy: 20000
+    Sell: 10000
+    Weight: 700
+    Attack: 100
+    Range: 1
+    Slots: 3
+    Jobs:
+      BardDancer: true
+    Gender: Male
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 2
+    Refineable: true
+    Script: |
+      bonus bDex,5;
+      bonus2 bSkillAtk,394,getrefine();
+      bonus2 bSkillAtk,316,getrefine();
+
+  - Id: 120145
+    AegisName: Wep_Icarus_Fist
+    Name: Icarus Fist
+    Type: Weapon
+    SubType: Knuckle
+    Buy: 20000
+    Sell: 10000
+    Weight: 400
+    Attack: 90
+    Range: 1
+    Slots: 3
+    Jobs:
+      Monk: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 1
+    Refineable: true
+    Script: |
+      bonus bStr,0;
+
+
+  - Id: 120147
+    AegisName: Wep_Icarus_Huuma
+    Name: Icarus Huuma
+    Type: Weapon
+    SubType: Huuma
+    Buy: 20000
+    Sell: 10000
+    Weight: 300
+    Attack: 150
+    Range: 1
+    Slots: 3
+    Jobs:
+      Ninja: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bMatkRate,10;
+      bonus bAtkRate,10;
+      bonus2 bSkillAtk,544,getrefine();
+      bonus2 bSkillAtk,537,getrefine();
+      bonus2 bSkillAtk,540,getrefine();
+      bonus2 bSkillAtk,534,getrefine();
+
+  - Id: 120148
+    AegisName: Wep_Icarus_Katar
+    Name: Icarus Katar
+    Type: Weapon
+    SubType: Katar
+    Buy: 20000
+    Sell: 10000
+    Weight: 800
+    Attack: 125
+    Range: 1
+    Slots: 3
+    Jobs:
+      Assassin: true
+    Locations:
+      Right_Hand: true
+      Left_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 18
+    Refineable: true
+    Script: |
+      bonus bAgi,3;
+      bonus bLuk,3;
+      bonus2 bSkillAtk,136,getrefine();
+      bonus2 bSkillAtk,137,getrefine();
+
+  - Id: 120150
+    AegisName: Wep_Icarus_Spear
+    Name: Icarus Spear
+    Type: Weapon
+    SubType: 1hSpear
+    Buy: 20000
+    Sell: 10000
+    Weight: 1000
+    Attack: 100
+    Range: 3
+    Slots: 3
+    Jobs:
+      Knight: true
+      Crusader: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 4
+    Refineable: true
+    Script: |
+      bonus bStr,3;
+      bonus bVit,3;
+      bonus bHit,getrefine();
+      bonus2 bSkillAtk,397,getrefine();
+      bonus2 bSkillAtk,251,getrefine();
+
+  - Id: 120151
+    AegisName: Wep_Icarus_Revolver
+    Name: Icarus Revolver
+    Type: Weapon
+    SubType: Revolver
+    Buy: 20000
+    Sell: 10000
+    Weight: 400
+    Attack: 120
+    Range: 7
+    Slots: 3
+    Jobs:
+      Gunslinger: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 10
+    Refineable: true
+    Script: |
+      bonus bDex,5;
+      bonus2 bSkillAtk,515,getrefine();
+      bonus2 bSkillAtk,516,getrefine();
+
+
+  - Id: 120153
+    AegisName: Wep_Icarus_Shotgun
+    Name: Icarus Shotgun
+    Type: Weapon
+    SubType: Shotgun
+    Buy: 10
+    Weight: 600
+    Attack: 100
+    Range: 9
+    Slots: 3
+    Jobs:
+      Gunslinger: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 60
+    Refineable: true
+    Script: |
+      bonus bDex,5;
+      bonus2 bSkillAtk,519,getrefine();
+      bonus2 bSkillAtk,520,getrefine();
+
+  - Id: 120154
+    AegisName: Wep_Icarus_Sword
+    Name: Icarus Sword
+    Type: Weapon
+    SubType: 1hSword
+    Buy: 10
+    Weight: 500
+    Attack: 120
+    Range: 1
+    Slots: 3
+    Jobs:
+      Swordman: true
+      Knight: true
+      Crusader: true
+      Merchant: true
+      Blacksmith: true
+      Alchemist: true
+      Thief: true
+      Assassin: true
+      Rogue: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 2
+    Refineable: true
+    Script: |
+      bonus bStr,5;
+      bonus bHit,10;
+      if (Class == Job_Assassin || Class == Job_Assassin_Cross || Class == Job_Baby_Assassin)
+        bonus bCritAtkRate,getrefine();
+      else if (Class == Job_Crusader || Class == Job_Paladin || Class == Job_Baby_Crusader)
+        bonus bMaxHPrate,getrefine();
+      else if (Class == Job_Knight || Class == Job_Lord_Knight || Class == Job_Baby_Knight)
+        bonus2 bSkillAtk,62,getrefine();
+
+  - Id: 120155
+    AegisName: Wep_Icarus_Staff
+    Name: Icarus Staff
+    Type: Weapon
+    SubType: Staff
+    Buy: 10
+    Weight: 1200
+    Attack: 120
+    Range: 1
+    Slots: 3
+    Jobs:
+      Wizard: true
+      Sage: true
+      Priest: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 60
+    Refineable: true
+    Script: |
+      bonus bInt,getrefine();
+      bonus bMatkRate,15;
+
+  - Id: 120156
+    AegisName: Wep_Icarus_Whip
+    Name: Icarus Whip
+    Type: Weapon
+    SubType: Whip
+    Buy: 10
+    Weight: 400
+    Attack: 100
+    Range: 1
+    Slots: 3
+    Jobs:
+      BardDancer: true
+    Gender: Female
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 3
+    Refineable: true
+    Script: |
+      bonus bDex,5;
+      bonus2 bSkillAtk,394,getrefine();
+      bonus2 bSkillAtk,316,getrefine();
+
+  - Id: 120157
+    AegisName: Skewer_
+    Name: Skewer
+    Type: Weapon
+    SubType: Dagger
+    Buy: 20
+    Weight: 1000
+    Attack: 70
+    Range: 1
+    Slots: 3
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 36
+    Refineable: true
+    Script: |
+      bonus bVit,5;
+      bonus bCritical,10;
+      bonus bCritAtkRate,getrefine()*2;
+
+  - Id: 120158
+    AegisName: Wep_Icarus_Dagger_4S
+    Name: Icarus Dagger
+    Type: Weapon
+    SubType: Dagger
+    Buy: 20000
+    Sell: 10000
+    Weight: 400
+    Attack: 100
+    Range: 1
+    Slots: 4
+    Jobs:
+      Assassin: true
+      Rogue: true
+      Ninja: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 1
+    Refineable: true
+    Script: |
+      bonus bAgi,3;
+      bonus bDex,3;
+      bonus bHit,getrefine();
+      if (Class == Job_Mage || Class == Job_Ninja)
+        bonus bMatkRate,getrefine();
+      else if (Class == Job_Assassin)
+        bonus2 bSkillAtk,379,getrefine();
+
+  - Id: 120159
+    AegisName: Wep_Icarus_Staff_4S
+    Name: Icarus Staff
+    Type: Weapon
+    SubType: Staff
+    Buy: 10
+    Weight: 1200
+    Attack: 120
+    Range: 1
+    Slots: 4
+    Jobs:
+      Wizard: true
+      Sage: true
+      Priest: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 60
+    Refineable: true
+    Script: |
+      bonus bInt,getrefine();
+      bonus bMatkRate,15;
+
+  - Id: 120160
+    AegisName: Wep_Icarus_Sword_4S
+    Name: Icarus Sword
+    Type: Weapon
+    SubType: 1hSword
+    Buy: 10
+    Weight: 500
+    Attack: 120
+    Range: 1
+    Slots: 4
+    Jobs:
+      Swordman: true
+      Knight: true
+      Crusader: true
+      Merchant: true
+      Blacksmith: true
+      Alchemist: true
+      Thief: true
+      Assassin: true
+      Rogue: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 2
+    Refineable: true
+    Script: |
+      bonus bStr,5;
+      bonus bHit,10;
+      if (Class == Job_Assassin)
+        bonus bCritAtkRate,getrefine();
+      else if (Class == Job_Crusader)
+        bonus bMaxHPrate,getrefine();
+      else if (Class == Job_Knight)
+        bonus2 bSkillAtk,62,getrefine();
+
+  - Id: 120161
+    AegisName: Wep_Icarus_Shotgun_4S
+    Name: Icarus Shotgun
+    Type: Weapon
+    SubType: Shotgun
+    Buy: 10
+    Weight: 600
+    Attack: 100
+    Range: 9
+    Slots: 4
+    Jobs:
+      Gunslinger: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 60
+    Refineable: true
+    Script: |
+      bonus bDex,5;
+      bonus2 bSkillAtk,519,getrefine();
+      bonus2 bSkillAtk,520,getrefine();
+
+  - Id: 120162
+    AegisName: Wep_Icarus_Revolver_4S
+    Name: Icarus Revolver
+    Type: Weapon
+    SubType: Revolver
+    Buy: 20000
+    Sell: 10000
+    Weight: 400
+    Attack: 120
+    Range: 7
+    Slots: 4
+    Jobs:
+      Gunslinger: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 10
+    Refineable: true
+    Script: |
+      bonus bDex,5;
+      bonus2 bSkillAtk,515,getrefine();
+      bonus2 bSkillAtk,516,getrefine();
+
+  - Id: 120163
+    AegisName: Wep_Icarus_Spear_4S
+    Name: Icarus Spear
+    Type: Weapon
+    SubType: 1hSpear
+    Buy: 20000
+    Sell: 10000
+    Weight: 1000
+    Attack: 100
+    Range: 3
+    Slots: 4
+    Jobs:
+      Knight: true
+      Crusader: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 4
+    Refineable: true
+    Script: |
+      bonus bStr,3;
+      bonus bVit,3;
+      bonus bHit,getrefine();
+      bonus2 bSkillAtk,397,getrefine();
+      bonus2 bSkillAtk,251,getrefine();
+
+  - Id: 120164
+    AegisName: Wep_Icarus_Katar_4S
+    Name: Icarus Katar
+    Type: Weapon
+    SubType: Katar
+    Buy: 20000
+    Sell: 10000
+    Weight: 800
+    Attack: 125
+    Range: 1
+    Slots: 4
+    Jobs:
+      Assassin: true
+    Locations:
+      Right_Hand: true
+      Left_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 18
+    Refineable: true
+    Script: |
+      bonus bAgi,3;
+      bonus bLuk,3;
+      bonus2 bSkillAtk,136,getrefine();
+      bonus2 bSkillAtk,137,getrefine();
+
+  - Id: 120165
+    AegisName: Wep_Icarus_Huuma_4S
+    Name: Icarus Huuma
+    Type: Weapon
+    SubType: Huuma
+    Buy: 20000
+    Sell: 10000
+    Weight: 300
+    Attack: 150
+    Range: 1
+    Slots: 4
+    Jobs:
+      Ninja: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 65
+    Refineable: true
+    Script: |
+      bonus bMatkRate,10;
+      bonus bAtkRate,10;
+      bonus2 bSkillAtk,544,getrefine();
+      bonus2 bSkillAtk,537,getrefine();
+      bonus2 bSkillAtk,540,getrefine();
+      bonus2 bSkillAtk,534,getrefine();
+
+  - Id: 120166
+    AegisName: Wep_Icarus_Bow_4S
+    Name: Icarus Bow
+    Type: Weapon
+    SubType: Bow
+    Buy: 20000
+    Sell: 10000
+    Weight: 500
+    Attack: 100
+    Range: 9
+    Slots: 4
+    Jobs:
+      Archer: true
+      Hunter: true
+      BardDancer: true
+      Rogue: true
+    Locations:
+      Both_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 4
+    Refineable: true
+    Script: |
+      bonus bDex,5;
+      if (Class == Job_Hunter || Class == Job_Sniper || Class == Job_Baby_Hunter)
+        bonus2 bSkillAtk,382,getrefine();
+      else if (Class == Job_Rogue || Class == Job_Stalker || Class == Job_Baby_Rogue) {
+        bonus2 bSkillAtk,46,getrefine();
+        bonus bLongAtkRate,getrefine();
+      }
+
+  - Id: 120167
+    AegisName: Wep_Icarus_Book_4S
+    Name: Icarus Book
+    Type: Weapon
+    SubType: Book
+    Buy: 20000
+    Sell: 10000
+    Weight: 600
+    Attack: 100
+    Range: 1
+    Slots: 4
+    Jobs:
+      Priest: true
+      Sage: true
+      StarGladiator: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 14
+    Refineable: true
+    Script: |
+      bonus bStr,3;
+      bonus bInt,3;
+      if (Class == Job_Sage) {
+        bonus bMatkRate,10;
+        bonus2 bSkillAtk,14,getrefine();
+        bonus2 bSkillAtk,19,getrefine();
+        bonus2 bSkillAtk,20,getrefine();
+      }
+      else if (Class == Job_Priest) {
+        bonus bMatkRate,10;
+        bonus2 bSkillAtk,156,getrefine();
+      }
+      else if (Class == Job_Star_Gladiator)
+        bonus bAtkRate,getrefine();
+
+  - Id: 120168
+    AegisName: Wep_Icarus_Axe_4S
+    Name: Icarus Axe
+    Type: Weapon
+    SubType: 1hAxe
+    Buy: 20000
+    Sell: 10000
+    Weight: 800
+    Attack: 150
+    Range: 1
+    Slots: 4
+    Jobs:
+      Blacksmith: true
+      Alchemist: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 3
+    Refineable: true
+    Script: |
+      bonus bStr,3;
+      bonus bInt,3;
+      if (Class == Job_Creator)
+        bonus2 bSkillAtk,490,getrefine();
+      else if (Class == Job_Whitesmith) {
+        bonus2 bSkillAtk,485,getrefine();
+        bonus2 bSkillAtk,42,getrefine();
+      }
+
+  - Id: 120169
+    AegisName: Banryu_4S
+    Name: Banryu
+    Type: Weapon
+    SubType: 1hSword
+    Buy: 24000
+    Weight: 900
+    Attack: 100
+    Range: 1
+    Slots: 4
     Jobs:
       Crusader: true
       Knight: true
@@ -4080,6 +4921,376 @@ Body:
     WeaponLevel: 3
     EquipLevelMin: 14
     Refineable: true
+    Script: |
+      .@refine = getrefine();
+      bonus2 bSkillAtk,62,.@refine;
+      bonus2 bSkillAtk,368,.@refine*2;
+      if (.@refine >= 5)
+        bonus bStr,.@refine;
+      if (.@refine >= 7)
+        bonus2 bAddRace,RC_DemiHuman,.@refine*2;
+
+  - Id: 120170
+    AegisName: Wep_Icarus_Whip_4S
+    Name: Icarus Whip
+    Type: Weapon
+    SubType: Whip
+    Buy: 10
+    Weight: 400
+    Attack: 100
+    Range: 1
+    Slots: 4
+    Jobs:
+      BardDancer: true
+    Gender: Female
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 3
+    Refineable: true
+    Script: |
+      bonus bDex,5;
+      bonus2 bSkillAtk,DC_ARROWVULCAN,getrefine();
+      bonus2 bSkillAtk,BA_MUSICALSTRIKE,getrefine();
+
+  - Id: 120171
+    AegisName: Fist of Fury
+    Name: Fist of Fury
+    Type: Weapon
+    SubType: Mace
+    Buy: 20
+    Weight: 6000
+    Attack: 250
+    Range: 1
+    Slots: 3
+    Jobs:
+      Alchemist: true
+      Blacksmith: true
+      Crusader: true
+      Knight: true
+      Merchant: true
+      Swordman: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 95
+    Script: |
+      bonus bAtkEle,Ele_Wind;
+      bonus bDex,40;
+      bonus bStr,15;
+      bonus bAspdRate,10;
+      bonus bUnbreakableWeapon;
+
+  - Id: 120172
+    AegisName: Fist of Fury_4S
+    Name: Fist of Fury
+    Type: Weapon
+    SubType: Mace
+    Buy: 20
+    Weight: 6000
+    Attack: 250
+    Range: 1
+    Slots: 4
+    Jobs:
+      Alchemist: true
+      Blacksmith: true
+      Crusader: true
+      Knight: true
+      Merchant: true
+      Swordman: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 95
+    Script: |
+      bonus bAtkEle,Ele_Wind;
+      bonus bDex,40;
+      bonus bStr,15;
+      bonus bAspdRate,10;
+      bonus bUnbreakableWeapon;
+
+  - Id: 120173
+    AegisName: Skewer_4S
+    Name: Skewer
+    Type: Weapon
+    SubType: Dagger
+    Buy: 20
+    Weight: 1000
+    Attack: 70
+    Range: 1
+    Slots: 3
+    Jobs:
+      Alchemist: true
+      Archer: true
+      Assassin: true
+      BardDancer: true
+      Blacksmith: true
+      Crusader: true
+      Hunter: true
+      Knight: true
+      Mage: true
+      Merchant: true
+      Ninja: true
+      Rogue: true
+      Sage: true
+      Swordman: true
+      Thief: true
+      Wizard: true
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 36
+    Refineable: true
+    Script: |
+      bonus bVit,5;
+      bonus bCritical,10;
+      bonus bCritAtkRate,getrefine()*2;   
+
+  - Id: 120174
+    AegisName: Wep_Icarus_Violin_4S
+    Name: Icarus Violin
+    Type: Weapon
+    SubType: Musical
+    Buy: 20000
+    Sell: 10000
+    Weight: 700
+    Attack: 100
+    Range: 1
+    Slots: 4  
+    Jobs: 
+      BardDancer: true
+    Gender: Male
+    Locations:
+      Right_Hand: true
+    WeaponLevel: 4
+    EquipLevelMin: 2
+    Refineable: true
+    Script: |
+      bonus bDex,5;
+      bonus2 bSkillAtk,394,getrefine();
+      bonus2 bSkillAtk,316,getrefine();
+
+  - Id: 5137
+    AegisName: Alice_Doll
+    Name: Alice Doll
+    Type: Armor
+    Buy: 20
+    Weight: 50
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 30
+    View: 208
+    Script: |
+      bonus bStr,getrefine()/2;
+      bonus2 bAddRace,RC_DemiHuman,10;
+      bonus2 bSubEle,Ele_Fire,-15;
+
+  - Id: 5138
+    AegisName: Magic_Eyes
+    Name: Magic Eyes
+    Type: Armor
+    Buy: 20
+    Weight: 3
+    Slots: 1
+    Defense: 1
+    Jobs:
+      Mage: true
+      SoulLinker: true
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 30
+    Refineable: true
+    View: 209
+    Script: |
+      bonus bMdef,5;
+      bonus bInt,getrefine()/2;
+      bonus bCastrate,-10;
+      bonus bUseSPrate,20;
+      bonus bMatk,10;
+
+  - Id: 5102
+    AegisName: Round_Eyes
+    Name: Blank Eyes
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Slots: 1    
+    Defense: 0
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 185
+    Script: |
+      bonus bAgi,3;
+      bonus bLuk,3;
+      bonus bCritAtkRate,3;
+
+  - Id: 2357
+    AegisName: Valkyrie_Armor
+    Name: Valkyrian Armor
+    Type: Armor
+    Weight: 2800
+    Defense: 6
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Classes:
+      Upper: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 75
+    Refineable: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bMaxHPrate,getrefine();
+      bonus2 bResEff,Eff_Freeze,10000;
+      bonus bUnbreakableArmor;
+      if (BaseClass == Job_Mage || BaseClass == Job_Archer || BaseClass == Job_Acolyte || BaseClass == Job_Ninja)
+         bonus2 bResEff,Eff_Silence,5000;
+      else if (BaseClass == Job_Swordman || BaseClass == Job_Merchant || BaseClass == Job_Thief || BaseClass == Job_Taekwon || BaseClass == Job_Gunslinger)
+         bonus2 bResEff,Eff_Stun,5000;
+		 
+  - Id: 2421
+    AegisName: Valkyrie_Shoes
+    Name: Valkyrian Shoes
+    Type: Armor
+    Weight: 200
+    Defense: 4
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Classes:
+      Upper: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 75
+    Refineable: true
+    Script: |
+      bonus bUnbreakableShoes;
+      bonus bSpeedRate,10;
+      bonus2 bResEff,Eff_Sleep,10000;
+      bonus bLongAtkDef,getrefine();
+      if (BaseClass == Job_Taekwon || BaseClass == Job_Mage || BaseClass == Job_Archer || BaseClass == Job_Acolyte || BaseClass == Job_Ninja)
+         bonus bMaxHPrate,(BaseLevel/10);
+      else if (BaseClass == Job_Swordman || BaseClass == Job_Merchant || BaseClass == Job_Thief || BaseClass == Job_Gunslinger)
+         bonus bMaxSPrate,(JobLevel/10);
+
+  - Id: 2524
+    AegisName: Valkyrie_Manteau
+    Name: Valkyrian Manteau
+    Type: Armor
+    Weight: 500
+    Defense: 3
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Classes:
+      Upper: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 75
+    Refineable: true
+    Script: |
+      bonus bUnbreakableGarment;
+      if (BaseClass == Job_Taekwon || BaseClass == Job_Mage || BaseClass == Job_Archer || BaseClass == Job_Thief || BaseClass == Job_Ninja)
+         bonus bFlee2,5+(getequiprefinerycnt(EQI_GARMENT)*3);
+      else if (BaseClass == Job_Swordman || BaseClass == Job_Merchant || BaseClass == Job_Acolyte || BaseClass == Job_Gunslinger)
+         bonus bShortWeaponDamageReturn,5+(getequiprefinerycnt(EQI_GARMENT)*3); 
+		 
+		 
+  - Id: 2115
+    AegisName: Valkyrja's_Shield
+    Name: Valkyrja's Shield
+    Type: Armor
+    Buy: 30000
+    Weight: 500
+    Defense: 3
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Locations:
+      Left_Hand: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    View: 4
+    Script: |
+      bonus2 bSubEle,Ele_Water,20;
+      bonus2 bSubEle,Ele_Fire,20;
+      bonus2 bSubEle,Ele_Dark,20;
+      bonus2 bSubEle,Ele_Undead,20;
+      bonus bMdef,5;
+      bonus bShortWeaponDamageReturn,getrefine();
+      bonus2 bResEff,Eff_Stone,10000;
+      bonus bUnbreakableShield;		 
+	  
+  - Id: 2410
+    AegisName: Sleipnir
+    Name: Sleipnir
+    Type: Armor
+    Buy: 20
+    Weight: 3500
+    Defense: 5
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 94
+    Script: |
+      bonus bMdef,10;
+      bonus bInt,10;
+      bonus bMaxHPrate,25;
+      bonus bMaxSPrate,25;
+      bonus bSPrecovRate,15;
+      bonus bSpeedRate,45; 
+
+
+  - Id: 12293
+    AegisName: Dried_Yggdrasilberry
+    Name: Dried Yggdrasilberry
+    Type: Healing
+    Buy: 5000
+    Weight: 300
+    Flags:
+      BuyingStore: true
+    Delay:
+      Duration: 1000
+      Status: Reuse_Limit_F
+    Script: |
+      percentheal 100,100;
+
+  - Id: 120176
+    AegisName: Dried_Yggdrasilseed
+    Name: Dried Yggdrasil Seed
+    Type: Healing
+    Buy: 5000
+    Weight: 300
+    Flags:
+      BuyingStore: true
+    Delay:
+      Duration: 700
+      Status: Reuse_Limit_G
+    Script: |
+      percentheal 50,50;
+
+
 #Body:
 # THQ Quest Items
 #=============================================================

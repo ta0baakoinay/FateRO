@@ -1104,7 +1104,7 @@ Body:
     Flags:
       BuyingStore: true
     Delay:
-      Duration: 5000
+      Duration: 2000
       Status: Reuse_Limit_F
     Script: |
       percentheal 100,100;
@@ -1117,7 +1117,7 @@ Body:
     Flags:
       BuyingStore: true
     Delay:
-      Duration: 3000
+      Duration: 1500
       Status: Reuse_Limit_G
     Script: |
       percentheal 50,50;
@@ -5818,16 +5818,16 @@ Body:
       BuyingStore: true
     Script: |
       percentheal 20,0;
-  - Id: 12293
-    AegisName: Dried_Yggdrasilberry
-    Name: Dried Yggdrasilberry
-    Type: Healing
-    Buy: 500
-    Weight: 200
-    Flags:
-      BuyingStore: true
-    Script: |
-      percentheal 0,20;
+#  - Id: 12293
+#    AegisName: Dried_Yggdrasilberry
+#    Name: Dried Yggdrasilberry
+#    Type: Healing
+#    Buy: 500
+#    Weight: 200
+#    Flags:
+#      BuyingStore: true
+#    Script: |
+#      percentheal 0,20;
   - Id: 12294
     AegisName: PC_Bang_Coin_Box1
     Name: PC-Room Coin Box
