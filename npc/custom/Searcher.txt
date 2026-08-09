@@ -1,52 +1,3 @@
-//============================================================
-// NPC: Item/Card Search by Category + Name/ID (SQL only)
-// 2022+ Client Compatible
-//
-// FIX NOTES (this version):
-// 1) Original overlap bug: setdialogsize() called after mes lines
-//    already printed. Fixed by always sizing FIRST, then printing.
-//
-// 2) Lingering box bug: fixed by close2 before every next; that
-//    opens a new box.
-//
-// 3) Page 1 of the owner list used to be crammed onto the SAME screen
-//    as the category-total info (no next; in between), causing
-//    client-side overflow scrolling that looked like a "small box".
-//    FIX: category info and the owner list are now two separate
-//    screens (next; between them, no close2 - see note 5), and every
-//    owner page gets its own fresh setdialogsize() call.
-//
-// 4) setdialogalign()/setdialogsize() must be called AFTER at least
-//    one mes line has already opened the dialog box, not before.
-//    Calling them before any mes exists gets silently dropped by the
-//    client and the box falls back to default size. Every screen now
-//    prints its first line, THEN aligns/resizes, THEN prints the rest.
-//
-// 5) close2 does NOT silently dismiss the box - it adds a "Close"
-//    button the player must click before script execution continues.
-//    Using it as a "silent" transition between screens was wrong and
-//    forced an extra click on every screen change. Removed everywhere
-//    except genuine terminal points (errors, empty input) where a
-//    single close click is expected and the script ends right after.
-//
-// 6) Title/name line ran into the count line right below it (e.g.
-//    item name directly touching "Server Count:" / category name
-//    directly touching "Total Count:") because the blank spacer only
-//    existed further down, right before the dashed separator - there
-//    was nothing separating the very first preamble line from the
-//    second one. FIX: a blank mes " "; now follows the first preamble
-//    line everywhere it's printed standalone (before the rest of the
-//    preamble/count lines), and every affected CalcDialogHeight call
-//    was bumped by 1 line to keep the box sized correctly.
-//
-// NOTE ON select() VS setdialogsize(): select() always renders as
-// the client's own separate, auto-sized native popup - setdialogsize
-// has no effect on it and there's no script command that changes
-// that. This is a hard client limitation, not a bug.
-//============================================================
-
-// ----------------- Helper functions (must be above NPC) -----------------
-
 function	script	CalcDialogHeight	{
 	.@lines = getarg(0);
 	.@DLG_BASE = 100;	// title bar + button row + padding
@@ -211,6 +162,11 @@ function	script	GetCardOwnersSQL	{
 // Optional preamble (e.g. "Total Count: X") is shown ONLY on page 1,
 // merged onto the same screen as the first page of owner rows - set
 // $@dop_preamble$[] and pass the count as arg 2 before calling.
+//
+// FIX: setdialogalign/setdialogsize are now called BEFORE any mes
+// lines are written for a given screen. The client needs the box
+// dimensions declared up front - calling mes first then resizing
+// mid-buffer is what was causing the odd/undersized dialog boxes.
 function	script	DisplayOwnersPaginated	{
 	.@owner_count = getarg(0);
 	.@page_size = getarg(1, 10);
@@ -232,10 +188,11 @@ function	script	DisplayOwnersPaginated	{
 		if (.@page == 0)
 			.@page_lines += .@preamble_count + 1;
 
+		setdialogalign(DIALOG_ALIGN_CENTER);
+		setdialogsize(500, callfunc("CalcDialogHeight", .@page_lines));
+
 		if (.@page == 0 && .@preamble_count > 0) {
 			mes $@dop_preamble$[0];
-			setdialogalign(DIALOG_ALIGN_CENTER);
-			setdialogsize(500, callfunc("CalcDialogHeight", .@page_lines));
 			mes " ";
 			for(.@k = 1; .@k < .@preamble_count; .@k++)
 				mes $@dop_preamble$[.@k];
@@ -243,13 +200,11 @@ function	script	DisplayOwnersPaginated	{
 			mes "^888888------------------------------^000000";
 		} else {
 			mes "^0080FFOwners^000000 ( Page " + (.@page + 1) + " / " + .@total_pages + " )";
-			setdialogalign(DIALOG_ALIGN_CENTER);
-			setdialogsize(500, callfunc("CalcDialogHeight", .@page_lines));
 		}
 		mes " ";
 
 		for(.@i = .@start; .@i < .@end; .@i++) {
-			mes "[^008000" + $@card_amounts[.@i] + "^000000] " + itemlink($@card_itemids[.@i]) + " - ^0000FF" + $@card_owners$[.@i] + "^000000 ^888888(" + $@card_locations$[.@i] + ")^000000";
+			mes mesitemicon($@card_itemids[.@i]) + " [^008000" + $@card_amounts[.@i] + "^000000] " + itemlink($@card_itemids[.@i]) + " - ^0000FF" + $@card_owners$[.@i] + "^000000 ^888888(" + $@card_locations$[.@i] + ")^000000";
 		}
 
 		.@nav$ = "";
@@ -291,7 +246,7 @@ function	script	ShowItemResultSQL	{
 		.@owner_index = callfunc("GetCardOwnersSQL", .@item_id, 0);
 
 	.@pi = 0;
-	$@dop_preamble$[.@pi] = itemlink(.@item_id); .@pi++;
+	$@dop_preamble$[.@pi] = mesitemicon(.@item_id) + " " + itemlink(.@item_id); .@pi++;
 	if (.@count > 0) {
 		$@dop_preamble$[.@pi] = "^008000Server Count: " + .@count + "^000000"; .@pi++;
 	} else {
@@ -301,9 +256,9 @@ function	script	ShowItemResultSQL	{
 	if (.@owner_index > 0) {
 		callfunc("DisplayOwnersPaginated", .@owner_index, 10, .@pi);
 	} else {
-		mes $@dop_preamble$[0];
 		setdialogalign(DIALOG_ALIGN_CENTER);
 		setdialogsize(500, callfunc("CalcDialogHeight", .@pi + 1));
+		mes $@dop_preamble$[0];
 		mes " ";
 		for(.@j = 1; .@j < .@pi; .@j++)
 			mes $@dop_preamble$[.@j];
@@ -314,7 +269,7 @@ function	script	ShowItemResultSQL	{
 }
 
 // ----------------- NPC -----------------
-prontera,150,169,4	script	Card Checker	412,{
+prontera,150,169,4	script	Transparency Checker	412,{
 	while(1) {
 		.@menu$ = "";
 		for(.@i = 0; .@i < .cat_count; .@i++)
@@ -395,9 +350,9 @@ S_SearchCategory:
 	if (.@owner_index > 0) {
 		callfunc("DisplayOwnersPaginated", .@owner_index, 10, .@pi);
 	} else {
-		mes $@dop_preamble$[0];
 		setdialogalign(DIALOG_ALIGN_CENTER);
 		setdialogsize(500, callfunc("CalcDialogHeight", .@pi + 1));
+		mes $@dop_preamble$[0];
 		mes " ";
 		for(.@j = 1; .@j < .@pi; .@j++)
 			mes $@dop_preamble$[.@j];
@@ -407,9 +362,9 @@ S_SearchCategory:
 	return;
 
 S_SearchByNameOrId:
-	mes " ";
 	setdialogalign(DIALOG_ALIGN_CENTER);
 	setdialogsize(500, callfunc("CalcDialogHeight", 2));
+	mes " ";
 	mes "Enter an Item ID, or part of an item name:";
 	next;
 	input .@search$;
@@ -433,9 +388,9 @@ S_SearchByNameOrId:
 		.@item_id = atoi(.@search$);
 		.@item_name$ = getitemname(.@item_id);
 		if (.@item_name$ == "null" || .@item_name$ == "") {
-			mes " ";
 			setdialogalign(DIALOG_ALIGN_CENTER);
 			setdialogsize(500, callfunc("CalcDialogHeight", 2));
+			mes " ";
 			mes "^FF0000Error: Item ID " + .@item_id + " does not exist!^000000";
 			next;
 			close2;
@@ -446,9 +401,9 @@ S_SearchByNameOrId:
 	}
 
 	if (!.name_search_ready) {
-		mes " ";
 		setdialogalign(DIALOG_ALIGN_CENTER);
 		setdialogsize(500, callfunc("CalcDialogHeight", 3));
+		mes " ";
 		mes "^FF0000Name search is currently unavailable on this server (no item database table found).^000000";
 		mes "Please search using the numeric Item ID instead.";
 		next;
@@ -456,13 +411,24 @@ S_SearchByNameOrId:
 		return;
 	}
 
+	// FIX: partial-name search now behaves like @ii / @iteminfo -
+	// an exact name match (if any) is bubbled to the top, then the
+	// remaining results are sorted by closeness (shortest name
+	// first, since a shorter name containing the search text is a
+	// tighter match than a long one), capped at the 5 closest hits.
 	.@safe$ = escape_sql(.@search$);
-	.@match_count = query_sql("SELECT id, name_english FROM "+.item_table$+" WHERE name_english LIKE '%"+.@safe$+"%' ORDER BY LENGTH(name_english) ASC LIMIT 10", .@match_ids, .@match_names$);
+	.@match_count = query_sql(
+		"SELECT id, name_english FROM "+.item_table$+" "+
+		"WHERE name_english LIKE '%"+.@safe$+"%' "+
+		"ORDER BY (LOWER(name_english) = LOWER('"+.@safe$+"')) DESC, LENGTH(name_english) ASC "+
+		"LIMIT 5",
+		.@match_ids, .@match_names$
+	);
 
 	if (.@match_count == 0) {
-		mes " ";
 		setdialogalign(DIALOG_ALIGN_CENTER);
 		setdialogsize(500, callfunc("CalcDialogHeight", 2));
+		mes " ";
 		mes "^FF0000No items found matching \""+.@search$+"\".^000000";
 		next;
 		close2;
@@ -470,12 +436,12 @@ S_SearchByNameOrId:
 	}
 
 	.@lines = 1 + 1 + .@match_count + 1 + 1; // header + blank + rows + blank + note
-	callfunc("PrintHeader", "Found " + .@match_count + " matching item(s):");
 	setdialogalign(DIALOG_ALIGN_CENTER);
 	setdialogsize(500, callfunc("CalcDialogHeight", .@lines));
+	callfunc("PrintHeader", "Found " + .@match_count + " matching item(s):");
 	mes " ";
 	for(.@i = 0; .@i < .@match_count; .@i++) {
-		mes itemlink(.@match_ids[.@i]) + " ^888888(ID: " + .@match_ids[.@i] + ")^000000";
+		mes mesitemicon(.@match_ids[.@i]) + " " + itemlink(.@match_ids[.@i]) + " ^888888(ID: " + .@match_ids[.@i] + ")^000000";
 	}
 	mes " ";
 	mes "^888888Select the item on the next screen.^000000";
@@ -496,7 +462,7 @@ S_SearchByNameOrId:
 
 OnInit:
 	setarray .cat_name$[0], "Credit", "Proof of Donation", "Rare MVP Cards", "Gold";
-	setarray .cat_ids$[0], "909", "7179", "4430,4408,4145", "969";
+	setarray .cat_ids$[0], "30035", "7179", "4430,4408,4145", "969";
 	.cat_count = 4;
 
 	.name_search_ready = false;
@@ -515,7 +481,7 @@ OnInit:
 
 OnTimer500:
 	specialeffect EF_LJOSALFAR;
-	showscript "Card Checker";
+	showscript "Transparency Checker";
 	initnpctimer;
 	end;
 }
