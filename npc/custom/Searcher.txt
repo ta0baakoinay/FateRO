@@ -73,7 +73,16 @@ function	script	GetCardOwnersSQL	{
 		.@index++;
 	}
 
-	.@size = query_sql("SELECT c.name, s.amount FROM storage s INNER JOIN `char` c ON s.account_id = c.account_id WHERE s.nameid="+.@item_id, .@names$, .@amounts);
+	// FIX: `storage` has exactly ONE row per ACCOUNT (it's shared across
+	// all characters on that account), not one per character. The old
+	// query joined it to every character on the account
+	// (s.account_id = c.account_id with no further restriction), so an
+	// account with N characters produced N duplicate rows, each showing
+	// the FULL storage amount under a different character's name.
+	// Fixed by joining to a single representative character per account
+	// (the account's lowest char_id, so this still works even if that
+	// account's char slot 0 was deleted).
+	.@size = query_sql("SELECT c.name, s.amount FROM storage s INNER JOIN (SELECT account_id, MIN(char_id) AS char_id FROM `char` GROUP BY account_id) mc ON s.account_id = mc.account_id INNER JOIN `char` c ON c.char_id = mc.char_id WHERE s.nameid="+.@item_id, .@names$, .@amounts);
 	for(.@i = 0; .@i < .@size; .@i++) {
 		$@card_owners$[.@index] = .@names$[.@i];
 		$@card_amounts[.@index] = .@amounts[.@i];
@@ -124,7 +133,8 @@ function	script	GetCardOwnersSQL	{
 			.@index++;
 		}
 
-		.@size = query_sql("SELECT c.name, (s.card0="+.@item_id+")+(s.card1="+.@item_id+")+(s.card2="+.@item_id+")+(s.card3="+.@item_id+") as total FROM storage s INNER JOIN `char` c ON s.account_id = c.account_id WHERE s.card0="+.@item_id+" OR s.card1="+.@item_id+" OR s.card2="+.@item_id+" OR s.card3="+.@item_id, .@names$, .@amounts);
+		// Same account-vs-character fix as the plain storage query above.
+		.@size = query_sql("SELECT c.name, (s.card0="+.@item_id+")+(s.card1="+.@item_id+")+(s.card2="+.@item_id+")+(s.card3="+.@item_id+") as total FROM storage s INNER JOIN (SELECT account_id, MIN(char_id) AS char_id FROM `char` GROUP BY account_id) mc ON s.account_id = mc.account_id INNER JOIN `char` c ON c.char_id = mc.char_id WHERE s.card0="+.@item_id+" OR s.card1="+.@item_id+" OR s.card2="+.@item_id+" OR s.card3="+.@item_id, .@names$, .@amounts);
 		for(.@i = 0; .@i < .@size; .@i++) {
 			$@card_owners$[.@index] = .@names$[.@i];
 			$@card_amounts[.@index] = .@amounts[.@i];

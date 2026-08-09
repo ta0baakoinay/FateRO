@@ -42,7 +42,7 @@
 //=   (See the two `announce` lines in L_BatchMain if you'd rather
 //=   go back to one broadcast per individual attempt.)
 //=============================================================
-prontera,155,181,4	script	Socket Specialist#4SForce	123,{
+prontera,155,181,4	script	Socket Specialist#4SForce	459,{
 
 	.@n = getarraysize(.SourceID);
 

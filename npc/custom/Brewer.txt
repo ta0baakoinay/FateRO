@@ -1,0 +1,346 @@
+//===== rAthena Script Created by The Legendary Betlog =====
+
+// ---------------------------------------------------------
+// REQUIRED SQL TABLE (run this manually against your
+// char-server database before using the rankings feature):
+// ---------------------------------------------------------
+/*
+CREATE TABLE IF NOT EXISTS `brewer_rankings` (
+  `char_id`        INT(11) UNSIGNED NOT NULL,
+  `char_name`      VARCHAR(30) NOT NULL,
+  `brewer_exp`     INT(11) UNSIGNED NOT NULL DEFAULT 0,
+  `brewer_level`   TINYINT(3) UNSIGNED NOT NULL DEFAULT 0,
+  `total_success`  INT(11) UNSIGNED NOT NULL DEFAULT 0,
+  `total_fail`     INT(11) UNSIGNED NOT NULL DEFAULT 0,
+  `total_brews`    INT(11) UNSIGNED NOT NULL DEFAULT 0,
+  `last_brew`      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`char_id`),
+  KEY `idx_success` (`total_success`),
+  KEY `idx_exp` (`brewer_exp`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+*/
+
+// ---------------------------------------------------------
+// Helper: derive Brewer Level (0-10) from total Brewer EXP
+// ---------------------------------------------------------
+function	script	F_BrewerLevel	{
+	.@exp = getarg(0);
+	.@lvl = .@exp / 10000;
+	if (.@lvl > 10)
+		.@lvl = 10;
+	if (.@lvl < 0)
+		.@lvl = 0;
+	return .@lvl;
+}
+
+// ---------------------------------------------------------
+// Helper: success rate (%) for the given Brewer Level
+// Levels 0-9 use the table; Level 10 (max) keeps the last
+// tier's rate (47%) since there is no further level to climb.
+// ---------------------------------------------------------
+function	script	F_BrewerRate	{
+	.@lvl = getarg(0);
+	setarray .@rate[0], 20,23,26,29,32,35,38,41,44,47;
+	if (.@lvl > 9)
+		.@lvl = 9;
+	if (.@lvl < 0)
+		.@lvl = 0;
+	return .@rate[.@lvl];
+}
+
+// ---------------------------------------------------------
+// Helper: reset/resize the dialog box before drawing a new
+// screen. Confirmed working pattern: blank mes, then clear
+// (wipes buffer without waiting on the player), then resize.
+// ---------------------------------------------------------
+function	script	F_DialogReset	{
+	mes " ";
+	clear;
+	setdialogsize(400, 250);
+	return;
+}
+
+// ---------------------------------------------------------
+// Brewer NPC
+// ---------------------------------------------------------
+prontera,151,181,4	script	Brewing Specialist	749,{
+
+OnInteract:
+	.@lvl = F_BrewerLevel(BrewerExp);
+	.@rate = F_BrewerRate(.@lvl);
+
+	callfunc "F_DialogReset";
+	mes "^0000FF[ Brewer ]^000000";
+	mes "^888888------------------------------^000000";
+	mes "Welcome back. Let's see what we can brew today.";
+	mes "^888888------------------------------^000000";
+	mes "Brewer Level  : ^0000FF"+.@lvl+" / 10^000000";
+	mes "Brewer EXP    : ^0000FF"+BrewerExp+" / 100000^000000";
+	if (.@lvl < 10)
+		mes "Success Rate  : ^008000"+.@rate+"%^000000";
+	else
+		mes "Success Rate  : ^008000"+.@rate+"%^000000 ^FF0000(MAX LEVEL)^000000";
+	mes "^888888------------------------------^000000";
+	mes " ";
+	mes mesitemicon(12293)+" ^0000FF"+getitemname(12293)+"^000000";
+	mes mesitemicon(120176)+" ^0000FF"+getitemname(120176)+"^000000";
+	next;
+
+	switch(select(
+		"Brew "+getitemname(12293),
+		"Brew "+getitemname(120176),
+		"View Brewer Level Table",
+		"View Top 50 Rankings",
+		"Cancel"
+	)) {
+	case 1:
+		callsub L_Brew, 12293, 100000, 970,1, 504,1, 505,1, 607,2, "Dried Yggdrasil Berry";
+		end;
+	case 2:
+		callsub L_Brew, 120176, 10000, 970,1, 504,1, 505,1, 608,2, "Dried Yggdrasil Leaf";
+		end;
+	case 3:
+		callsub L_ShowTable;
+		end;
+	case 4:
+		callsub L_ShowRankings;
+		end;
+	default:
+		callfunc "F_DialogReset";
+		mes "^0000FF[ Brewer ]^000000";
+		mes "Come back anytime.";
+		close;
+	}
+	end;
+
+// ===========================================================
+// L_Brew - generic brewing routine, reused by every recipe
+// args: resultItemID, zenyCost,
+//       matID1,matQty1, matID2,matQty2, matID3,matQty3, matID4,matQty4,
+//       recipeName$
+// ===========================================================
+L_Brew:
+	.@rid    = getarg(0);
+	.@cost   = getarg(1);
+	.@i1 = getarg(2);  .@c1 = getarg(3);
+	.@i2 = getarg(4);  .@c2 = getarg(5);
+	.@i3 = getarg(6);  .@c3 = getarg(7);
+	.@i4 = getarg(8);  .@c4 = getarg(9);
+	.@rname$ = getarg(10);
+
+	callfunc "F_DialogReset";
+	mes "^0000FF[ Brewer ]^000000";
+	mes "^888888------------------------------^000000";
+	mes "Recipe: ^0000FF"+.@rname$+"^000000";
+	mes "^888888------------------------------^000000";
+	mes "Result: "+mesitemicon(.@rid)+" ^0000FF"+getitemname(.@rid)+"^000000";
+	mes " ";
+	mes "Cost per brew:";
+	mes "- ^008000"+.@cost+"z^000000  (You have "+Zeny+"z)";
+	mes "- "+mesitemicon(.@i1)+" "+getitemname(.@i1)+" x"+.@c1+"  (You have "+countitem(.@i1)+")";
+	mes "- "+mesitemicon(.@i2)+" "+getitemname(.@i2)+" x"+.@c2+"  (You have "+countitem(.@i2)+")";
+	mes "- "+mesitemicon(.@i3)+" "+getitemname(.@i3)+" x"+.@c3+"  (You have "+countitem(.@i3)+")";
+	mes "- "+mesitemicon(.@i4)+" "+getitemname(.@i4)+" x"+.@c4+"  (You have "+countitem(.@i4)+")";
+	mes "^888888------------------------------^000000";
+	next;
+
+	// --- figure out the maximum number of brews affordable ---
+	.@max = (.@cost > 0) ? (Zeny / .@cost) : 9999;
+	.@t = countitem(.@i1) / .@c1; if (.@t < .@max) .@max = .@t;
+	.@t = countitem(.@i2) / .@c2; if (.@t < .@max) .@max = .@t;
+	.@t = countitem(.@i3) / .@c3; if (.@t < .@max) .@max = .@t;
+	.@t = countitem(.@i4) / .@c4; if (.@t < .@max) .@max = .@t;
+	if (.@max > 999)
+		.@max = 999; // sane cap so a single click can't loop forever
+	if (.@max < 0)
+		.@max = 0;
+
+	if (.@max <= 0) {
+		callfunc "F_DialogReset";
+		mes "^0000FF[ Brewer ]^000000";
+		mes "You don't have enough materials or Zeny to brew this even once.";
+		close;
+	}
+
+	callfunc "F_DialogReset";
+	mes "^0000FF[ Brewer ]^000000";
+	mes "You can brew up to ^FF0000"+.@max+"^000000 at once with what you're carrying.";
+	next;
+
+	switch(select(
+		"Brew x1",
+		"Enter Custom Quantity",
+		"Brew Maximum ("+.@max+")",
+		"Cancel"
+	)) {
+	case 1:
+		.@qty = 1;
+		break;
+	case 2:
+		callfunc "F_DialogReset";
+		mes "^0000FF[ Brewer ]^000000";
+		mes "How many would you like to brew? (1 - "+.@max+")";
+		next;
+		input .@qty, 1, .@max;
+		break;
+	case 3:
+		.@qty = .@max;
+		break;
+	default:
+		callfunc "F_DialogReset";
+		mes "^0000FF[ Brewer ]^000000";
+		mes "Come back anytime.";
+		close;
+	}
+
+	if (.@qty <= 0) {
+		callfunc "F_DialogReset";
+		mes "^0000FF[ Brewer ]^000000";
+		mes "Invalid quantity.";
+		close;
+	}
+	if (.@qty > .@max)
+		.@qty = .@max;
+
+	.@lvlbefore = F_BrewerLevel(BrewerExp);
+	.@success = 0;
+	.@fail = 0;
+
+	// Build the rate lookup ONCE outside the loop. Calling the
+	// F_BrewerRate()/F_BrewerLevel() functions (each a separate
+	// callfunc, and F_BrewerRate rebuilding a 10-slot array every
+	// time) on every one of up to 999 iterations is what tripped
+	// the "infinity loop" watchdog — too many script instructions
+	// without yielding. Doing the lookup inline below fixes it.
+	setarray .@ratetbl[0], 20,23,26,29,32,35,38,41,44,47;
+
+	for (.@n = 0; .@n < .@qty; .@n++) {
+		// re-check every attempt: EXP/level can change mid-batch,
+		// and this keeps the loop safe if something else touches
+		// the player's Zeny/inventory mid-script.
+		if (Zeny < .@cost || countitem(.@i1) < .@c1 || countitem(.@i2) < .@c2 || countitem(.@i3) < .@c3 || countitem(.@i4) < .@c4)
+			break;
+
+		Zeny -= .@cost;
+		delitem .@i1, .@c1;
+		delitem .@i2, .@c2;
+		delitem .@i3, .@c3;
+		delitem .@i4, .@c4;
+
+		.@lvl = BrewerExp / 10000;
+		if (.@lvl > 9)
+			.@lvl = 9;
+		.@rate = .@ratetbl[.@lvl];
+
+		if (rand(1,100) <= .@rate) {
+			getitem .@rid, 1;
+			BrewerExp += 3;
+			.@success++;
+		} else {
+			BrewerExp += 1;
+			.@fail++;
+		}
+		if (BrewerExp > 100000)
+			BrewerExp = 100000;
+	}
+
+	.@lvlafter = F_BrewerLevel(BrewerExp);
+
+	// Broadcast the result server-wide (only if at least one
+	// brew attempt actually happened).
+	if (.@success + .@fail > 0) {
+		announce strcharinfo(0)+" brewed "+getitemname(.@rid)+" (Success: "+.@success+" | Failed: "+.@fail+")", bc_all, 0xFFCC00;
+
+		// -----------------------------------------------------
+		// Persist / update the player's ranking row.
+		// char_name is refreshed every write in case of renames.
+		// -----------------------------------------------------
+		query_sql(
+			"INSERT INTO `brewer_rankings` "+
+			"(`char_id`,`char_name`,`brewer_exp`,`brewer_level`,`total_success`,`total_fail`,`total_brews`,`last_brew`) "+
+			"VALUES ("+getcharid(0)+", '"+escape_sql(strcharinfo(0))+"', "+BrewerExp+", "+.@lvlafter+", "+.@success+", "+.@fail+", "+(.@success+.@fail)+", NOW()) "+
+			"ON DUPLICATE KEY UPDATE "+
+			"`char_name` = VALUES(`char_name`), "+
+			"`brewer_exp` = VALUES(`brewer_exp`), "+
+			"`brewer_level` = VALUES(`brewer_level`), "+
+			"`total_success` = `total_success` + VALUES(`total_success`), "+
+			"`total_fail` = `total_fail` + VALUES(`total_fail`), "+
+			"`total_brews` = `total_brews` + VALUES(`total_brews`), "+
+			"`last_brew` = NOW()"
+		);
+	}
+
+	callfunc "F_DialogReset";
+	mes "^0000FF[ Brewer ]^000000";
+	mes "^888888------------------------------^000000";
+	mes "Brewing complete!";
+	mes "^888888------------------------------^000000";
+	mes "Attempts   : ^0000FF"+(.@success+.@fail)+"^000000";
+	mes "Successes  : ^008000"+.@success+"^000000  ("+mesitemicon(.@rid)+" ^0000FF"+getitemname(.@rid)+" x"+.@success+"^000000)";
+	mes "Failures   : ^FF0000"+.@fail+"^000000";
+	mes "^888888------------------------------^000000";
+	mes "Brewer EXP   : ^0000FF"+BrewerExp+" / 100000^000000";
+	mes "Brewer Level : ^0000FF"+.@lvlafter+" / 10^000000";
+	if (.@lvlafter > .@lvlbefore) {
+		mes " ";
+		mes "^FF0000Brewer Level up! You are now Level "+.@lvlafter+".^000000";
+	}
+	close;
+
+// ===========================================================
+// L_ShowTable - reference table of the progression
+// ===========================================================
+L_ShowTable:
+	setarray .@need[0], 10000,20000,30000,40000,50000,60000,70000,80000,90000,100000;
+	setarray .@rate[0], 20,23,26,29,32,35,38,41,44,47;
+
+	mes " ";
+	clear;
+	setdialogsize(450, 400);
+	mes "^0000FF[ Brewer ]^000000";
+	mes "^888888------------------------------^000000";
+	mes "Brewer Level Progression";
+	mes "^888888------------------------------^000000";
+	for (.@i = 0; .@i < 10; .@i++) {
+		mes "Lv "+.@i+" -> "+(.@i+1)+"   Rate: ^008000"+.@rate[.@i]+"%^000000   EXP to reach: ^0000FF"+.@need[.@i]+"^000000";
+	}
+	mes "^888888------------------------------^000000";
+	mes "Successful brew: ^008000+3 EXP^000000";
+	mes "Failed brew    : ^FF0000+1 EXP^000000";
+	close;
+
+// ===========================================================
+// L_ShowRankings - top 50 brewers by total successful brews
+// ===========================================================
+L_ShowRankings:
+	.@rows = query_sql(
+		"SELECT `char_name`,`total_success`,`total_fail`,`brewer_level` "+
+		"FROM `brewer_rankings` "+
+		"ORDER BY `total_success` DESC "+
+		"LIMIT 50",
+		.@name$, .@succ, .@fail, .@lvl
+	);
+
+	mes " ";
+	clear;
+	setdialogsize(500, 450);
+	mes "^0000FF[ Brewer ]^000000";
+	mes "^888888------------------------------^000000";
+	mes "Top 50 Brewers (by successful brews)";
+	mes "^888888------------------------------^000000";
+
+	if (.@rows <= 0) {
+		mes "No rankings recorded yet. Be the first to brew!";
+		close;
+	}
+
+	for (.@i = 0; .@i < .@rows; .@i++) {
+		mes ""+(.@i+1)+". ^0000FF"+.@name$[.@i]+"^000000  Lv."+.@lvl[.@i]+"";
+		mes "     Successful Brew: ^008000"+.@succ[.@i]+"^000000  |  Failed Brew: ^FF0000"+.@fail[.@i]+"^000000";
+	}
+	mes "^888888------------------------------^000000";
+	close;
+
+OnTouch:
+	end;
+}
