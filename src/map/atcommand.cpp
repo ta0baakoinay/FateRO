@@ -2084,7 +2084,7 @@ ACMD_FUNC(go)
 		char map[MAP_NAME_LENGTH];
 		int32 x, y;
 	} data[] = {
-		{ MAP_PRONTERA,    156, 191 }, //  0=Prontera
+		{ MAP_MAINTOWN,    151, 103 }, //  0=Prontera
 		{ MAP_MORROC,      156,  93 }, //  1=Morroc
 		{ MAP_GEFFEN,      119,  59 }, //  2=Geffen
 		{ MAP_PAYON,       162, 233 }, //  3=Payon
@@ -2129,6 +2129,7 @@ ACMD_FUNC(go)
 		{ MAP_MALAYA,      242, 211 }, // 34=Malaya Port
 		{ MAP_ECLAGE,      110,  39 }, // 35=Eclage
 		{ MAP_LASAGNA,     193, 182 }, // 36=Lasagna
+		{ MAP_PRONTERA,    156, 191 }, // 38=Old Prontera
 	};
 
 	nullpo_retr(-1, sd);

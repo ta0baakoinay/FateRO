@@ -34,6 +34,7 @@
 #define MAP_RACHEL "rachel"
 #define MAP_VEINS "veins"
 #define MAP_JAIL "sec_pri"
+#define MAP_MAINTOWN "maintown"
 #ifdef RENEWAL
 	#define MAP_NOVICE "iz_int"
 #else

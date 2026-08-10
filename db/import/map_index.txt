@@ -16,3 +16,4 @@
 //
 //mymap	1250
 //mymap-2
+ro_prontera

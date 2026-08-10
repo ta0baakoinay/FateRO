@@ -402,3 +402,4 @@ bra_in01	mapflag	nobranch
 // Events
 //============================================================
 //evt_zombie	mapflag	nobranch
+maintown	mapflag	nobranch
