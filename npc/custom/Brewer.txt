@@ -63,7 +63,7 @@ function	script	F_DialogReset	{
 // ---------------------------------------------------------
 // Brewer NPC
 // ---------------------------------------------------------
-prontera,151,181,4	script	Brewing Specialist	749,{
+maintown,206,135,4	script	Brewing Specialist	749,{
 
 OnInteract:
 	.@lvl = F_BrewerLevel(BrewerExp);

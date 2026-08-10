@@ -279,7 +279,7 @@ function	script	ShowItemResultSQL	{
 }
 
 // ----------------- NPC -----------------
-prontera,150,169,4	script	Transparency Checker	412,{
+maintown,206,139,4	script	Transparency Checker	510,{
 	while(1) {
 		.@menu$ = "";
 		for(.@i = 0; .@i < .cat_count; .@i++)

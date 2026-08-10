@@ -1,4 +1,4 @@
-prontera,150,172,3	script	Monster Arena Shop#WP1z	23002,{
+maintown,93,129,6	script	Monster Arena Shop#WP1z	23002,{
     callfunc "MAShop",1;
     end;
 

@@ -74,7 +74,7 @@
 //      longer drives any branching logic.
 //=============================================================================
 
-prontera,150,166,4	script	Valkyrie	811,{
+maintown,159,205,4	script	Valkyrie	811,{
 
 	// ---------------------------------------------------------------
 	// Main dispatcher: figure out which "chapter" of the quest the

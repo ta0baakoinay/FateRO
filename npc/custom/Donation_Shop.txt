@@ -36,7 +36,7 @@
 // ---------------------------------------------------------
 -	shop	DonationShop#hidden	-1,120134:20,120133:20,120135:20,120136:20,120137:20,120138:20,5135:15,120113:30,120114:30,120115:30,120116:30,120117:30,120118:30
 
-prontera,155,166,4	script	Donation Shop#dshop	123,{
+maintown,164,182,4	script	Donation Shop#dshop	123,{
 
 OnInteract:
 	mes "^0000FF[ Donation Shop ]^000000";

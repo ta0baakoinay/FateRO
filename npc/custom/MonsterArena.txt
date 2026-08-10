@@ -3,7 +3,7 @@
 // Modified: Points system + GM Item Management + Permanent Rate Storage
 //====================================================
 
-prontera,156,175,3	script	Monster Arena	23003,{
+maintown,93,137,6	script	Monster Arena	23003,{
 
 	// GM Level 99 Drop Rate Management
 	if (getgmlevel() >= 99) {
