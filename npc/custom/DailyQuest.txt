@@ -1,0 +1,800 @@
+/*
+DROP TABLE IF EXISTS `rank_mission`;
+CREATE TABLE `rank_mission` (
+  `char_id` int(11) NOT NULL,
+  `name` varchar(24) NOT NULL,
+  `point` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`name`),
+  KEY `char_id` (`char_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+*/
+
+function	script	F_CommaPlural	{
+    .@n = getarg(0);
+    .@str$ = getarg(1);
+    return sprintf(getarg(2, "%s %s"), F_InsertComma(.@n), (.@n != 1 ? F_GetPlural(.@str$) : .@str$));
+}
+
+function	script	F_RODEX_SendMail_Array	{
+    .@cid = getarg(0);
+    .@sender$ = getarg(1, "Ragnafinest");
+    .@title$ = getarg(2, "System Announcement");
+    .@msg$ = getarg(3, "Hello World!\r\n\r\n- Ragnafinest");
+    .@zeny = getarg(4, 0);
+    .@size = getarraysize(getarg(5));
+    .@qty = .@size/2;
+    if (.@qty > 0) {
+        freeloop(1);
+        do {
+            .@itm_1 = getelementofarray(getarg(5), .@i);
+            .@amt_1 = getelementofarray(getarg(5), .@i+1);
+            .@itm_2 = getelementofarray(getarg(5), .@i+2);
+            .@amt_2 = getelementofarray(getarg(5), .@i+3);
+            .@itm_3 = getelementofarray(getarg(5), .@i+4);
+            .@amt_3 = getelementofarray(getarg(5), .@i+5);
+            .@itm_4 = getelementofarray(getarg(5), .@i+6);
+            .@amt_4 = getelementofarray(getarg(5), .@i+7);
+            .@itm_5 = getelementofarray(getarg(5), .@i+8);
+            .@amt_5 = getelementofarray(getarg(5), .@i+9);
+            switch (.@qty) {
+                case 1:
+                    setarray .@itm_r[0], .@itm_1;
+                    setarray .@amt_r[0], .@amt_1;
+                    mail(.@cid, .@sender$, .@title$, .@msg$, .@zeny, .@itm_r, .@amt_r);
+                    break;
+                case 2:
+                    setarray .@itm_r[0], .@itm_1, .@itm_2;
+                    setarray .@amt_r[0], .@amt_1, .@amt_2;
+                    mail(.@cid, .@sender$, .@title$, .@msg$, .@zeny, .@itm_r, .@amt_r);
+                    break;
+                case 3:
+                    setarray .@itm_r[0], .@itm_1, .@itm_2, .@itm_3;
+                    setarray .@amt_r[0], .@amt_1, .@amt_2, .@amt_3;
+                    mail(.@cid, .@sender$, .@title$, .@msg$, .@zeny, .@itm_r, .@amt_r);
+                    break;
+                case 4:
+                    setarray .@itm_r[0], .@itm_1, .@itm_2, .@itm_3, .@itm_4;
+                    setarray .@amt_r[0], .@amt_1, .@amt_2, .@amt_3, .@amt_4;
+                    mail(.@cid, .@sender$, .@title$, .@msg$, .@zeny, .@itm_r, .@amt_r);
+                    break;
+                default:
+                    setarray .@itm_r[0], .@itm_1, .@itm_2, .@itm_3, .@itm_4, .@itm_5;
+                    setarray .@amt_r[0], .@amt_1, .@amt_2, .@amt_3, .@amt_4, .@amt_5;
+                    mail(.@cid, .@sender$, .@title$, .@msg$, .@zeny, .@itm_r, .@amt_r);
+                    break;
+            }
+            .@qty -= 5;
+            .@i += 10;
+        } while (.@qty > 0);
+        freeloop(0);
+    } else {
+        freeloop(1);
+        while (.@zeny > 0) {
+            mail(.@cid, .@sender$, .@title$, .@msg$, .@zeny > MAX_ZENY ? MAX_ZENY : .@zeny);
+            .@zeny -= MAX_ZENY;
+        }
+        freeloop(0);
+    }
+    return;
+}
+
+//=========================================================================
+// Close cut-in illustrations
+//=========================================================================
+function	script	F_CloseCutin	{
+    close2();
+    cutin("", 255);
+    end;
+}
+
+//=========================================================================
+// F_TimeShow(<time>);
+//=========================================================================
+function	script	F_TimeShow	{
+    .@type = getarg(1,0);
+    .@sec = getarg(0);
+    .@day = .@sec / 86400;
+    .@sec -= (.@day * 86400);
+    .@hr = .@sec / 3600;
+    .@sec -= (.@hr * 3600);
+    .@min = .@sec / 60;
+    .@sec -= (.@min * 60);
+
+    .@str$ = "";
+
+    .@day$ = .@type ? sprintf("%dd", .@day) : F_InsertPlural(.@day, "day", 0);
+    .@hr$  = .@type ? sprintf("%dh", .@hr) : F_InsertPlural(.@hr, "hour", 0);
+    .@min$ = .@type ? sprintf("%dmn", .@min) : F_InsertPlural(.@min, "minute", 0);
+    .@sec$ = .@type ? sprintf("%ds", .@sec) : F_InsertPlural(.@sec, "second", 0);
+
+    .@str$ += (.@day > 0) ? .@day$ + "" : "";
+    .@str$ += (.@day > 0 && (.@hr > 0 || .@min > 0 || .@sec > 0)) ? ", " : "";
+    .@str$ += (.@hr > 0) ? .@hr$ + "" : "";
+    .@str$ += (.@hr > 0 && (.@min > 0 || .@sec > 0)) ? ", " : "";
+    .@str$ += (.@min > 0) ? .@min$ + "" : "";
+    .@str$ += (.@min > 0 && .@sec > 0) ? ", " : "";
+    .@str$ += (.@sec > 0) ? .@sec$ : "";
+
+    if (charat(.@str$, 0) == " ")
+        delchar(.@str$, 0);
+
+    if (charat(.@str$, getstrlen(.@str$) - 1) == " ")
+        delchar(.@str$, 0);
+
+    return .@str$;
+}
+
+//=========================================================================
+// Display received in-game currency.
+//=========================================================================
+function	script	F_ShowCurrency	{
+    .@var$ = getarg(0);
+    .@name$ = getarg(1);
+    .@point$ = .@name$ + " Point";
+    setd(.@var$, getd(.@var$) + getarg(2));
+    .@str$ = sprintf("[%s] You currently have %s.", .@name$ + " System", F_CommaPlural(getd(.@var$), .@point$));
+    dispbottom(.@str$, 0x00FFFF);
+    return;
+}
+
+function	script	F_ShowCurrency_Mes	{
+    .@str$ = F_CommaPlural(getarg(0), getarg(1), " > ^777777%s ^3366FF%s^000000");
+    return .@str$;
+}
+
+function	script	F_PointGain	{
+    .@type = getarg(0, 0);
+    .@pt = getarg(1, 0);
+    .@evt$ = getarg(2);
+    if (.@pt) {
+        if (!.@type)
+            .@str$ = sprintf("You won %s from %s.", F_CommaPlural(.@pt, "Event Point"), .@evt$);
+        else
+            .@str$ = sprintf("You received %s as a consolation from %s.", F_CommaPlural(.@pt, "Event Point"), .@evt$);
+        message(strcharinfo(0), .@str$);
+    }
+    return;
+}
+
+maintown,140,132,6	script	Daily Mission Board	857,{
+	function F_Limit;
+	function F_MissionCheck;
+	function F_MissionRank;
+	if ($MISSION_DATE != MISSION_DATE) {
+		MISSION_DATE = $MISSION_DATE;
+		deletearray(MISSION_LIST);
+		deletearray(MISSION_DROP);
+		deletearray(MISSION_DUR);
+		for (.@i=0; .@i<.mission_limit; .@i++) {
+			deletearray(getd("MISSION_"+.@i+"_MOBHUNT"));
+			deletearray(getd("MISSION_"+.@i+"_ITMHUNT"));
+			deletearray(getd("MISSION_"+.@i+"_REWARD"));
+			deletearray(getd("MISSION_"+.@i+"_LIMIT"));
+			deletearray(getd("MISSION_"+.@i+"_KILL"));
+			deletearray(getd("MISSION_"+.@i+"_HUNT"));
+			setd("MISSION_"+.@i+"_DESC$", "");
+		}
+		MISSION_MASK = 0;
+	}
+
+	for (.@i=0; .@i<.mission_limit; .@i++) {
+		if (MISSION_DUR[.@i] < gettimetick(2)) {
+			.@j = MISSION_LIST[.@i];
+			MISSION_DROP[getarraysize(MISSION_DROP)] = .@j;
+			MISSION_LIST[.@i] = 0;
+			deletearray(getd("MISSION_"+.@i+"_MOBHUNT"));
+			deletearray(getd("MISSION_"+.@i+"_ITMHUNT"));
+			deletearray(getd("MISSION_"+.@i+"_REWARD"));
+			deletearray(getd("MISSION_"+.@i+"_LIMIT"));
+			deletearray(getd("MISSION_"+.@i+"_KILL"));
+			deletearray(getd("MISSION_"+.@i+"_HUNT"));
+			setd("MISSION_"+.@i+"_DESC$", "");
+		}
+	}
+
+	for (.@i=0; .@i<.mission_limit; .@i++) {
+		.@j = MISSION_LIST[.@i];
+		if (.@j > 0)
+			++.@cnt;
+	}
+
+	mes .header$;
+	mes "Oh, are you new here?";
+	mes " ";
+	mes "I am the Mission Master!";
+	mes "Accepting and completing";
+	mes "a mission will help you";
+	mes "to start in the SphinxRO!";
+	next;
+	switch(select((.@cnt > 0 ? "Check Mission" : ""),
+		(.@cnt < .mission_limit ? "Take Mission" : ""),
+		"Mission Ranking", "Cancel")) {
+		case 1:
+			.@menu$ = "";
+			for (.@i=0; .@i<.mission_limit; .@i++) {
+				.@j = MISSION_LIST[.@i];
+				if (.@j > 0)
+					.@menu$ += sprintf("^777777%s^000000", .mission_name$[.@j]);
+				else
+					.@menu$ += "";
+				.@menu$ += ":";
+			}
+			.@i = select(.@menu$) - 1;
+			.@j = MISSION_LIST[.@i];
+			mes .header$;
+			mes sprintf("^777777Mission: ^3355FF%s^000000", .mission_name$[.@j]);
+			mes sprintf("^777777Description: ^3355FF%s^000000", getd("MISSION_"+.@i+"_DESC$"));
+			mes " ";
+			mes sprintf("^CC9933Mission Progress:^000000");
+			mes sprintf("^777777Time Left: ^FF0000%s^000000", Time2Str(MISSION_DUR[.@i]));
+			.@mob$ = "MISSION_"+.@i+"_MOBHUNT";
+			.@itm$ = "MISSION_"+.@i+"_ITMHUNT";
+			.@kill$ = "MISSION_"+.@i+"_KILL";
+			.@reward$ = "MISSION_"+.@i+"_REWARD";
+			if (getarraysize(getd(.@mob$))) {
+				mes "^777777Mobs:^000000";
+				for (.@a=0; .@a<getarraysize(getd(.@mob$)); .@a+=2) {
+					.@b = .@a/2;
+					.@mob = getd(.@mob$+"["+.@a+"]");
+					.@amt = getd(.@mob$+"["+(.@a+1)+"]");
+					.@cnt = getd(.@kill$+"["+.@b+"]");
+					.@clr$ = .@cnt < .@amt ? "^FF0000" : "^009900";
+					.@mobname$ = getmonsterinfo(.@mob, MOB_NAME);
+					mes sprintf(" - %s%s [%d/%d]^000000", .@clr$, .@mobname$, .@cnt, .@amt);
+				}
+			}
+			if (getarraysize(getd(.@itm$))) {
+				mes "^777777Items:^000000";
+				for (.@a=0; .@a<getarraysize(getd(.@itm$)); .@a+=2) {
+					.@itm = getd(.@itm$+"["+.@a+"]");
+					.@amt = getd(.@itm$+"["+(.@a+1)+"]");
+					.@cnt = countitem(.@itm);
+					.@clr$ = .@cnt < .@amt ? "^FF0000" : "^009900";
+					mes sprintf(" - %s%s [%d/%d]^000000", .@clr$, mesitemlink(.@itm), .@cnt, .@amt);
+				}
+			}
+			mes " ";
+			mes "^009900Rewards:^000000";
+			if (getd(.@reward$+"[0]"))
+				mes sprintf("^3355FF%s Zeny^000000", F_InsertComma(getd(.@reward$+"[0]")));
+			if (getd(.@reward$+"[1]"))
+				mes sprintf("^3355FF%s^000000", F_CommaPlural(getd(.@reward$+"[1]"), "Activity Point"));
+			for (.@a=2; .@a<getarraysize(getd(.@reward$)); .@a+=2) {
+				.@itm = getd(.@reward$+"["+.@a+"]");
+				.@amt = getd(.@reward$+"["+(.@a+1)+"]");
+				mes sprintf("^3355FF%d %s^000000", .@amt, mesitemlink(.@itm));
+			}
+			next;
+			switch(select((!F_MissionCheck(.@i) ? "Submit Mission" : ""),
+						(F_MissionCheck(.@i) ? "Drop Mission" : ""), 
+						"Cancel")) {
+				case 1:
+					if (getarraysize(getd(.@itm$))) {
+						for (.@a=0; .@a<getarraysize(getd(.@itm$)); .@a+=2)
+							delitem(getd(.@itm$+"["+.@a+"]"), getd(.@itm$+"["+(.@a+1)+"]"));
+					}
+					.@reward$ = "MISSION_"+.@i+"_REWARD";
+					.@zeny   = getd(.@reward$+"[0]");
+					.@activity_pt = getd(.@reward$+"[1]");
+					deletearray(getd(.@reward$+"[0]"), 2);
+					copyarray(.@reward[0], getd(.@reward$+"[0]"), getarraysize(getd(.@reward$)));
+					F_ShowCurrency("#ACTIVITYPOINTS", "Activity", .@activity_pt);
+					F_RODEX_SendMail_Array(getcharid(CHAR_ID_CHAR), "Mission Manager", "Rewards", sprintf("Here are your rewards for\r\nfinishing the mission, '%s'!", .mission_name$[.@j]), .@zeny, .@reward);
+					MISSION_MASK |= (1 << .@j - 1);
+					MISSION_DUR[.@i] = 0;
+					MISSION_LIST[.@i] = 0;
+					deletearray(getd("MISSION_"+.@i+"_MOBHUNT"));
+					deletearray(getd("MISSION_"+.@i+"_ITMHUNT"));
+					deletearray(getd("MISSION_"+.@i+"_REWARD"));
+					deletearray(getd("MISSION_"+.@i+"_LIMIT"));
+					deletearray(getd("MISSION_"+.@i+"_KILL"));
+					deletearray(getd("MISSION_"+.@i+"_HUNT"));
+					setd("MISSION_"+.@i+"_DESC$", "");
+					++$MISSION_TOTAL;
+					++$MISSION_TODAY;
+					F_MissionRank();	// Adds points into database.
+					announce(sprintf("%s has finished the mission, '%s'!", strcharinfo(0), .mission_name$[.@j]), bc_npc_, 0xffff00);
+					mes .header$;
+					mes sprintf("You have completed the mission, ^3355FF%s^000000!", .mission_name$[.@j]);
+					mes " ";
+					mes "Check your RODEX mail for your rewards!";
+					break;
+
+				case 2:
+					mes .header$;
+					mes sprintf("Do you want to drop the mission, ^3355FF%s^000000?", .mission_name$[.@j]);
+					mes " ";
+					mes "^FF0000*Any progress you've made for this mission will be lost!*^000000";
+					next;
+					if (select("No...", "Yes!") == 1) break;
+					MISSION_DROP[getarraysize(MISSION_DROP)] = .@j;
+					MISSION_LIST[.@i] = 0;
+					MISSION_DUR[.@i] = 0;
+					deletearray(getd("MISSION_"+.@i+"_MOBHUNT"));
+					deletearray(getd("MISSION_"+.@i+"_ITMHUNT"));
+					deletearray(getd("MISSION_"+.@i+"_REWARD"));
+					deletearray(getd("MISSION_"+.@i+"_LIMIT"));
+					deletearray(getd("MISSION_"+.@i+"_KILL"));
+					deletearray(getd("MISSION_"+.@i+"_HUNT"));
+					setd("MISSION_"+.@i+"_DESC$", "");
+					mes .header$;
+					mes sprintf("The mission, ^3355FF%s^000000 has been dropped!", .mission_name$[.@j]);
+					break;
+
+				default:
+					break;
+			}
+			break;
+
+		case 2:
+			.@menu$ = "";
+			for (.@i=0; .@i<.mission_limit; .@i++) {
+				.@j = MISSION_LIST[.@i];
+				.@menu$ += sprintf("%s:", (MISSION_LIST[.@i] ? sprintf("^777777%s^000000", .mission_name$[.@j]) : sprintf("#%d [^FF0000Empty^000000]", .@i+1)));
+			}
+			.@i = select(.@menu$) - 1;
+			if (MISSION_LIST[.@i] > 0) {
+				.@j = MISSION_LIST[.@i];
+				mes .header$;
+				mes "You have already";
+				mes "reserved a mission";
+				mes "on this slot!";
+				mes " ";
+				mes sprintf("Mission: ^3355FF%s^000000", .mission_name$[.@j]);
+				mes sprintf("Time Left: ^FF0000%s^000000", Time2Str(MISSION_DUR[.@i]));
+				break;
+			}
+			do {
+				.@limit$ = "";
+				deletearray(.@mobhunt);
+				deletearray(.@itmhunt);
+				deletearray(.@limit);
+				deletearray(.@reward);
+				.@j = select(sprintf("%s%s^000000", (F_Limit(1, .@i, 70, 10) ? "^FF0000" : "^009900"), .mission_name$[1]),
+							sprintf("%s%s^000000", (F_Limit(2, .@i, 99, 60) ? "^FF0000" : "^009900"), .mission_name$[2]),
+							sprintf("%s%s^000000", (F_Limit(3, .@i, 10, 60) ? "^FF0000" : "^009900"), .mission_name$[3]),
+							sprintf("%s%s^000000", (F_Limit(4, .@i, 1, 3, Job_Archer, Job_Rogue) ? "^FF0000" : "^009900"), .mission_name$[4]),
+							sprintf("%s%s^000000", (F_Limit(5, .@i, 70, 60) ? "^FF0000" : "^009900"), .mission_name$[5]),
+							sprintf("%s%s^000000", (F_Limit(6, .@i, 255, 30) ? "^FF0000" : "^009900"), .mission_name$[6]),
+							sprintf("%s%s^000000", (F_Limit(7, .@i, 255, 30) ? "^FF0000" : "^009900"), .mission_name$[7]),
+							sprintf("%s%s^000000", (F_Limit(8, .@i, 255, 30) ? "^FF0000" : "^009900"), .mission_name$[8]),
+							sprintf("%s%s^000000", (F_Limit(9, .@i, 255, 30) ? "^FF0000" : "^009900"), .mission_name$[9]));
+				switch(.@j) {
+					case 1:
+						setarray .@mobhunt[0], 1002, 33, 1113, 44, 1031, 55;
+						setarray .@reward[0], 3000000, 3;
+						setarray .@limit[0], 70, 600;
+						.@desc$ = "Slain different kinds of Porings!";
+						break;
+
+					case 2:
+						setarray .@mobhunt[0], 1243, 300;
+						setarray .@reward[0], 3000000, 3;
+						setarray .@limit[0], 99, 3600;
+						.@desc$ = "Kill some Sasquach at the Christmas Field!";
+						break;
+
+					case 3:
+						setarray .@itmhunt[0], 914, 100, 949, 100, 705, 100;
+						setarray .@reward[0], 3000000, 3;
+						setarray .@limit[0], 99, 3600;
+						.@desc$ = "Collect the required loots and deliver!";
+						break;
+
+					case 4:
+						setarray .@mobhunt[0], 1007, 200;
+						setarray .@reward[0], 3000000, 3;
+						setarray .@limit[0], 99, 300, Job_Archer, Job_Rogue;
+						.@limit$ = "[Base] Archer, Rogue";
+						.@desc$ = "Complete the quest in 5 minutes!";
+						break;
+
+					case 5:
+						setarray .@mobhunt[0], 1196, 300, 1197, 300;
+						setarray .@reward[0], 3000000, 3;
+						setarray .@limit[0], 99, 3600;
+						.@desc$ = "Hunt and deliver requirements and get rewarded!";
+						break;
+
+					case 6:
+						setarray .@mobhunt[0], 1115, 5, 1059, 5, 1150, 5, 1147, 5;
+						setarray .@reward[0], 5000000, 5;
+						setarray .@limit[0], 255, 3600;
+						.@desc$ = "Slain some MVP monsters in Alpha MVP Arena.";
+						break;
+
+					case 7:
+						setarray .@mobhunt[0], 1159, 5, 1312, 5, 1087, 5, 1190, 5;
+						setarray .@reward[0], 5000000, 5;
+						setarray .@limit[0], 255, 3600;
+						.@desc$ = "Slain some MVP monsters in Beta MVP Arena.";
+						break;
+
+					case 8:
+						setarray .@mobhunt[0], 1112, 5, 1038, 5, 1046, 5, 1373, 5;
+						setarray .@reward[0], 5000000, 5;
+						setarray .@limit[0], 255, 3600;
+						.@desc$ = "Slain some MVP monsters in Theta MVP Arena.";
+						break;
+
+					case 9:
+						setarray .@mobhunt[0], 1492, 5, 1157, 5, 1272, 5, 1039, 5;
+						setarray .@reward[0], 5000000, 5;
+						setarray .@limit[0], 255, 3600;
+						.@desc$ = "Slain some MVP monsters in Epsilon MVP Arena.";
+						break;
+
+					default:
+						break;
+				}
+				mes .header$;
+				if (F_Limit(.@j, .@i, .@limit[0], .@limit[1], .@limit[2], .@limit[3]) == 4) {
+					mes sprintf("The mission. ^3355FF%s^000000 has been dropped!", .mission_name$[.@j]);
+					mes " ";
+					mes "Choose another mission!";
+					F_CloseCutin();
+				}
+				if (F_Limit(.@j, .@i, .@limit[0], .@limit[1], .@limit[2], .@limit[3]) == 3) {
+					mes sprintf("The mission. ^3355FF%s^000000 is not suited for you.", .mission_name$[.@j]);
+					mes " ";
+					mes "Choose another mission!";
+					F_CloseCutin();
+				}
+				if (F_Limit(.@j, .@i, .@limit[0], .@limit[1], .@limit[2], .@limit[3]) == 2) {
+					mes sprintf("The mission. ^3355FF%s^000000 is already finished!", .mission_name$[.@j]);
+					F_CloseCutin();
+				}
+				if (F_Limit(.@j, .@i, .@limit[0], .@limit[1], .@limit[2], .@limit[3]) == 1) {
+					mes "You have already added this mission!";
+					F_CloseCutin();
+				}
+				mes sprintf("^777777Mission: ^3355FF%s^000000", .mission_name$[.@j]);
+				mes sprintf("^777777Description: ^3355FF%s^000000", .@desc$);
+				mes " ";
+				if (getarraysize(.@mobhunt)) {
+					mes "^777777Required Mobs:^000000";
+					for (.@a=0; .@a<getarraysize(.@mobhunt); .@a+=2) {
+						.@mobname$ = getmonsterinfo(.@mobhunt[.@a], MOB_NAME);
+						mes sprintf("- ^3355FF%d %s^000000", .@mobhunt[.@a+1], .@mobname$);
+					}
+				}
+				if (getarraysize(.@itmhunt)) {
+					mes "^777777Required Items:^000000";
+					for (.@a=0; .@a<getarraysize(.@itmhunt); .@a+=2)
+						mes sprintf("- ^3355FF%d %s (%d)^000000", .@itmhunt[.@a+1], mesitemlink(.@itmhunt[.@a]), .@itmhunt[.@a]);
+				}
+				mes " ";
+				mes "^FF0000Limitations:^000000";
+				mes sprintf("^777777Base Level: ^FF0000%s^000000", .@limit[0] != 255 ? sprintf("%d ~ 255", .@limit[0]) : sprintf("%d", .@limit[0]));
+				if (.@limit$ != "")
+					mes sprintf("^777777Jobs: ^FF0000%s^000000", .@limit$);
+				mes sprintf("^777777Time Limit: ^FF0000%s^000000", F_TimeShow(.@limit[1]));
+				mes " ";
+				mes "^009900Rewards:^000000";
+				if (.@reward[0] > 0)
+					mes sprintf("^3355FF%s Zeny^000000", F_InsertComma(.@reward[0]));
+				if (.@reward[1] > 0)
+					mes sprintf("^3355FF%s^000000", F_CommaPlural(.@reward[1], "Activity Point"));
+				for (.@a=2; .@a<getarraysize(.@reward); .@a+=2)
+					mes sprintf("^3355FF%d %s^000000", .@reward[.@a+1], mesitemlink(.@reward[.@a]));
+				next;
+			} while(select("Take the mission!", "Go Back") != 1);
+			MISSION_LIST[.@i] = .@j;
+			MISSION_DUR[.@i] = gettimetick(2) + .@limit[1];
+			if (getarraysize(.@mobhunt))
+				copyarray(getd("MISSION_"+.@i+"_MOBHUNT[0]"), .@mobhunt[0], getarraysize(.@mobhunt));
+			if (getarraysize(.@itmhunt))
+				copyarray(getd("MISSION_"+.@i+"_ITMHUNT[0]"), .@itmhunt[0], getarraysize(.@itmhunt));
+			copyarray(getd("MISSION_"+.@i+"_REWARD[0]"), .@reward[0], getarraysize(.@reward));
+			copyarray(getd("MISSION_"+.@i+"_LIMIT[0]"), .@limit[0], getarraysize(.@limit));
+			setd("MISSION_"+.@i+"_DESC$", .@desc$);
+			mes .header$;
+			mes sprintf("You have accepted the mission, ^3355FF%s^000000.", .mission_name$[.@j]);
+			mes sprintf("^777777Time Limit: ^FF0000%s^000000", F_TimeShow(.@limit[1]));
+			break;
+
+		case 3:
+			.@cnt = 0;
+			for (.@i=1; .@i<=getarraysize(.mission_name$); .@i++) {
+				if ((MISSION_MASK&(1 << (.@i - 1))))
+					.@cnt++;
+			}
+			mes .header$;
+			mes "You want to see the rankings, huh?";
+			mes " ";
+			mes sprintf("Overall Daily Quest Done: ^009900%s^000000", F_InsertComma($MISSION_TOTAL));
+			mes sprintf("Daily Quest Done Today: ^000099%s^000000", F_InsertComma($MISSION_TODAY));
+			mes sprintf("Missions Completed: ^FF0000%s^000000", F_InsertComma(.@cnt));
+			next;
+			switch(select(sprintf("View Top %d Mission Rankers", .top_rank), "Cancel")) {
+				case 1:
+					.@nb = query_sql("SELECT `name`, `point` FROM `rank_mission` ORDER BY `point` DESC LIMIT 0, "+.top_rank, .@name_r$, .@pt_r);
+					if (!.@nb) {
+						mes .header$;
+						mes "There are no records yet!";
+						break;
+					}
+					mes .header$;
+					for (.@i=0; .@i<.@nb; .@i++)
+						mes sprintf("- %s : ^0000FF%s^000000", .@name_r$[.@i], F_CommaPlural(.@pt_r[.@i], "Point"));
+					break;
+
+				default:
+					break;
+			}
+			break;
+
+		default:
+			break;
+	}
+	F_CloseCutin();
+	end;
+
+OnInit:
+	bindatcmd "rmvmission",strnpcinfo(0)+"::OnReset",99,99;
+	bindatcmd "missionreset",strnpcinfo(0)+"::OnRankReset",99,99;
+	.header$ = "[ Mission Master ]";
+	.top_rank = 20;
+	.mission_limit = 4;
+	setarray .mission_name$[1], 
+								"Train it like Miley",
+								"The White Bear Killah",
+								"The Daily Lootbucks",
+								"The Speed Limit",
+								"The Prisoners' Delivery",
+								"Rookie MVP - Alpha",
+								"Rookie MVP - Beta",
+								"Rookie MVP - Theta",
+								"Rookie MVP - Epsilon";
+
+	questinfo(QTYPE_QUEST);
+	if ($MISSION_DATE != atoi(gettimestr("%Y%m%d", 10)))
+		$MISSION_DATE = atoi(gettimestr("%Y%m%d", 10));
+	// Start the showscript loop
+	while (1) {
+		showscript("Daily Mission Board");
+		sleep(1000);
+	}
+	end;
+
+OnClock0000:
+	$MISSION_DATE = atoi(gettimestr("%Y%m%d", 10));
+	$MISSION_TODAY = 0;
+	end;
+
+OnReset:
+	deletearray(MISSION_LIST);
+	deletearray(MISSION_DROP);
+	deletearray(MISSION_DUR);
+	for (.@i=0; .@i<.mission_limit; .@i++) {
+		deletearray(getd("MISSION_"+.@i+"_MOBHUNT"));
+		deletearray(getd("MISSION_"+.@i+"_ITMHUNT"));
+		deletearray(getd("MISSION_"+.@i+"_REWARD"));
+		deletearray(getd("MISSION_"+.@i+"_LIMIT"));
+		deletearray(getd("MISSION_"+.@i+"_KILL"));
+		deletearray(getd("MISSION_"+.@i+"_HUNT"));
+		setd("MISSION_"+.@i+"_DESC$", "");
+	}
+	MISSION_MASK = 0;
+	message(strcharinfo(0), "[Mission Manager] Your missions has been reset.");
+	end;
+
+OnRankReset:
+	query_sql("TRUNCATE TABLE `rank_mission`");
+	message(strcharinfo(0), "[Mission Manager] Rankings has been reset.");
+	end;
+
+
+
+// F_Limit(<mission_id>, <slot_idx>, <min_lv>, <duration>{, <job_1>, ...});
+function	F_Limit	{
+	if ((MISSION_MASK&(1 << (getarg(0) - 1))))
+		return 2;
+	if (getarraysize(MISSION_LIST) > 0) {
+		for (.@i=0; .@i<getarraysize(MISSION_LIST); .@i++) {
+			if (MISSION_LIST[.@i] == getarg(0))
+				return 1;
+		}
+	}
+	for (.@i=0; .@i<getarraysize(MISSION_DROP); .@i++) {
+		if (MISSION_DROP[.@i] == getarg(0))
+			return 4;
+	}
+	if (BaseLevel < getarg(2)) return 3;
+	if (getargcount() > 4) {
+		if (!getarg(4)) return 0;
+		.@found = false;
+		for (.@i=4; .@i<getargcount(); .@i++) {
+			if (BaseClass == getarg(.@i) || BaseJob == getarg(.@i)) {
+				.@found = true;
+				break;
+			}
+		}
+		if (!.@found) return 3;
+		return 0;
+	}
+	return 0;
+}
+
+// F_MissionCheck(<mission_idx>);
+function	F_MissionCheck	{
+	.@mob$  = sprintf("MISSION_%d_MOBHUNT", getarg(0));
+	.@kill$ = sprintf("MISSION_%d_KILL", getarg(0));
+	.@itm$ = sprintf("MISSION_%d_ITMHUNT", getarg(0));
+
+	if (getd(.@mob$)) {
+		freeloop(1);
+		for(.@i=0; .@i<getarraysize(getd(.@mob$)); .@i+=2) {
+			.@j = .@i/2;
+			if (getd(.@mob$+"["+(.@i+1)+"]") > getd(.@kill$+"["+.@j+"]")) {
+				.@fail = true;
+				break;
+			}
+		}
+		freeloop(0);
+	}
+
+	if (getd(.@itm$)) {
+		freeloop(1);
+		for(.@i=0; .@i<getarraysize(getd(.@itm$)); .@i+=2) {
+			if (getd(.@itm$+"["+(.@i+1)+"]") > countitem(getd(.@itm$+"["+.@i+"]"))) {
+				.@fail = true;
+				break;
+			}
+		}
+		freeloop(0);
+	}
+
+	return (.@fail) ? 1 : 0;
+}
+
+function	F_MissionRank	{
+	query_sql(sprintf("INSERT INTO `rank_mission`(`char_id`, `name`, `point`) VALUES('%d', '%s', 1) ON DUPLICATE KEY UPDATE `point` = `point` + 1", getcharid(CHAR_ID_CHAR), strcharinfo(0)));
+	return;
+}
+
+}
+
+
+-	script	MissionBoard_Mechanics	FAKE_NPC,{
+	end;
+
+OnInit:
+	bindatcmd("mission", strnpcinfo(0)+"::OnExecute", 0, 99);
+	.mission_limit = 4;
+	setarray .mission_name$[1], 
+								"Train it like Miley",
+								"The White Bear Killah",
+								"The Daily Lootbucks",
+								"The Speed Limit",
+								"The Prisoners' Delivery",
+								"Rookie MVP - Alpha",
+								"Rookie MVP - Beta",
+								"Rookie MVP - Theta",
+								"Rookie MVP - Epsilon";
+	end;
+
+OnExecute:
+	if (!getarraysize(MISSION_LIST)) {
+		message(strcharinfo(0), "[Mission Manager] There are no missions available right now!");
+		end;
+	}
+	freeloop(1);
+	for (.@i=0; .@i<.mission_limit; .@i++) {
+		if (MISSION_LIST[.@i] != 0) {
+			.@mob$ = "MISSION_"+.@i+"_MOBHUNT";
+			.@itm$ = "MISSION_"+.@i+"_ITMHUNT";
+			dispbottom(sprintf("+ Mission %d ---------------------------", (.@i+1)), 0xb5ffb5);
+			dispbottom(sprintf(" Title: %s", .mission_name$[MISSION_LIST[.@i]]));
+			dispbottom(sprintf(" Description: %s", getd("MISSION_"+.@i+"_DESC$")));
+			if (gettimetick(2) < MISSION_DUR[.@i])
+				dispbottom(sprintf(" Time Left: %s", Time2Str(MISSION_DUR[.@i])));
+			else 
+				dispbottom(sprintf(" Time Left: Expired"));
+			if (getarraysize(getd(.@mob$))) {
+				dispbottom(" Monsters:", 0xb5ffb5);
+				for (.@j=0; .@j<getarraysize(getd(.@mob$)); .@j+=2) {
+					.@k = .@j/2;
+					.@mob = getd(.@mob$+"["+.@j+"]");
+					.@amt = getd(.@mob$+"["+(.@j+1)+"]");
+					.@mobname$ = getmonsterinfo(.@mob, MOB_NAME);
+					.@killcnt = getd("MISSION_"+.@i+"_KILL["+.@k+"]");
+					dispbottom(sprintf("  - %s [%d/%d]", .@mobname$, .@killcnt, .@amt), 0xb5ffb5);
+				}
+			}
+			if (getarraysize(getd(.@itm$))) {
+				dispbottom(" Items:", 0xb5ffb5);
+				for (.@j=0; .@j<getarraysize(getd(.@itm$)); .@j+=2) {
+					.@itm = getd(.@itm$+"["+.@j+"]");
+					.@amt = getd(.@itm$+"["+(.@j+1)+"]");
+					.@cnt = countitem(.@itm);
+					dispbottom(sprintf("  - %s [%d/%d]", itemlink(.@itm), .@cnt, .@amt), 0xb5ffb5);
+				}
+			}
+		}
+	}
+	freeloop(0);
+	dispbottom("-------------------------------------------", 0xb5ffb5);
+	end;
+
+OnNPCKillEvent:
+	if (killedrid > 21000) end; // Checks for clones.
+	freeloop(1);
+	for (.@i=0; .@i<.mission_limit; .@i++) {
+		.@idx = .@i + 1;
+		if (MISSION_LIST[.@i] != 0) {
+			.@mob$ = "MISSION_"+.@i+"_MOBHUNT";
+			.@kill$ = "MISSION_"+.@i+"_KILL";
+			for (.@j=0; .@j<getarraysize(getd(.@mob$)); .@j+=2) {
+				.@k = .@j/2;
+				if (getmonsterinfo(getd(.@mob$+"["+(.@j)+"]"), MOB_NAME) == getmonsterinfo(killedrid, MOB_NAME)) {
+					.@cnt = getd(.@kill$+"["+.@k+"]");
+					if (.@cnt < getd(.@mob$+"["+(.@j+1)+"]")) {
+						setd(.@kill$+"["+.@k+"]", getd(.@kill$+"["+.@k+"]") + 1);
+						if (getd(.@kill$+"["+.@k+"]") < getd(.@mob$+"["+(.@j+1)+"]")) {
+							.@mobname$ = getmonsterinfo(killedrid, MOB_NAME);
+							.@newcnt = getd(.@kill$+"["+.@k+"]");
+							.@needamt = getd(.@mob$+"["+(.@j+1)+"]");
+							dispbottom(sprintf("[Mission Manager] Mission %d : Monster '%s' (%d/%d)", .@idx, .@mobname$, .@newcnt, .@needamt));
+						}
+						if (getd("MISSION_"+.@i+"_KILL["+.@k+"]") >= getd(.@mob$+"["+(.@j+1)+"]")) {
+							.@mobname$ = getmonsterinfo(killedrid, MOB_NAME);
+							.@donecnt = getd(.@kill$+"["+.@k+"]");
+							.@doneamt = getd(.@mob$+"["+(.@j+1)+"]");
+							announce(sprintf("[Mission Master] Mission %d : Monster '%s' (%d/%d) [DONE]", .@idx, .@mobname$, .@donecnt, .@doneamt), bc_self, 0xb5ffb5);
+						}
+					}
+				}
+			}
+		}
+	}
+	freeloop(0);
+	end;
+
+OnPCAddItemEvent:
+	if (!getarraysize(MISSION_LIST)) end;
+	if (!additemid) end;
+	freeloop(1);
+	for (.@i=0; .@i<.mission_limit; .@i++) {
+		.@idx = .@i + 1;
+		.@itm$ = "MISSION_"+.@i+"_ITMHUNT";
+		.@hnt$ = "MISSION_"+.@i+"_HUNT";
+		if (getarraysize(getd(.@itm$)) > 0) {
+			for (.@j=0; .@j<getarraysize(getd(.@itm$)); .@j+=2) {
+				.@k = .@j/2;
+				.@itm = getd(.@itm$+"["+.@j+"]");
+				if (.@itm == additemid) {
+					if (countitem(.@itm) < getd(.@itm$+"["+(.@j+1)+"]")) {
+						if (getd(.@hnt$+"["+.@k+"]")) setd(.@hnt$+"["+.@k+"]", 0);
+						dispbottom(sprintf("[Mission Manager] Mission %d : Item '%s' (%d/%d)", .@idx, itemlink(.@itm), countitem(.@itm), getd(.@itm$+"["+(.@j+1)+"]")));
+					}
+					if (!getd(.@hnt$+"["+.@k+"]") && countitem(.@itm) >= getd(.@itm$+"["+(.@j+1)+"]")) {
+						setd(.@hnt$+"["+.@k+"]", 1);
+						announce(sprintf("[Mission Manager] Mission %d : Item '%s' (%d/%d) [DONE]", .@idx, itemlink(.@itm), countitem(.@itm), getd(.@itm$+"["+(.@j+1)+"]")), bc_self, 0xb5ffb5);
+					}
+				}
+			}
+		}
+	}
+	freeloop(0);
+	end;
+
+OnPCLoginEvent:
+	if (!getarraysize(MISSION_LIST)) end;
+	sleep2(250);
+	for (.@i=0; .@i<.mission_limit; .@i++) {
+		if (MISSION_LIST[.@i] > 0 && MISSION_DUR[.@i] > 0 && MISSION_DUR[.@i] < gettimetick(2)) {
+			.@k = MISSION_LIST[.@i];
+			MISSION_LIST[.@i] = 0;
+			MISSION_DROP[getarraysize(MISSION_DROP)] = .@k;
+			deletearray(getd("MISSION_"+.@i+"_MOBHUNT"));
+			deletearray(getd("MISSION_"+.@i+"_ITMHUNT"));
+			deletearray(getd("MISSION_"+.@i+"_REWARD"));
+			deletearray(getd("MISSION_"+.@i+"_LIMIT"));
+			deletearray(getd("MISSION_"+.@i+"_KILL"));
+			setd("MISSION_"+.@i+"_DESC$", "");
+			dispbottom(sprintf("[Mission Manager] The mission '%s' has expired.", .mission_name$[.@k]), 0xb5ffb5);
+		}
+	}
+	end;
+}
