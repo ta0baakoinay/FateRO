@@ -696,3 +696,18 @@ brasilis,197,221,4	script	Kafra Employee::kaf_bra	4_F_KAFRA1,{
 	savepoint "brasilis",195,259,1,1;
 	callfunc "F_KafEnd",0,1,"in the city of Brasilis";
 }
+
+maintown,141,116,6	script	Kafra Employee::kaf_maintown	112,{
+	cutin "kafra_06",2;
+	callfunc "F_KafSet";
+	mes "[Kafra Employee]";
+	mes "Welcome to the";
+	mes "Kafra Corporation~";
+	mes "The Kafra Services are";
+	mes "always here to support";
+	mes "you. So how can I be";
+	mes "of service today?";
+	callfunc "F_Kafra",5,0,0,40,800;
+	savepoint "maintown",151,103,1,1;
+	callfunc "F_KafEnd",0,1,"in the city of Prontera";
+}

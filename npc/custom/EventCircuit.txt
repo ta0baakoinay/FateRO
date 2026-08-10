@@ -1,0 +1,895 @@
+// ============================================================
+// Box/Back click-triggers for the Dice event grid (unchanged,
+// these are map-position triggers, not event-logic NPCs).
+// ============================================================
+quiz_02,37,80,3	script	Box 1	HIDDEN_NPC,{
+	warp "quiz_02",rand(33,41),rand(52,73);
+	end;
+}
+
+quiz_02,49,80,3	script	Box 2	HIDDEN_NPC,{
+	warp "quiz_02",rand(45,53),rand(52,73);
+	end;
+}
+
+quiz_02,61,80,3	script	Box 3	HIDDEN_NPC,{
+	warp "quiz_02",rand(57,65),rand(52,73);
+	end;
+}
+
+quiz_02,73,80,3	script	Box 4	HIDDEN_NPC,{
+	warp "quiz_02",rand(69,77),rand(52,73);
+	end;
+}
+
+quiz_02,55,90,3	script	Back to Town#dice	4_BULLETIN_BOARD2,{
+	warp "maintown",151,103;
+	end;
+}
+
+quiz_02,37,64,3	script	Back#1	4_BULLETIN_BOARD2,{
+	warp "quiz_02",55,76;
+	end;
+}
+
+quiz_02,49,64,3	duplicate(Back#1)	Back#2	4_BULLETIN_BOARD2
+quiz_02,61,64,3	duplicate(Back#1)	Back#3	4_BULLETIN_BOARD2
+quiz_02,73,64,3	duplicate(Back#1)	Back#4	4_BULLETIN_BOARD2
+
+poring_w01,105,123,3	script	Back to Town	4_BULLETIN_BOARD2,{
+	warp "maintown",151,103;
+	end;
+}
+
+// ============================================================
+// Event Circuit — ONE NPC, ONE script, controls everything: the
+// info board, Dice, LMS, NvZ, Poring Catcher, AND Find the GM.
+// There is no second/duplicate NPC object anywhere — during Find
+// GM this NPC physically unitwarps itself away from town and
+// back, rather than needing a separate walking unit standing on
+// the same tile (which was rendering as two overlapping sprites).
+// While it's off hiding, the info board isn't in town either
+// (it's the same object) — it returns when the event ends.
+//
+// Only one event can run at a time (.active_event$ guard) —
+// Find GM now participates in that guard too, which it didn't
+// before.
+//
+// TIMER FIX: instead of 24 separate OnClockXXXX bodies (one per
+// event, out of sync with each other, and Find GM excluded from
+// the rotation entirely and running off its own OnMinute00
+// checker), every hour now falls into ONE shared block that
+// picks the event via hour % 5 against a single label array.
+// All 5 events rotate evenly through the day and never overlap.
+//
+// TIMER FIX #2: Find GM's old 30-minute safety cutoff
+// (OnTimer1800000) was broken — initnpctimer was called again at
+// the start of every round, which resets the npc timer clock to
+// 0 each time, so the 30-minute counter never actually
+// accumulated across rounds. Replaced with a real elapsed-time
+// check using gettimetick(2) captured once when the event starts.
+// ============================================================
+maintown,114,156,5	script	Event Circuit	819,{
+	setdialogsize(400,300);
+	mes "[Event Circuit]";
+	mes "Type ^0000FF@join^000000 in-game to join whichever event is live.";
+	mes "Select an event to view its rules, or check what's live right now.";
+	switch(select("Available Now","Dice","Disguise","Poring Catcher","Invasion","Find the GM","Rankings")) {
+	case 1:
+		clear;
+		setdialogsize(400,300);
+		mes "[Event Circuit]";
+		mes "Live status:";
+		mes "Dice - "+((.dice_start==1)?"^0000ffJoinable^000000":((.dice_start==2)?"^0000ffOn-going^000000":"^ff0000Not Available^000000"));
+		mes "Poring Catcher - "+((.poring_start==1)?"^0000ffJoinable^000000":((.poring_start==2)?"^0000ffOn-going^000000":"^ff0000Not Available^000000"));
+		mes "Find GM - "+((.findgm_status>=1)?"^0000ffOn-going, go find him!^000000":"^ff0000Not Available^000000");
+		mes "Disguise - ^ff0000Not automated yet^000000";
+		mes "Invasion - ^ff0000Not automated yet^000000";
+		close;
+	case 2:
+		clear;
+		setdialogsize(400,300);
+		mes "[Dice Event]";
+		mes "Open to all players.";
+		mes "Pick one box each round.";
+		mes "Wrong boxes are thrown out immediately.";
+		mes " ";
+		mes "Prize: Event Points x3, Credits x10";
+		mes "Consolation: 1 Event Point";
+		close;
+	case 3:
+		clear;
+		setdialogsize(400,300);
+		mes "[Disguise Event]";
+		mes "Open to all players.";
+		mes "Watch the NPC transform.";
+		mes "Type the exact monster name in chat.";
+		mes " ";
+		mes "Prize: Event Points x3, Credits x1";
+		mes "Consolation: 1 Event Point";
+		close;
+	case 4:
+		clear;
+		setdialogsize(400,300);
+		mes "[Poring Catcher Event]";
+		mes "Open to all players.";
+		mes "Kill only the real target each round.";
+		mes "Wrong kills remove you from the game.";
+		mes "Type the exact monster name in chat.";
+		mes " ";
+		mes "Prize: Event Points x3, Credits x10";
+		mes "Consolation: 1 Event Point";
+		close;
+	case 5:
+		clear;
+		setdialogsize(400,300);
+		mes "[Invasion Event]";
+		mes "Open to all players.";
+		mes "The invaded town is revealed when the event begins.";
+		mes "Kill the mobs to earn event points during the breach.";
+		mes "After killing the last monster in Final Wave, the Invasion General will spawn.";
+		mes " ";
+		mes "Prize: 10% chance of 1 Event Point per monster, Event Points x10, and Credit x1 for the Invasion General.";
+		close;
+	case 6:
+		clear;
+		setdialogsize(400,300);
+		mes "[Find the GM Event]";
+		mes "Open to all players.";
+		mes "Dev Prime teleports to a random spot on a random map.";
+		mes "Find him and step into his waiting room to win the round.";
+		mes "There are multiple rounds — he re-hides after each one.";
+		mes " ";
+		mes "Maps I can hide in: "+implode(.findgm_maps$,", ");
+		close;
+	case 7:
+		clear;
+		setdialogsize(400,300);
+		mes "[Event Rankings]";
+		mes "Top 10 players by Event Points.";
+		mes " ";
+		// #EVENT_POINTS is an account variable stored in acc_reg_num.
+		// The index is 0 for the scalar account variable.
+		.@count = query_sql(
+			"SELECT r.`account_id`, r.`value`, MIN(c.`name`) "
+			+"FROM `acc_reg_num` r "
+			+"LEFT JOIN `char` c ON c.`account_id` = r.`account_id` "
+			+"WHERE r.`key` = '#EVENT_POINTS' AND r.`index` = 0 "
+			+"GROUP BY r.`account_id`, r.`value` "
+			+"ORDER BY r.`value` DESC, r.`account_id` ASC "
+			+"LIMIT 10",
+			.@rank_aid, .@rank_points, .@rank_name$
+		);
+		if ( !.@count ) {
+			mes "No Event Points have been recorded yet.";
+			close;
+		}
+		for ( .@i = 0; .@i < .@count; .@i++ ) {
+			.@displayName$ = .@rank_name$[.@i];
+			if ( .@displayName$ == "" )
+				.@displayName$ = "Account "+.@rank_aid[.@i];
+			mes "^996600"+(.@i + 1)+". ^006699"+.@displayName$+" ^000000- ^FF0000"+.@rank_points[.@i]+" Event Points^000000";
+		}
+		close;
+	}
+	end;
+
+OnInit:
+	// The walking Find-GM duplicate (declared at the bottom of this
+	// file) re-runs this same OnInit too. Keep it invisible and
+	// skip the shared setup below on that copy — only the source
+	// "Event Circuit" object needs to register commands/mapflags.
+	if ( strnpcinfo(0) == "Dev Prime#findgm" ) {
+		hideonnpc strnpcinfo(0);
+		end;
+	}
+	$event_options = 1;
+	$event_item_arr = 0;
+	$event_var$ = "#EVENTVARIABLE";
+	$event_var_name$ = "Custom Points";
+	$event_var_gain = 1;
+
+	bindatcmd "eventstart", strnpcinfo(0)+"::OnStart",60,60;
+	bindatcmd "join", strnpcinfo(0)+"::OnJoinEvent";
+	bindatcmd "findgm", strnpcinfo(0)+"::OnFindGMInfo",60,99;
+	bindatcmd "eventstop", strnpcinfo(0)+"::OnEventStop",99,99;
+
+	// Unified hourly rotation: hour % 5 picks the event.
+	setarray .event_labels$[0], "OnDiceStart","OnLMSStart","OnPoringCatcherStart","OnNvZStart","OnFindGMEventStart";
+
+	// Find GM settings (used to live on the separate Dev Prime#findgm NPC).
+	// Now this same NPC walks itself around instead.
+	setarray .findgm_maps$[0],"amatsu","gonryun","aldebaran","lutie","comodo","yuno","umbala","louyang","jawaii","ayothaya","einbroch","lighthalzen","einbech","hugel","rachel","veins";
+	.findgm_rounds = 10; // 10 rounds, exactly 1 winner each = 10 winners max for this event
+	.findgm_pointReward = 1; // 1 Event Point per winner, no consolation prize
+	.findgm_zenyReward = 0;
+	.findgm_zenyAmount = 1000;
+	.findgm_countdown = 1; // minutes of "event begins in..." warning
+	.findgm_maxDuration = 1800; // seconds, safety cutoff for the whole event
+	.npcName$ = "Dev Prime";
+
+	setarray .@dice_flags,
+		mf_nowarp, mf_nowarpto, mf_noskill, mf_noteleport, mf_nomemo, mf_nosave, mf_noicewall, mf_nobranch, mf_noreturn;
+	for ( .@i = 0; .@i < getarraysize(.@dice_flags); .@i++)
+		setmapflag "quiz_02", .@dice_flags[.@i];
+
+	setarray .@lms_flags,
+		mf_nowarp, mf_nowarpto, mf_noteleport, mf_nomemo, mf_nosave, mf_noicewall, mf_nobranch, mf_noreturn;
+	for ( .@i = 0; .@i < getarraysize(.@lms_flags); .@i++)
+		setmapflag "06guild_01", .@lms_flags[.@i];
+
+	setarray .@nvz_flags,
+		mf_nowarp, mf_nowarpto, mf_noskill, mf_noteleport, mf_nomemo, mf_nosave, mf_noicewall, mf_nobranch, mf_noreturn, mf_nocommand;
+	for ( .@i = 0; .@i < getarraysize(.@nvz_flags); .@i++)
+		setmapflag "quiz_01", .@nvz_flags[.@i];
+
+	setarray .@poring_flags,
+		mf_nowarp, mf_nowarpto, mf_noskill, mf_noloot, mf_noteleport, mf_nomemo, mf_nosave, mf_noicewall, mf_nobranch, mf_noreturn;
+	for ( .@i = 0; .@i < getarraysize(.@poring_flags); .@i++)
+		setmapflag "poring_w01", .@poring_flags[.@i];
+	end;
+
+OnStart:
+	if ( .@atcmd_numparameters < 1 ) {
+		dispbottom "Usage: @eventstart <dice|lms|poring|nvz|findgm>";
+		dispbottom "Example: @eventstart dice";
+		end;
+	}
+
+	.@event$ = strtolower(.@atcmd_parameters$[0]);
+
+	if ( .@event$ == "dice" ) {
+		donpcevent strnpcinfo(0)+"::OnDiceStart";
+		end;
+	}
+
+	if ( .@event$ == "lms" ) {
+		donpcevent strnpcinfo(0)+"::OnLMSStart";
+		end;
+	}
+
+	if ( .@event$ == "poring" || .@event$ == "poringcatcher" ) {
+		donpcevent strnpcinfo(0)+"::OnPoringCatcherStart";
+		end;
+	}
+
+	if ( .@event$ == "nvz" ) {
+		donpcevent strnpcinfo(0)+"::OnNvZStart";
+		end;
+	}
+
+	if ( .@event$ == "findgm" || .@event$ == "find" ) {
+		donpcevent strnpcinfo(0)+"::OnFindGMEventStart";
+		end;
+	}
+
+	dispbottom "Invalid event.";
+	dispbottom "Usage: @eventstart <dice|lms|poring|nvz|findgm>";
+	end;
+
+OnEventStop:
+	.active_event$ = "";
+	.dice_start = false;
+	.lms_start = false;
+	.nvz_start = false;
+	.poring_start = false;
+	.findgm_status = 0;
+	stopnpctimer;
+	killmonsterall "quiz_01";
+	killmonsterall "poring_w01";
+	pvpoff "06guild_01";
+	delwaitingroom;
+	for(.@i = 1;.@i <= 4;.@i++) {
+		disablenpc "Back#"+.@i;
+		disablenpc "Box "+.@i;
+	}
+	mapwarp "quiz_02","maintown",151,103;
+	mapwarp "06guild_01","maintown",151,103;
+	mapwarp "quiz_01","maintown",151,103;
+	mapwarp "poring_w01","maintown",151,103;
+	donpcevent "Dev Prime#findgm::OnFindGMForceReset";
+	dispbottom "All events have been reset.";
+	end;
+
+OnFindGMInfo:
+	dispbottom "When the event begins, "+.npcName$+" will teleport to a random location on a random map.";
+	dispbottom "Find him to win! Maps: "+implode(.findgm_maps$,", ");
+	end;
+
+// @join is also an atcommand binding. It MUST NOT open a dialog because
+// players are allowed to use @join from anywhere. npc_scriptcont performs
+// npc_checknear on dialog continuation, which is incompatible with this use.
+OnJoinEvent:
+	if ( strcharinfo(3) == "guild_vs5" ) {
+		dispbottom "You cannot join events while in guild_vs5.";
+		end;
+	}
+
+	.@start = 0;
+	.@map$ = "";
+	.@x = 0;
+	.@y = 0;
+
+	if ( .dice_start == 1 ) {
+		.@start = .dice_start;
+		.@map$ = "quiz_02"; .@x = 55; .@y = 87;
+	} else if ( .lms_start == 1 ) {
+		.@start = .lms_start;
+		.@map$ = "06guild_01"; .@x = 0; .@y = 0;
+	} else if ( .poring_start == 1 ) {
+		.@start = .poring_start;
+		.@map$ = "poring_w01"; .@x = 100; .@y = 100;
+	} else if ( .nvz_start == 1 ) {
+		if ( BaseLevel > 1 || Class != 0 ) {
+			dispbottom "Only Lv 1 Novice can enter.";
+			end;
+		}
+		getinventorylist;
+		if ( @inventorylist_amount ) {
+			dispbottom "You must store all your items first.";
+			@inventorylist_amount = false;
+			end;
+		}
+		sc_start SC_DECREASEAGI,600000,10;
+		.@start = .nvz_start;
+		.@map$ = "quiz_01"; .@x = 42; .@y = 369;
+	} else if ( .findgm_status >= 1 ) {
+		dispbottom "Find GM doesn't warp you in. Find Dev Prime on his current map and enter his waiting room.";
+		end;
+	}
+
+	if ( !.@start ) {
+		dispbottom "No event is currently accepting participants.";
+		end;
+	}
+
+	sc_end SC_ALL;
+	percentheal 100,100;
+	warp .@map$,.@x,.@y;
+
+	#EVENT_POINTS += 1;
+	dispbottom "You received 1 Event Point for participating! You now have "+#EVENT_POINTS+" Event Points.";
+	end;
+
+// ---------------- Unified hourly rotation ----------------
+// Every hour of the day falls through to this single block.
+// hour % 5 picks which of the 5 events runs, so they rotate
+// evenly and Find GM is finally part of the same schedule as
+// everything else (no more separate OnMinute00 checker).
+OnClock0000:
+OnClock0100:
+OnClock0200:
+OnClock0300:
+OnClock0400:
+OnClock0500:
+OnClock0600:
+OnClock0700:
+OnClock0800:
+OnClock0900:
+OnClock1000:
+OnClock1100:
+OnClock1200:
+OnClock1300:
+OnClock1400:
+OnClock1500:
+OnClock1600:
+OnClock1700:
+OnClock1800:
+OnClock1900:
+OnClock2000:
+OnClock2100:
+OnClock2200:
+OnClock2300:
+	if ( .active_event$ != "" ) end; // something's still running (e.g. ran long) — skip this slot rather than stacking events
+	.@idx = gettime(3) % 5;
+	donpcevent strnpcinfo(0)+"::"+.event_labels$[.@idx];
+	end;
+
+// ---------------- Dice ----------------
+OnDiceStart:
+	if ( .active_event$ != "" ) end;
+	.active_event$ = "Dice";
+	.dice_start = 1;
+	for(.@i = 1;.@i <= 4;.@i++) {
+		disablenpc "Back#"+.@i;
+		disablenpc "Box "+.@i;
+	}
+	announce "Dice: We are going to have a Dice event.",0;
+	sleep 10000;
+	if ( .active_event$ != "Dice" ) end;
+
+	announce "Dice: For those who wants to join, use @join",0;
+	sleep 10000;
+	if ( .active_event$ != "Dice" ) end;
+
+	announce "Dice: After 1 Minute Event will close.",0;
+	sleep 10000;
+	if ( .active_event$ != "Dice" ) end;
+
+	announce "Dice: So please if you want to join. use @join",0;
+	for(.@w = 0; .@w < 6; .@w++) {
+		sleep 10000;
+		if ( .active_event$ != "Dice" ) end;
+	}
+	announce "Dice: The entry to the event is now closed.",bc_all,0x0ceedb;
+	if ( !getmapusers("quiz_02") ) {
+		announce "Dice: Not enough participants.",bc_all,0x0ceedb;
+		.dice_start = false;
+		.active_event$ = "";
+		end;
+	}
+	.dice_start = 2;
+	sleep 3500;
+	mapannounce "quiz_02","We're about to begin the event.",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "quiz_02","The rules are simple.",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "quiz_02","You'll have to enter one of the 4 avaiaible boxes.",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "quiz_02","Then a four sides dice will be thrown. Wrong boxes are thrown out immediately.",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "quiz_02","Remember to enter the boxes!",bc_map,0x0ceedb;
+	sleep 2000;
+	mapannounce "quiz_02","That's all. Let's begin.",bc_map,0x0ceedb;
+	sleep 3000;
+	while(!.@end && .dice_start && .@rounds < 5) {
+		for(.@i = 1;.@i <= 4;.@i++) {
+			enablenpc "Back#"+.@i;
+			enablenpc "Box "+.@i;
+		}
+		sleep 1500;
+		mapannounce "quiz_02","The dice will soon be thrown. Enter the desired box clicking the metalic number inside them.",bc_map,0x0ceedb;
+		for(.@w = 0; .@w < 4; .@w++) {
+			sleep 5000;
+			if ( .active_event$ != "Dice" ) end;
+		}
+		for(.@i = 5;.@i > 0;.@i--) {
+			mapannounce "quiz_02",.@i+"...",bc_map,0x0ceedb;
+			sleep 990;
+		}
+		for(.@i = 1;.@i <= 4;.@i++) {
+			disablenpc "Back#"+.@i;
+			disablenpc "Box "+.@i;
+		}
+		areawarp "quiz_02",32,95,79,76,"maintown",151,103;
+		areawarp "quiz_02",80,85,80,76,"maintown",151,103;
+		areawarp "quiz_02",31,85,31,76,"maintown",151,103;
+		.@n = rand(1,4);
+		mapannounce "quiz_02","Time! The dice shows the number "+.@n+".",bc_map,0x0ceedb;
+		setarray .@cords1[0],33,41;
+		setarray .@cords2[0],45,53;
+		setarray .@cords3[0],57,65;
+		setarray .@cords4[0],69,77;
+		for(.@i = 1;.@i <= 4;.@i++) {
+			if(.@i != .@n)
+				areawarp "quiz_02",getd(".@cords"+.@i+"[0]"),52,getd(".@cords"+.@i+"[1]"),73,"maintown",151,103;
+		}
+		sleep 3000;
+		.@players = getmapusers("quiz_02");
+		if(.@players <= 3 && .dice_start && .@players) {
+			mapannounce "quiz_02","The event is now over! Winners, enjoy your prizes!",bc_map,0x0ceedb;
+			.@size = getmapunits(BL_PC,"quiz_02",.@players);
+			.dice_start = false;
+			for(.@i = 0;.@i < .@size;.@i++) {
+				attachrid .@players[.@i];
+				announce strcharinfo(0)+" has won the Dice Event.",bc_all,0x0ceedb;
+				if ( $event_options&1 ) {
+					for ( .@j = 0; .@j < $event_item_arr; .@j += 2 )
+						getitem $event_item_reward[.@j], $event_item_reward[.@j+1];
+				}
+				#EVENT_POINTS += 2;
+				dispbottom "You won the event! You received 2 additional Event Points (3 total for winning). You now have "+#EVENT_POINTS+" Event Points.";
+				warp "maintown",151,103;
+			}
+		} else if( !.@players ) {
+			.@end = true;
+			.dice_start = false;
+			announce "There was no winner on the Dice Event.",bc_all,0x0ceedb;
+		} else {
+			mapannounce "quiz_02","There's no clear winners yet, let's roll the dice again.",bc_map,0x0ceedb;
+		}
+		.@rounds++;
+	}
+	if(.@rounds >= 5) {
+		mapannounce "quiz_02","There were no winner clear in all of the event. The event is now over.",bc_map,0x0ceedb;
+		.dice_start = false;
+	}
+	.active_event$ = "";
+	end;
+
+// ---------------- Last Man Standing ----------------
+OnLMSStart:
+	if ( .active_event$ != "" ) end;
+	.active_event$ = "LMS";
+	.lms_start = 1;
+	pvpoff "06guild_01";
+	announce "LMS: We are going to have a Last Man Standing event.",0;
+	sleep 10000;
+	if ( .active_event$ != "LMS" ) end;
+
+	announce "LMS: For those who wants to join, use @join",0;
+	sleep 10000;
+	if ( .active_event$ != "LMS" ) end;
+
+	announce "LMS: After 1 Minute Event will close.",0;
+	sleep 10000;
+	if ( .active_event$ != "LMS" ) end;
+
+	announce "LMS: So please if you want to join. use @join",0;
+	for(.@w = 0; .@w < 6; .@w++) {
+		sleep 10000;
+		if ( .active_event$ != "LMS" ) end;
+	}
+	announce "LMS: The entry to the event is now closed.",bc_all,0x0ceedb;
+	if ( getmapusers("06guild_01") < 2 ) {
+		announce "LMS: Not enough participants.",bc_all,0x0ceedb;
+		.lms_start = false;
+		.active_event$ = "";
+		mapwarp "06guild_01", "maintown", 151, 103;
+		end;
+	}
+	.lms_start = 2;
+	sleep 3500;
+	mapannounce "06guild_01","We're about to begin the event.",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "06guild_01","The rules are simple.",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "06guild_01","Kill everyone in the map.",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "06guild_01","Last Man Standing wins!",bc_map,0x0ceedb;
+	sleep 2000;
+	mapannounce "06guild_01","That's all. Let's begin.",bc_map,0x0ceedb;
+	sleep 3000;
+	for (.@i = 10; .@i > 0; .@i--) {
+		mapannounce "06guild_01", "LMS: -- "+.@i+" --",bc_map,0x0ceedb;
+		sleep 1000;
+	}
+	mapannounce "06guild_01", "LMS: Fight! ",bc_map,0x0ceedb;
+	pvpon "06guild_01";
+	.lms_timer = 0;
+	initnpctimer;
+	end;
+
+OnTimer5000:
+	.lms_timer++;
+	.@size = getmapusers("06guild_01");
+	if ( .@size > 1 && .lms_timer == 6 ) {
+		.lms_timer = 0;
+		mapannounce "06guild_01", "LMS: "+ .@size +" players left..", bc_blue;
+	}
+	else if ( .@size <= 1 )
+		donpcevent strnpcinfo(0)+"::OnLMSEnd";
+	setnpctimer 0;
+	end;
+
+OnLMSEnd:
+	stopnpctimer;
+	.lms_start = false;
+	pvpoff "06guild_01";
+	mapannounce "06guild_01", "LMS: Event ended!",bc_map,0x0ceedb;
+	sleep 5000;
+	.@size = getmapunits(BL_PC,"06guild_01",.@aid);
+	if ( .@size == 0 ) {
+		announce "LMS: No winners.",0;
+		.active_event$ = "";
+		end;
+	}
+	attachrid .@aid;
+	announce strcharinfo(0)+" has won the Last Man Standing Event.",bc_all,0x0ceedb;
+	if ( $event_options&1 ) {
+		for ( .@j = 0; .@j < $event_item_arr; .@j += 2 )
+			getitem $event_item_reward[.@j], $event_item_reward[.@j+1];
+	}
+	#EVENT_POINTS += 2;
+	dispbottom "You won the event! You received 2 additional Event Points (3 total for winning). You now have "+#EVENT_POINTS+" Event Points.";
+	warp "SavePoint",0,0;
+	.active_event$ = "";
+	end;
+
+// ---------------- Novice v Zombie ----------------
+OnNvZStart:
+	if ( .active_event$ != "" ) end;
+	.active_event$ = "NvZ";
+	.nvz_start = 1;
+	killmonsterall "quiz_01";
+	announce "NvZ: We are going to have a Novice Vs. Zombie event.",0;
+	sleep 10000;
+	if ( .active_event$ != "NvZ" ) end;
+
+	announce "NvZ: For those who wants to join, use @join",0;
+	sleep 10000;
+	if ( .active_event$ != "NvZ" ) end;
+
+	announce "NvZ: After 1 Minute Event will close.",0;
+	sleep 10000;
+	if ( .active_event$ != "NvZ" ) end;
+
+	announce "NvZ: So please if you want to join. use @join",0;
+	for(.@w = 0; .@w < 6; .@w++) {
+		sleep 10000;
+		if ( .active_event$ != "NvZ" ) end;
+	}
+	announce "NvZ: The entry to the event is now closed.",bc_all,0x0ceedb;
+	if ( getmapusers("quiz_01") <= 1 ) {
+		announce "NvZ: Not enough participants.",bc_all,0x0ceedb;
+		.nvz_start = false;
+		.active_event$ = "";
+		mapwarp "quiz_01", "maintown", 151, 103;
+		end;
+	}
+	.nvz_start = 2;
+	sleep 3500;
+	mapannounce "quiz_01","We're about to begin the event.",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "quiz_01","The rules are simple.",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "quiz_01","Zombies will be spawned in the map.",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "quiz_01","and will apear every 20 seconds.",bc_map,0x0ceedb;
+	sleep 2000;
+	mapannounce "quiz_01","Last man surviving wins.",bc_map,0x0ceedb;
+	sleep 2000;
+	mapannounce "quiz_01","That's all. Let's begin.",bc_map,0x0ceedb;
+	sleep 3000;
+	monster "quiz_01",42,369,"Zombie",1036,4;
+	initnpctimer;
+	end;
+
+OnTimer20000:
+	monster "quiz_01",42,369,"Zombie",1036,10;
+	setnpctimer 0;
+	end;
+
+OnPCDieEvent:
+	if ( .lms_start && strcharinfo(3) == "06guild_01" ) {
+		warp "SavePoint",0,0;
+		.@size = getmapusers("06guild_01");
+		if ( .@size > 1 )
+			mapannounce "06guild_01", "LMS: "+ .@size +" players left..", bc_blue;
+		else if ( .@size <= 1 )
+			donpcevent strnpcinfo(0)+"::OnLMSEnd";
+	}
+	else if ( .nvz_start && strcharinfo(3) == "quiz_01" ) {
+		warp "maintown",151,103;
+		if ( getmapusers("quiz_01") == 1 ) {
+			stopnpctimer;
+			killmonsterall "quiz_01";
+			.@size = getmapunits(BL_PC,"quiz_01",.@aid);
+			.nvz_start = false;
+			attachrid .@aid;
+			announce strcharinfo(0)+" has won the Novice v Zombie Event.",bc_all,0x0ceedb;
+			if ( $event_options&1 ) {
+				for ( .@j = 0; .@j < $event_item_arr; .@j += 2 )
+					getitem $event_item_reward[.@j], $event_item_reward[.@j+1];
+			}
+			#EVENT_POINTS += 2;
+				dispbottom "You won the event! You received 2 additional Event Points (3 total for winning). You now have "+#EVENT_POINTS+" Event Points.";
+			.active_event$ = "";
+			warp "maintown",151,103;
+			end;
+		}
+	}
+	end;
+
+// ---------------- Poring Catcher ----------------
+OnPoringCatcherStart:
+	if ( .active_event$ != "" ) end;
+	.active_event$ = "Poring Catcher";
+	.poring_start = 1;
+	announce "Poring Catcher: We are going to have a Poring Catcher event.",0;
+	sleep 10000;
+	if ( .active_event$ != "Poring Catcher" ) end;
+
+	announce "Poring Catcher: For those who wants to join, use @join",0;
+	sleep 10000;
+	if ( .active_event$ != "Poring Catcher" ) end;
+
+	announce "Poring Catcher: After 1 Minute Event will close.",0;
+	sleep 10000;
+	if ( .active_event$ != "Poring Catcher" ) end;
+
+	announce "Poring Catcher: So please if you want to join. use @join",0;
+	for(.@w = 0; .@w < 6; .@w++) {
+		sleep 10000;
+		if ( .active_event$ != "Poring Catcher" ) end;
+	}
+	announce "Poring Catcher: The entry to the event is now closed.",bc_all,0x0ceedb;
+	.poring_start = 2;
+	sleep 3500;
+	if( !getmapusers("poring_w01") ) {
+		announce "Poring Catcher: Not enough participants in the Event.",bc_all,0x0ceedb;
+		sleep 2500;
+		announce "Poring Catcher: Event will be halted.",bc_all,0x0ceedb;
+		.poring_start = false;
+		.active_event$ = "";
+		end;
+	}
+	mapannounce "poring_w01","We're about to begin the event.",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "poring_w01","The rules are simple.",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "poring_w01","In a few seconds I'm going to spawn tons of porings..",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "poring_w01","..All you need to do is kill the Poring with the right name..",bc_map,0x0ceedb;
+	sleep 2500;
+	mapannounce "poring_w01","..Which would be Poring.",bc_map,0x0ceedb;
+	sleep 2000;
+	mapannounce "poring_w01","If you kill the wrong one, you're out!",bc_map,0x0ceedb;
+	sleep 2000;
+	mapannounce "poring_w01","That's all. Let's begin.",bc_map,0x0ceedb;
+	sleep 3000;
+	areamonster "poring_w01",84,119,124,90,"Poring",1002,1,strnpcinfo(0)+"::OnMobKilledWin";
+	areamonster "poring_w01",84,119,124,90,"Poking",1002,3*getmapusers("poring_w01"),strnpcinfo(0)+"::OnMobKilled";
+	areamonster "poring_w01",84,119,124,90,"Poiring",1002,3*getmapusers("poring_w01"),strnpcinfo(0)+"::OnMobKilled";
+	areamonster "poring_w01",84,119,124,90,"Poling",1002,3*getmapusers("poring_w01"),strnpcinfo(0)+"::OnMobKilled";
+	areamonster "poring_w01",84,119,124,90,"Porng",1002,3*getmapusers("poring_w01"),strnpcinfo(0)+"::OnMobKilled";
+	areamonster "poring_w01",84,119,124,90,"pH0ur1n6",1002,3*getmapusers("poring_w01"),strnpcinfo(0)+"::OnMobKilled";
+	areamonster "poring_w01",84,119,124,90,"P0ring",1002,3*getmapusers("poring_w01"),strnpcinfo(0)+"::OnMobKilled";
+	areamonster "poring_w01",84,119,124,90,"Porong",1002,3*getmapusers("poring_w01"),strnpcinfo(0)+"::OnMobKilled";
+	areamonster "poring_w01",84,119,124,90,"Powing",1002,3*getmapusers("poring_w01"),strnpcinfo(0)+"::OnMobKilled";
+	areamonster "poring_w01",84,119,124,90,"Poriing",1002,3*getmapusers("poring_w01"),strnpcinfo(0)+"::OnMobKilled";
+	areamonster "poring_w01",84,119,124,90,"Boring",1002,3*getmapusers("poring_w01"),strnpcinfo(0)+"::OnMobKilled";
+	areamonster "poring_w01",84,119,124,90,"Lolwut!?",1002,3*getmapusers("poring_w01"),strnpcinfo(0)+"::OnMobKilled";
+	areamonster "poring_w01",84,119,124,90,"Kill me to win!",1002,3*getmapusers("poring_w01"),strnpcinfo(0)+"::OnMobKilled";
+	end;
+
+OnMobKilled:
+	dispbottom "You killed the wrong Poring! Yerrrrrrrrrrrr out!";
+	warp "maintown",151,103;
+	sleep 5000;
+	if ( !getmapusers("poring_w01") ) {
+		.poring_start = false;
+		killmonsterall "poring_w01";
+		announce "Poring Catcher: No one won the Poring Catcher Event!.",bc_all,0x0ceedb;
+		.active_event$ = "";
+	}
+	end;
+
+OnMobKilledWin:
+	announce strcharinfo(0)+" won the Poring Catcher Event!",bc_all,0xFF7F50;
+	if ( $event_options&1 ) {
+		for ( .@j = 0; .@j < $event_item_arr; .@j += 2 )
+			getitem $event_item_reward[.@j], $event_item_reward[.@j+1];
+	}
+	#EVENT_POINTS += 2;
+	dispbottom "You won the event! You received 2 additional Event Points (3 total for winning). You now have "+#EVENT_POINTS+" Event Points.";
+	killmonsterall "poring_w01";
+	sleep 5000;
+	mapwarp "poring_w01","maintown",151,103;
+	.poring_start = false;
+	.active_event$ = "";
+	end;
+
+// ---------------- Find the GM ----------------
+// Entry point from the hourly rotation, runs on "Event Circuit"
+// itself (which stays put in town). It hands off the actual
+// hide-and-seek to the separate "Dev Prime#findgm" NPC (declared
+// at the bottom of this file) — that one is invisible/parked
+// until now, so it never overlaps with Event Circuit in town.
+OnFindGMEventStart:
+	if ( .active_event$ != "" ) end;
+	.active_event$ = "FindGM";
+	.findgm_status = 1;
+	.findgm_startTick = gettimetick(2);
+	for(.@i = .findgm_countdown; .@i > 0; .@i--) {
+		announce "[Find "+.npcName$+"] : The event will begin in "+callfunc("F_InsertPlural",.@i,"minute")+"!",bc_all|bc_yellow;
+		for(.@w = 0; .@w < 6; .@w++) {
+			sleep 10000;
+			if ( .active_event$ != "FindGM" ) end;
+		}
+	}
+	announce "[Find "+.npcName$+"] : The event has now begun!",bc_all|bc_yellow;
+	donpcevent "Dev Prime#findgm::OnFindGMIntro";
+	end;
+
+// Runs on "Dev Prime#findgm" (invoked via strnpcinfo(0) from within
+// its own OnFindGMRoundStart/OnFindGMRoundEnd below), so "self"
+// here is the walking unit, not the town board.
+OnFindGMEnd:
+	.findgm_status = 0;
+	.active_event$ = "";
+	announce "[Find "+.npcName$+"]: The event is over! thank you for participating.",bc_all|bc_yellow;
+	delwaitingroom;
+	unitwarp getnpcid(0),"maintown",114,156;
+	hideonnpc strnpcinfo(0);
+	end;
+
+// Also runs on "Dev Prime#findgm" — makes it visible and sends it
+// off to hide for the first round. Bails if @eventstop reset state
+// while this thread was mid-sleep in the countdown above.
+OnFindGMIntro:
+	if ( .active_event$ != "FindGM" ) end;
+	hideoffnpc strnpcinfo(0);
+	sleep 2000;
+	npctalk "I will now teleport to random locations across different maps";
+	sleep 2000;
+	npctalk "You must find me to win the event!";
+	sleep 2000;
+	npctalk "This event will last for "+callfunc("F_InsertPlural",.findgm_rounds,"round");
+	sleep 2000;
+	npctalk "I can hide in: "+implode(.findgm_maps$,", ");
+	sleep 2000;
+	npctalk "Goodluck!";
+	.findgm_round = 1;
+	donpcevent strnpcinfo(0)+"::OnFindGMRoundStart";
+	end;
+
+OnFindGMRoundStart:
+	// Bails if @eventstop reset state while this thread was mid-sleep.
+	if ( .active_event$ != "FindGM" ) end;
+	// Safety cutoff: replaces the old broken OnTimer1800000 approach
+	// (which reset every round via initnpctimer and never actually
+	// timed out). This checks real elapsed time instead.
+	if ( gettimetick(2) - .findgm_startTick > .findgm_maxDuration ) {
+		donpcevent strnpcinfo(0)+"::OnFindGMEnd";
+		end;
+	}
+	.@mapIndex = rand(getarraysize(.findgm_maps$));
+	.findgm_map$ = .findgm_maps$[.@mapIndex];
+
+	do {
+		.@x = rand(0,450);
+		.@y = rand(0,450);
+	} while (!checkcell(.findgm_map$,.@x,.@y,cell_chkpass));
+	unitwarp getnpcid(0),.findgm_map$,.@x,.@y;
+	announce "[Find "+.npcName$+"] : Round "+.findgm_round+"/"+.findgm_rounds+" - "+.npcName$+" is hiding somewhere in "+.findgm_map$+"! Go find him now!",bc_all|bc_yellow;
+	delwaitingroom;
+	waitingroom "Enter to claim prize!", 2, strnpcinfo(0)+"::OnFindGMRoundEnd",1;
+	.findgm_status = 2;
+	end;
+
+OnFindGMRoundEnd:
+	if(.findgm_status != 2) end;
+	.findgm_status = 1;
+	getwaitingroomusers strnpcinfo(0);
+	for(.@i = 0; .@i < getarraysize(.@waitingroom_users); .@i++) {
+		if(.@waitingroom_users[.@i] > 0) {
+			.@winner = .@waitingroom_users[.@i];
+		}
+	}
+	if(!attachrid(.@winner)) {
+		.findgm_status = 2;
+		end;
+	}
+	specialeffect2 EF_SPHERE;
+	announce .npcName$+": I've been found by "+strcharinfo(0)+" in "+.findgm_map$+"! (Round "+.findgm_round+"/"+.findgm_rounds+")",bc_all|bc_yellow;
+	if(.findgm_pointReward) {
+		#EVENT_POINTS += .findgm_pointReward;
+		dispbottom "You won "+.findgm_pointReward+" Event Point(s)! You now have "+#EVENT_POINTS+" Event Points.";
+	}
+	if(.findgm_zenyReward) {
+		Zeny += .findgm_zenyAmount;
+		dispbottom "You've gained "+.findgm_zenyAmount+" zeny for winning a round in the event.";
+	}
+	sleep 1000;
+	if(.findgm_round >= .findgm_rounds) {
+		donpcevent strnpcinfo(0)+"::OnFindGMEnd";
+		end;
+	}
+	.findgm_round++;
+	announce "[Find "+.npcName$+"] : Round "+.findgm_round+" starting in 5 seconds!",bc_all|bc_yellow;
+	sleep 5000;
+	donpcevent strnpcinfo(0)+"::OnFindGMRoundStart";
+	end;
+
+// Called by @eventstop via donpcevent "Dev Prime#findgm::OnFindGMForceReset".
+// Runs on the walking unit itself: drop its waiting room, hide it,
+// and pull it back to its parked spot regardless of what it was
+// mid-doing when the reset happened.
+OnFindGMForceReset:
+	delwaitingroom;
+	unitwarp getnpcid(0),"maintown",114,156;
+	hideonnpc strnpcinfo(0);
+	end;
+}
+
+// ============================================================
+// The physical Find-GM unit. It's a `duplicate()` of Event
+// Circuit, so it shares that NPC's "." variables directly in rAthena — no
+// bridging needed. It starts hidden via hideonnpc (see OnInit
+// above) and parked on the same tile as Event Circuit, so it's
+// invisible and unclickable until OnFindGMIntro calls
+// hideoffnpc on it; OnFindGMEnd hides it again and warps it back
+// here afterward. Event Circuit itself never moves or disappears.
+// ============================================================
+maintown,114,156,5	duplicate(Event Circuit)	Dev Prime#findgm	871

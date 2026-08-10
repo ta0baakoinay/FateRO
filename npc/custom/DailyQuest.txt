@@ -362,28 +362,28 @@ maintown,140,132,6	script	Daily Mission Board	857,{
 				switch(.@j) {
 					case 1:
 						setarray .@mobhunt[0], 1002, 33, 1113, 44, 1031, 55;
-						setarray .@reward[0], 3000000, 3;
+						setarray .@reward[0], 1000000, 3;
 						setarray .@limit[0], 70, 600;
 						.@desc$ = "Slain different kinds of Porings!";
 						break;
 
 					case 2:
 						setarray .@mobhunt[0], 1243, 300;
-						setarray .@reward[0], 3000000, 3;
+						setarray .@reward[0], 1000000, 3;
 						setarray .@limit[0], 99, 3600;
 						.@desc$ = "Kill some Sasquach at the Christmas Field!";
 						break;
 
 					case 3:
 						setarray .@itmhunt[0], 914, 100, 949, 100, 705, 100;
-						setarray .@reward[0], 3000000, 3;
+						setarray .@reward[0], 1000000, 3;
 						setarray .@limit[0], 99, 3600;
 						.@desc$ = "Collect the required loots and deliver!";
 						break;
 
 					case 4:
 						setarray .@mobhunt[0], 1007, 200;
-						setarray .@reward[0], 3000000, 3;
+						setarray .@reward[0], 1000000, 3;
 						setarray .@limit[0], 99, 300, Job_Archer, Job_Rogue;
 						.@limit$ = "[Base] Archer, Rogue";
 						.@desc$ = "Complete the quest in 5 minutes!";
@@ -391,7 +391,7 @@ maintown,140,132,6	script	Daily Mission Board	857,{
 
 					case 5:
 						setarray .@mobhunt[0], 1196, 300, 1197, 300;
-						setarray .@reward[0], 3000000, 3;
+						setarray .@reward[0], 1000000, 3;
 						setarray .@limit[0], 99, 3600;
 						.@desc$ = "Hunt and deliver requirements and get rewarded!";
 						break;
