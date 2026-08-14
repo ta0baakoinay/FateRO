@@ -1,5 +1,0 @@
--	script	CELLPVP	-1,{
-OnInit:
-    setcell "maintown",139,139,160,160,cell_pvp,1;
-    end;
-}
