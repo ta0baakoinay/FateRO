@@ -133,88 +133,88 @@ Body:
             Item: Donation_Card
             Amount: 30
 
-  - Name: Quest Shop#qshop40
-    Map: sec_in01
-    X: 160
-    Y: 170
-    Direction: South
-    Sprite: 4_M_ROKI2
-    Items:
-      - Index: 0
-        Item: Mizukage Hat
-        Zeny: 200000000
-        RequiredItems:
-          - Index: 0
-            Item: Jellopy
-            Amount: 30
-          - Index: 1
-            Item: Gold
-            Amount: 30
-          - Index: 2
-            Item: Oridecon
-            Amount: 30    
-      - Index: 1
-        Item: Tsuchikage Hat
-        Zeny: 200000000
-        RequiredItems:
-          - Index: 0
-            Item: Jellopy
-            Amount: 30
-          - Index: 1
-            Item: Gold
-            Amount: 30
-          - Index: 2
-            Item: Oridecon
-            Amount: 30
-      - Index: 2
-        Item: Kazekage Hat
-        Zeny: 200000000
-        RequiredItems:
-          - Index: 0
-            Item: Jellopy
-            Amount: 30
-          - Index: 1
-            Item: Gold
-            Amount: 30
-          - Index: 2
-            Item: Oridecon
-            Amount: 30
-      - Index: 3
-        Item: Hoshikage Hat
-        Zeny: 200000000
-        RequiredItems:
-          - Index: 0
-            Item: Jellopy
-            Amount: 30
-          - Index: 1
-            Item: Gold
-            Amount: 30
-          - Index: 2
-            Item: Oridecon
-            Amount: 30
-      - Index: 4
-        Item: Hokage Hat
-        Zeny: 200000000
-        RequiredItems:
-          - Index: 0
-            Item: Jellopy
-            Amount: 30
-          - Index: 1
-            Item: Gold
-            Amount: 30
-          - Index: 2
-            Item: Oridecon
-            Amount: 30
-      - Index: 5
-        Item: Raikage Hat
-        Zeny: 200000000
-        RequiredItems:
-          - Index: 0
-            Item: Jellopy
-            Amount: 30
-          - Index: 1
-            Item: Gold
-            Amount: 30
-          - Index: 2
-            Item: Oridecon
-            Amount: 30
+#  - Name: Quest Shop#qshop40
+#    Map: sec_in01
+#    X: 160
+#    Y: 170
+#    Direction: South
+#    Sprite: 4_M_ROKI2
+#    Items:
+#      - Index: 0
+#        Item: Mizukage Hat
+#        Zeny: 200000000
+#        RequiredItems:
+#          - Index: 0
+#            Item: Jellopy
+#            Amount: 30
+#          - Index: 1
+#            Item: Gold
+#            Amount: 30
+#          - Index: 2
+#            Item: Oridecon
+#            Amount: 30    
+#      - Index: 1
+#        Item: Tsuchikage Hat
+#        Zeny: 200000000
+#        RequiredItems:
+#          - Index: 0
+#            Item: Jellopy
+#            Amount: 30
+#          - Index: 1
+#            Item: Gold
+#            Amount: 30
+#          - Index: 2
+#            Item: Oridecon
+#            Amount: 30
+#      - Index: 2
+#        Item: Kazekage Hat
+#        Zeny: 200000000
+#        RequiredItems:
+#          - Index: 0
+#            Item: Jellopy
+#            Amount: 30
+#          - Index: 1
+#            Item: Gold
+#            Amount: 30
+#          - Index: 2
+#            Item: Oridecon
+#            Amount: 30
+#      - Index: 3
+#        Item: Hoshikage Hat
+#        Zeny: 200000000
+#        RequiredItems:
+#          - Index: 0
+#            Item: Jellopy
+#            Amount: 30
+#          - Index: 1
+#            Item: Gold
+#            Amount: 30
+#          - Index: 2
+#            Item: Oridecon
+#            Amount: 30
+#      - Index: 4
+#        Item: Hokage Hat
+#        Zeny: 200000000
+#        RequiredItems:
+#          - Index: 0
+#            Item: Jellopy
+#            Amount: 30
+#          - Index: 1
+#            Item: Gold
+#            Amount: 30
+#          - Index: 2
+#            Item: Oridecon
+#            Amount: 30
+#      - Index: 5
+#        Item: Raikage Hat
+#        Zeny: 200000000
+#        RequiredItems:
+#          - Index: 0
+#            Item: Jellopy
+#            Amount: 30
+#          - Index: 1
+#            Item: Gold
+#            Amount: 30
+#          - Index: 2
+#            Item: Oridecon
+#            Amount: 30

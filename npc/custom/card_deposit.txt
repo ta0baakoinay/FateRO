@@ -1,4 +1,4 @@
-prontera,153,175,3	script	Collector	4_M_HUMERCHANT,{
+maintown,93,121,6	script	Collector	4_M_HUMERCHANT,{
 	.@npc_name$ = "[Collector]";
 
 	mes .@npc_name$;

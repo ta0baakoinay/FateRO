@@ -1,0 +1,4 @@
+maintown_pvp	mapflag	pvp
+maintown_pvp	mapflag	pvp_nocalcrank
+maintown_pvp	mapflag	nowarpto
+maintown_pvp	mapflag	nowarp
