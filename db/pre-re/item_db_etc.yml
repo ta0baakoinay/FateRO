@@ -4380,13 +4380,36 @@ Body:
     Name: Berzebub Card
     Type: Card
     Buy: 20
-    Weight: 10
+    Weight: 1
     Locations:
       Both_Accessory: true
     Flags:
       BuyingStore: true
     Script: |
-      bonus bCastrate,-30;
+      bonus2 bSubEle,Ele_Water,5;
+      bonus2 bSubEle,Ele_Earth,5;
+      bonus2 bSubEle,Ele_Fire,5;
+      bonus2 bSubEle,Ele_Wind,5;
+      bonus2 bSubEle,Ele_Poison,5;
+      bonus2 bSubEle,Ele_Holy,5;
+      bonus2 bSubEle,Ele_Dark,5;
+      bonus2 bSubEle,Ele_Ghost,5;
+      bonus2 bSubEle,Ele_Undead,5;
+      bonus bLongAtkDef,5;
+      if (readparam(bVit) >= 200) {
+        bonus bVit,5;
+        bonus bMaxHPrate,5;
+        bonus bShortWeaponDamageReturn,3;
+        bonus bLongWeaponDamageReturn,3;
+        bonus2 bSubRace,RC_DemiHuman,3;
+      }
+      if (readparam(bAgi) >= 150) {
+        bonus bAgi,5;
+        bonus bFlee,10;
+        bonus bFlee2,5;
+        bonus bCriticalDefRate,5;
+        bonus bLongAtkDef,3;
+      }
   - Id: 4146
     AegisName: Maya_Card
     Name: Maya Card
@@ -5093,7 +5116,7 @@ Body:
     Name: Maya Purple Card
     Type: Card
     Buy: 20
-    Weight: 10
+    Weight: 1
     Locations:
       Head_Low: true
       Head_Mid: true
@@ -5101,7 +5124,8 @@ Body:
     Flags:
       BuyingStore: true
     Script: |
-      bonus bIntravision;
+      bonus bAtk,30;
+      bonus bHit,50;
   - Id: 4199
     AegisName: Merman_Card
     Name: Merman Card
@@ -7233,8 +7257,10 @@ Body:
     Flags:
       BuyingStore: true
     Script: |
-      skill "LK_BERSERK",1;
-      bonus bMaxHPrate,-50;
+      if (isequippedcnt(4359,4361,4363,4365,4367,4399,4403,4430)<2) {
+        skill "LK_BERSERK",1;
+        bonus bMaxHPrate,-50;
+      }
   - Id: 4358
     AegisName: Seyren_Card
     Name: Seyren Windsor Card
@@ -7256,13 +7282,13 @@ Body:
     Buy: 20
     Weight: 10
     Locations:
-      Garment: true
+      Right_Hand: true
     Flags:
       BuyingStore: true
     Script: |
-      skill "AS_CLOAKING",3;
-    UnEquipScript: |
-      sc_end SC_CLOAKING;
+      if (isequippedcnt(4357,4361,4363,4365,4367,4399,4403,4430)<2) {
+        bonus3 bAutoSpell,"ASC_EDP",1,30;
+      }
   - Id: 4360
     AegisName: Eremes_Card
     Name: Eremes Guile Card
@@ -7287,8 +7313,15 @@ Body:
     Flags:
       BuyingStore: true
     Script: |
-      bonus bBreakWeaponRate,1000;
-      bonus bBreakArmorRate,700;
+      if (isequippedcnt(4357,4359,4363,4365,4367,4399,4403,4430)<2) {
+        bonus bBreakWeaponRate,1000;
+        bonus bBreakArmorRate,700;
+        bonus3 bAutoSpell,"WS_OVERTHRUSTMAX",1,10;
+        bonus3 bAutoSpell,"MC_MAMMONITE",6,50;
+        if (getskilllv("MC_MAMMONITE")==10) {
+          bonus3 bAutoSpell,"MC_MAMMONITE",10,50;
+        }
+      }
   - Id: 4362
     AegisName: Harword_Card
     Name: Howard Alt-Eisen Card
@@ -7313,7 +7346,10 @@ Body:
     Flags:
       BuyingStore: true
     Script: |
-      bonus5 bAutoSpellWhenHit,"HP_ASSUMPTIO",1,50,BF_WEAPON|BF_MAGIC,0;
+      if (isequippedcnt(4357,4359,4361,4365,4367,4399,4403,4430)<2) {
+        bonus5 bAutoSpellWhenHit,"MG_SAFETYWALL",5,100,BF_WEAPON,0;
+        bonus2 bSubRace,RC_All,10;
+      }
   - Id: 4364
     AegisName: Magaleta_Card
     Name: Margaretha Sorin Card
@@ -7342,9 +7378,12 @@ Body:
     Flags:
       BuyingStore: true
     Script: |
-      bonus2 bIgnoreMdefClassRate,Class_Normal,100;
-      bonus bCastrate,100;
-      bonus bSPrecovRate,-100;
+      if (isequippedcnt(4357,4359,4361,4363,4367,4399,4403,4430)<2) {
+        bonus2 bIgnoreMdefClassRate,Class_Normal,100;
+        bonus bCastrate,100;
+        bonus bSPrecovRate,-100;
+        bonus bIntravision;
+      }
     UnEquipScript: |
       heal 0,-2000;
   - Id: 4366
@@ -7375,8 +7414,10 @@ Body:
     Flags:
       BuyingStore: true
     Script: |
-      bonus2 bHPDrainRate,50,20;
-      bonus bHPrecovRate,-10;
+      if (isequippedcnt(4357,4359,4361,4363,4365,4399,4403,4430)<2) {
+        bonus2 bHPDrainRate,50,20;
+        bonus bHit,200;
+      }
   - Id: 4368
     AegisName: Shecil_Card
     Name: Cecil Damon Card
@@ -7866,7 +7907,7 @@ Body:
     Name: Kiel-D-01 Card
     Type: Card
     Buy: 20
-    Weight: 10
+    Weight: 1
     Locations:
       Head_Low: true
       Head_Mid: true
@@ -7874,7 +7915,21 @@ Body:
     Flags:
       BuyingStore: true
     Script: |
-      bonus bDelayRate,-30;
+      if (isequippedcnt(4357,4359,4361,4363,4365,4367,4399,4430)<2) {
+        bonus2 bSubRace,RC_DemiHuman,5;
+        bonus bDelayRate,-5;
+        bonus bVit,5;
+        bonus bMaxHPrate,5;
+        bonus2 bSubEle,Ele_Water,5;
+        bonus2 bSubEle,Ele_Earth,5;
+        bonus2 bSubEle,Ele_Fire,5;
+        bonus2 bSubEle,Ele_Wind,5;
+        bonus2 bSubEle,Ele_Poison,5;
+        bonus2 bSubEle,Ele_Holy,5;
+        bonus2 bSubEle,Ele_Dark,5;
+        bonus2 bSubEle,Ele_Ghost,5;
+        bonus2 bSubEle,Ele_Undead,5;
+      }
   - Id: 4404
     AegisName: Skogul_Card
     Name: Skogul Card
@@ -8236,16 +8291,34 @@ Body:
     Name: Ifrit Card
     Type: Card
     Buy: 20
-    Weight: 10
+    Weight: 1
     Locations:
       Both_Accessory: true
     Flags:
       BuyingStore: true
     Script: |
-      bonus bBaseAtk,(JobLevel/10);
-      bonus bCritical,(JobLevel/10);
-      bonus bHit,(JobLevel/10);
-      bonus3 bAutoSpellWhenHit,"NPC_EARTHQUAKE",2,10;
+      if (isequippedcnt(4357,4359,4361,4363,4365,4367,4399,4403)<2) {
+        if (readparam(bStr) >= 200) {
+          bonus bStr,5;
+          bonus bAtkRate,5;
+          bonus2 bIgnoreDefRaceRate,RC_Boss,5;
+        }
+        if (readparam(bInt) >= 200) {
+          bonus bInt,5;
+          bonus bMatkRate,5;
+          bonus bVariableCastrate,-5;
+        }
+        if (readparam(bDex) >= 200) {
+          bonus bDex,5;
+          bonus bLongAtkRate,5;
+          bonus bHit,15;
+        }
+        if (readparam(bLuk) >= 150) {
+          bonus bLuk,5;
+          bonus bCritAtkRate,7;
+          bonus bFlee2,3;
+        }
+      }
   - Id: 4431
     AegisName: Kasa_Card
     Name: Kasa Card

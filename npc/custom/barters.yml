@@ -48,11 +48,11 @@ Header:
 
 Body:
   - Name: Donation Shop#custom
-    Map: prontera
-    X: 155
-    Y: 168
+    Map: maintown
+    X: 167
+    Y: 182
     Direction: South
-    Sprite: 4_M_MAYOR
+    Sprite: 4_F_KAFRA4
     Items:
       - Index: 0
         Item: "Valkyrie Helm"

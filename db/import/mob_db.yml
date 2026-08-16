@@ -340,7 +340,73 @@ Body:
     DamageMotion: 576
     Ai: Abr_Offensive
     Mode:
+      IgnoreMagic: true
+
+  - Id: 22174
+    AegisName: MD_PRI_RIGEL
+    Name: Quest Shop
+    Level: 144
+    Hp: 10000000
+    BaseExp: 4750
+    JobExp: 3616
+    Attack: 10000
+    Attack2: 10000
+    Defense: 20
+    MagicDefense: 37
+    Str: 444
+    Agi: 216
+    Vit: 279
+    Int: 174
+    Dex: 447
+    Luk: 90
+    AttackRange: 1
+    SkillRange: 10
+    ChaseRange: 12
+    Size: Large
+    Race: Plant
+    Element: Earth
+    ElementLevel: 3
+    WalkSpeed: 290
+    AttackDelay: 504
+    AttackMotion: 960
+    ClientAttackMotion: 480
+    DamageMotion: 576
+    Ai: Abr_Offensive
+    Mode:
       IgnoreMagic: true    
+
+  - Id: 20610
+    AegisName: REGINLEIF
+    Name: Donation Shop
+    Level: 144
+    Hp: 10000000
+    BaseExp: 4750
+    JobExp: 3616
+    Attack: 10000
+    Attack2: 10000
+    Defense: 20
+    MagicDefense: 37
+    Str: 444
+    Agi: 216
+    Vit: 279
+    Int: 174
+    Dex: 447
+    Luk: 90
+    AttackRange: 1
+    SkillRange: 10
+    ChaseRange: 12
+    Size: Large
+    Race: Plant
+    Element: Earth
+    ElementLevel: 3
+    WalkSpeed: 290
+    AttackDelay: 504
+    AttackMotion: 960
+    ClientAttackMotion: 480
+    DamageMotion: 576
+    Ai: Abr_Offensive
+    Mode:
+      IgnoreMagic: true
 #Body:
 # eAthena Dev Team
 #=============================================================

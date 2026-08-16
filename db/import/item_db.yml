@@ -4872,7 +4872,7 @@ Body:
         bonus2 bSkillAtk,156,getrefine();
       }
       else if (Class == Job_Star_Gladiator)
-        bonus bAtkRate,getrefine();
+        bonus2 bAddRace,RC_All,getrefine();
 
   - Id: 120168
     AegisName: Wep_Icarus_Axe_4S
@@ -5290,6 +5290,122 @@ Body:
     Script: |
       percentheal 50,50;
 
+  - Id: 120177
+    AegisName: Hat_Creed
+    Name: Hat_Creed
+    Type: Armor
+    Slots: 1
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    View: 2782
+    Script: |
+      bonus bStr,0;
+
+  - Id: 120178
+    AegisName: Hat_Danzo
+    Name: Hat_Danzo
+    Type: Armor
+    Slots: 1
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2783
+    Script: |
+      bonus bStr,0;
+  - Id: 120179
+    AegisName: Mid_Hollow
+    Name: Mid_Hollow
+    Type: Armor
+    Slots: 1
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2784
+    Script: |
+      bonus bStr,0;
+  - Id: 120180
+    AegisName: Mid_Robot
+    Name: Mid_Robot
+    Type: Armor
+    Slots: 1
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2785
+    Script: |
+      bonus bStr,0;
+  - Id: 120181
+    AegisName: Mid_Tobi
+    Name: Mid_Tobi
+    Type: Armor
+    Slots: 1
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 2786
+    Script: |
+      bonus bStr,0;
+  - Id: 120182
+    AegisName: Angeling_Wings
+    Name: Angeling Wings
+    Type: Armor
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2787
+    Script: |
+      bonus bStr,0;
+  - Id: 120183
+    AegisName: ArchAngel_Wings
+    Name: ArchAngel Wings
+    Type: Armor
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2788
+    Script: |
+      bonus bStr,0;
+  - Id: 120184
+    AegisName: ArchDevil_Wings
+    Name: ArchDevil Wings
+    Type: Armor
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2789
+    Script: |
+      bonus bStr,0;
+  - Id: 120185
+    AegisName: Devil_Wings
+    Name: Devil Wings
+    Type: Armor
+    Weight: 50
+    Defense: 1
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1      
+    EquipLevelMin: 1
+    Jobs:
+      StarGladiator: true
+    View: 2790
+    Script: |
+      bonus bFlee2,10;
+      bonus bFlee,10;
+      if (Class == Job_Star_Gladiator || Class == Job_Star_Gladiator2) {
+        bonus2 bAddClass,Class_All,25;
+        bonus2 bAddEle,Ele_Dark,25;
+      }
+  - Id: 120186
+    AegisName: Deviling_Wings
+    Name: Deviling Wings
+    Type: Armor
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 2791
+    Script: |
+      bonus bStr,0;
 
 #Body:
 # THQ Quest Items
