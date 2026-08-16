@@ -1,10 +1,10 @@
-sec_in01,160,173,3	script	Donation Items#WP1z	115,{
-    callfunc "donateshop",1;
+sec_in01,160,173,3	script	Quest Shop#001	115,{
+    callfunc "questshop001",1,2;
     end;
 
 OnInit:
 	while (1){
-		 showscript ("Donation Manager");
+		 showscript ("Quest Shop");
 		 sleep(1000); 
 	}	
 	end;
@@ -14,7 +14,7 @@ OnInit:
 
 // Script Core - DO NOT DUPLICATE THIS NPC !!!!!!!!!!!!!
 //============================================================
--	script	donateshop_shop	-1,{
+-	script	questshop001_shop	-1,{
 function Add; function Chk; function Slot;
 OnInit:
 	freeloop(1);
@@ -34,8 +34,8 @@ OnInit:
 // -----------------------------------------------------------
 
 	setarray .Shops$[1],
-		"Quest Shop#0001";						// Shop Named 1
-
+		"Quest Shop#0001",						// Shop 1 (100% success rate)
+		"Quest Shop#0002";						// Shop 2 (40% success rate)
 // -----------------------------------------------------------
 //  Quest items.
 //	Add(<shop ID>,<reward ID>,<reward amount>,
@@ -46,26 +46,42 @@ OnInit:
 //	          (omit this line for a shop item to always succeed at 100%)
 // -----------------------------------------------------------
 
-// Quest Shop#0001 -- 40% success rate, 30x (909,969,999) + 30,000,000z each
-Add(1,120092,1,30000000,0,909,30,969,30,999,30);
-setd ".rate_1_120092",40;
-Add(1,120093,1,30000000,0,909,30,969,30,999,30);
-setd ".rate_1_120093",40;
-Add(1,120094,1,30000000,0,909,30,969,30,999,30);
-setd ".rate_1_120094",40;
-Add(1,120095,1,30000000,0,909,30,969,30,999,30);
-setd ".rate_1_120095",40;
-Add(1,120096,1,30000000,0,909,30,969,30,999,30);
-setd ".rate_1_120096",40;
-Add(1,120097,1,30000000,0,909,30,969,30,999,30);
-setd ".rate_1_120097",40;
+// Quest Shop#0001 -- 100% success rate, 30x (909,969,999) + 30,000,000z each
+Add(1,120182,1,30000000,0,909,30,969,30,999,30);
+Add(1,120186,1,30000000,0,909,30,969,30,999,30);
+Add(1,120182,1,30000000,0,909,30,969,30,999,30);
+Add(1,120184,1,30000000,0,909,30,969,30,999,30);
+Add(1,120121,1,30000000,0,909,30,969,30,999,30);
+Add(1,120111,1,30000000,0,909,30,969,30,999,30);
+Add(1,120112,1,30000000,0,909,30,969,30,999,30);
+Add(1,120110,1,30000000,0,909,30,969,30,999,30);
+Add(1,120108,1,30000000,0,909,30,969,30,999,30);
+Add(1,120119,1,30000000,0,909,30,969,30,999,30);
+Add(1,120109,1,30000000,0,909,30,969,30,999,30);
+Add(1,120120,1,100000000,0,120182,1,120186,1,120182,1,120184,1,120184,1,120121,1,120111,1,120111,1,120112,1,120110,1,120108,1,120119,1,120109,1);
+
+// (no rate lines needed - items default to 100% success)
+
+// Quest Shop#0002 -- 40% success rate, 30x (909,969,999) + 30,000,000z each
+Add(2,120092,1,30000000,0,909,30,969,30,999,30);
+setd ".rate_2_120092",40;
+Add(2,120093,1,30000000,0,909,30,969,30,999,30);
+setd ".rate_2_120093",40;
+Add(2,120094,1,30000000,0,909,30,969,30,999,30);
+setd ".rate_2_120094",40;
+Add(2,120095,1,30000000,0,909,30,969,30,999,30);
+setd ".rate_2_120095",40;
+Add(2,120096,1,30000000,0,909,30,969,30,999,30);
+setd ".rate_2_120096",40;
+Add(2,120097,1,30000000,0,909,30,969,30,999,30);
+setd ".rate_2_120097",40;
 // -----------------------------------------------------------
 
 	freeloop(0);
 	set .menu$,"";
 	for(set .@i,1; .@i<=getarraysize(.Shops$); set .@i,.@i+1) {
 		set .menu$, .menu$+.Shops$[.@i]+":";
-		npcshopdelitem "donateshop"+("000"+.@i),909;
+		npcshopdelitem "questshop001"+("000"+.@i),909;
 	}
 	end;
 
@@ -84,8 +100,8 @@ OnMenu:
 		end;
 	}
 	dispbottom "Select one item at a time.";
-	callshop "donateshop"+("000"+@shop_index),1;
-	npcshopattach "donateshop"+("000"+@shop_index);
+	callshop "questshop001"+("000"+@shop_index),1;
+	npcshopattach "questshop001"+("000"+@shop_index);
 	end;
 
 OnBuyItem:
@@ -114,7 +130,7 @@ OnBuyItem:
 	mes " ";
 	clear;
 	setdialogsize(400,.@dlg_h);
-	mes "[ ^FF9300Donation Manager^000000 ]";
+	mes "[ ^FF9300Quest Shop^000000 ]";
 	mes mesitemicon(.@q[0])+" Reward: ^336699"+((.@q[2] > 1)?.@q[2]+"x ":"")+Slot(.@q[0])+"^000000";
 	if (.@rate < 100) mes "^FF0000Success Rate: "+.@rate+"%^000000";
 	mes "Requirements:";
@@ -126,7 +142,7 @@ OnBuyItem:
 	}
 	if (.@q[6]) {
     	for(set .@i, 6; .@i < getarraysize(.@q); set .@i, .@i + 2) {
-		mes Chk(countitem(.@q[.@i]), .@q[.@i + 1] * .@q[1]) + Slot(.@q[.@i]) + " (" + countitem(.@q[.@i]) + "/" + (.@q[.@i + 1] * .@q[1]) + ")^000000";
+		mes Chk(countitem(.@q[.@i]), .@q[.@i + 1] * .@q[1]) + mesitemicon(.@q[.@i]) + " " + Slot(.@q[.@i]) + " (" + countitem(.@q[.@i]) + "/" + (.@q[.@i + 1] * .@q[1]) + ")^000000";
 	    }
 	}	
 	next;
@@ -138,12 +154,12 @@ OnBuyItem:
 		switch(select(" ~ Buy ^0055FF"+getitemname(.@q[0])+"^000000:"+((.@preview && !@qe[7])?" ~ Preview...":"")+":  ~ ^777777Cancel^000000")) {
 		case 1:
 			if (@qe[0]) {
-				mes "[ ^FF9300Donation Manager^000000 ]";
+				mes "[ ^FF9300Quest Shop^000000 ]";
 				mes "You're missing one or more crating requirements.";
 				close;
 			}
 			if (!checkweight(.@q[0],.@q[2])) {
-				mes "[ ^FF9300Donation Manager^000000 ]";
+				mes "[ ^FF9300Quest Shop^000000 ]";
 				mes "^FF0000You need "+(((.@q[2]*getiteminfo(.@q[0], ITEMINFO_WEIGHT))+Weight-MaxWeight)/10)+" additional weight capacity to complete this trade.^000000";
 				close;
 			}
@@ -157,13 +173,13 @@ OnBuyItem:
 				getitem .@q[0],.@q[2];
 				announce strcharinfo(0)+" has crafted "+((.@q[2] > 1)?.@q[2]+"x "+itemlink(.@q[0]):callfunc("F_InsertArticle",itemlink(.@q[0])))+"! ("+.@rate+"% Chance)",bc_all, 0xffc3db;
 				specialeffect2 EF_FLOWERLEAF;
-				mes "[ ^FF9300Donation Manager^000000 ]";
+				mes "[ ^FF9300Quest Shop^000000 ]";
 				mes mesitemicon(.@q[0])+" ^00AA00Success!^000000 You received "+((.@q[2] > 1)?.@q[2]+"x ":"")+getitemname(.@q[0])+".";
 				close;
 			} else {
 				announce strcharinfo(0)+" has failed to craft "+itemlink(.@q[0])+"! ("+.@rate+"% Chance)",bc_all, 0xffc3db;
 				specialeffect2 EF_LEXAETERNA;
-				mes "[ ^FF9300Donation Manager^000000 ]";
+				mes "[ ^FF9300Quest Shop^000000 ]";
 				mes mesitemicon(.@q[0])+" ^FF0000Failed!^000000 Your materials and Zeny were consumed, but the trade was unsuccessful.";
 				close;
 			}
@@ -204,7 +220,7 @@ function Add {
 			setarray .@j[.@i-2],getarg(.@i),getarg(.@i+1);
 	}
 	copyarray getd(".q_"+getarg(0)+"_"+getarg(1)+"[0]"),.@j[0],getarraysize(.@j);
-	npcshopadditem "donateshop"+("000"+getarg(0)),getarg(1),((.ShowZeny)?getarg(3):0);
+	npcshopadditem "questshop001"+("000"+getarg(0)),getarg(1),((.ShowZeny)?getarg(3):0);
 	return;
 }
 
@@ -226,15 +242,16 @@ function Slot {
 }
 }
 
-function	script	donateshop	{
+function	script	questshop001	{
 	deletearray @i[0],getarraysize(@i);
 	for(set .@i,0; .@i<getargcount(); set .@i,.@i+1)
 		set @i[.@i],getarg(.@i);
-	doevent "donateshop_shop::OnMenu";
+	doevent "questshop001_shop::OnMenu";
 	end;
 }
 
 
 // Shop data
 //============================================================
--	shop	donateshop0001	-1,909:-1
+-	shop	questshop0010001	-1,909:-1
+-	shop	questshop0010002	-1,909:-1
