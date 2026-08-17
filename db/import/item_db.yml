@@ -5304,7 +5304,7 @@ Body:
 
   - Id: 120178
     AegisName: Hat_Danzo
-    Name: Hat_Danzo
+    Name: Danzo
     Type: Armor
     Slots: 1
     Locations:
@@ -5312,10 +5312,12 @@ Body:
     ArmorLevel: 1
     View: 2783
     Script: |
-      bonus bStr,0;
+      bonus bInt,3;
+      bonus2 bSkillAtk,490,5;
+
   - Id: 120179
     AegisName: Mid_Hollow
-    Name: Mid_Hollow
+    Name: Hollow Mask
     Type: Armor
     Slots: 1
     Locations:
@@ -5323,10 +5325,12 @@ Body:
     ArmorLevel: 1
     View: 2784
     Script: |
-      bonus bStr,0;
+      bonus bAtkRate,3;
+      bonus bMatkRate,3;
+
   - Id: 120180
     AegisName: Mid_Robot
-    Name: Mid_Robot
+    Name: Robot Ears
     Type: Armor
     Slots: 1
     Locations:
@@ -5334,10 +5338,12 @@ Body:
     ArmorLevel: 1
     View: 2785
     Script: |
-      bonus bStr,0;
+      bonus bMaxHPrate,3;
+      bonus2 bSubRace,RC_All,2;
+
   - Id: 120181
     AegisName: Mid_Tobi
-    Name: Mid_Tobi
+    Name: Tobi Mask
     Type: Armor
     Slots: 1
     Locations:
@@ -5345,7 +5351,8 @@ Body:
     ArmorLevel: 1
     View: 2786
     Script: |
-      bonus bStr,0;
+      bonus bStr,3;
+      bonus2 bAddSize,Size_Medium,5;
   - Id: 120182
     AegisName: Angeling_Wings
     Name: Angeling Wings

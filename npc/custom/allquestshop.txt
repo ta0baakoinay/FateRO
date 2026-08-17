@@ -2,7 +2,7 @@ maintown,173,182,3	script	Quest Shop#aioqshop	22174,{
 	mes "[Quest Shop]";
 	mes "What would you like to browse?";
 	next;
-	switch(select("Quest Shop:Quest Shop (40% Success):Cancel")) {
+	switch(select("Quest Shop:Quest Shop (40% Success):Quest Shop (30% Success):Cancel")) {
 	case 1:
 		close2;
 		callfunc "questshop001",1;
@@ -11,6 +11,10 @@ maintown,173,182,3	script	Quest Shop#aioqshop	22174,{
 		close2;
 		callfunc "questshop001",2;
 		end;
+	case 3:
+		close2;
+		callfunc "questshop001",3;
+		end;		
 	default:
 		close;
 	}

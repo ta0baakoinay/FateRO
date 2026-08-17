@@ -1,5 +1,5 @@
 sec_in01,160,173,3	script	Quest Shop#001	115,{
-    callfunc "questshop001",1,2;
+    callfunc "questshop001",1,2,3;
     end;
 
 OnInit:
@@ -35,7 +35,8 @@ OnInit:
 
 	setarray .Shops$[1],
 		"Quest Shop#0001",						// Shop 1 (100% success rate)
-		"Quest Shop#0002";						// Shop 2 (40% success rate)
+		"Quest Shop#0002",						// Shop 2 (40% success rate)
+		"Quest Shop#0003";						// Shop 3 (30% success rate)
 // -----------------------------------------------------------
 //  Quest items.
 //	Add(<shop ID>,<reward ID>,<reward amount>,
@@ -75,6 +76,17 @@ Add(2,120096,1,30000000,0,909,30,969,30,999,30);
 setd ".rate_2_120096",40;
 Add(2,120097,1,30000000,0,909,30,969,30,999,30);
 setd ".rate_2_120097",40;
+
+
+// Quest Shop#0003 -- 30% success rate, 30x (909,969,999) + 30,000,000z each
+Add(3,120180,1,30000000,0,909,30,969,30,999,30);
+setd ".rate_3_120180",30;
+Add(3,120178,1,30000000,0,909,30,969,30,999,30);
+setd ".rate_3_120178",30;
+Add(3,120181,1,30000000,0,909,30,969,30,999,30);
+setd ".rate_3_120181",30;
+Add(3,120179,1,30000000,0,909,30,969,30,999,30);
+setd ".rate_3_120179",30;
 // -----------------------------------------------------------
 
 	freeloop(0);
@@ -171,13 +183,13 @@ OnBuyItem:
 			set .@roll, rand(1,100);
 			if (.@roll <= .@rate) {
 				getitem .@q[0],.@q[2];
-				announce strcharinfo(0)+" has crafted "+((.@q[2] > 1)?.@q[2]+"x "+itemlink(.@q[0]):callfunc("F_InsertArticle",itemlink(.@q[0])))+"! ("+.@rate+"% Chance)",bc_all, 0xffc3db;
+				announce strcharinfo(0)+" has crafted "+((.@q[2] > 1)?.@q[2]+"x "+itemlink(.@q[0]):callfunc("F_InsertArticle",itemlink(.@q[0])))+"! ("+.@rate+"% Chance)",bc_all, 0x8A2BE2;
 				specialeffect2 EF_FLOWERLEAF;
 				mes "[ ^FF9300Quest Shop^000000 ]";
 				mes mesitemicon(.@q[0])+" ^00AA00Success!^000000 You received "+((.@q[2] > 1)?.@q[2]+"x ":"")+getitemname(.@q[0])+".";
 				close;
 			} else {
-				announce strcharinfo(0)+" has failed to craft "+itemlink(.@q[0])+"! ("+.@rate+"% Chance)",bc_all, 0xffc3db;
+				announce strcharinfo(0)+" has failed to craft "+itemlink(.@q[0])+"! ("+.@rate+"% Chance)",bc_all, 0xFF0000;
 				specialeffect2 EF_LEXAETERNA;
 				mes "[ ^FF9300Quest Shop^000000 ]";
 				mes mesitemicon(.@q[0])+" ^FF0000Failed!^000000 Your materials and Zeny were consumed, but the trade was unsuccessful.";
@@ -255,3 +267,4 @@ function	script	questshop001	{
 //============================================================
 -	shop	questshop0010001	-1,909:-1
 -	shop	questshop0010002	-1,909:-1
+-	shop	questshop0010003	-1,909:-1
