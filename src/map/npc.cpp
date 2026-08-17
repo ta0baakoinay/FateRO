@@ -3391,11 +3391,22 @@ e_purchase_result npc_barter_purchase( map_session_data& sd, std::shared_ptr<s_n
 				}
 			}
 		}
+
+		// --- Custom: server-wide announce on barter purchase ---
+		{
+			char output[256];
+			if( purchase.amount > 1 ){
+				safesnprintf( output, sizeof(output), "%s bought %ux %s!", sd.status.name, purchase.amount, purchase.data->ename.c_str() );
+			}else{
+				safesnprintf( output, sizeof(output), "%s bought %s!", sd.status.name, purchase.data->ename.c_str() );
+			}
+			intif_broadcast2( output, (int32)strlen(output) + 1, 0xFFCC00, FW_NORMAL, 12, 0, 0 );
+		}
+		// ---------------------------------------------------------
 	}
 
 	return e_purchase_result::PURCHASE_SUCCEED;
 }
-
 
 //Atempt to remove an npc from a map
 //This doesn't remove it from map_db
