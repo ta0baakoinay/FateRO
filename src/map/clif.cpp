@@ -13706,10 +13706,39 @@ void clif_parse_WeaponRefine( int32 fd, map_session_data *sd ){
 ///     255   = cancel
 /// NOTE: If there were more than 254 items in the list, choice
 ///     overflows to choice%256.
+// --- Custom: Barter purchase confirmation ---
+struct s_pending_barter_purchase{
+	int32 npcid;
+	std::shared_ptr<s_npc_barter> barter;
+	std::vector<s_barter_purchase> purchases;
+};
+static std::unordered_map<int32, s_pending_barter_purchase> pending_barter_purchases;
+// ---------------------------------------------
 void clif_parse_NpcSelectMenu(int32 fd,map_session_data *sd){
-	struct s_packet_db* info = &packet_db[RFIFOW(fd,0)];
-	int32 npc_id = RFIFOL(fd,info->pos[0]);
-	uint8 select = RFIFOB(fd,info->pos[1]);
+        struct s_packet_db* info = &packet_db[RFIFOW(fd,0)];
+        int32 npc_id = RFIFOL(fd,info->pos[0]);
+        uint8 select = RFIFOB(fd,info->pos[1]);
+
+        // --- Custom: intercept barter purchase confirmation ---
+        {
+                auto pending_it = pending_barter_purchases.find( sd->id );
+
+                if( pending_it != pending_barter_purchases.end() && pending_it->second.npcid == npc_id ){
+                        s_pending_barter_purchase pending = pending_it->second;
+
+                        pending_barter_purchases.erase( pending_it );
+                        sd->state.ignoretimeout = 0;
+
+                        clif_scriptclose( *sd, npc_id );
+
+                        if( select == 1 ){
+                                clif_npc_buy_result( sd, npc_barter_purchase( *sd, pending.barter, pending.purchases ) );
+                        }
+
+                        return;
+                }
+        }
+        // -------------------------------------------------------
 
 #ifdef SECURE_NPCTIMEOUT
 	if( sd->npc_idle_timer == INVALID_TIMER && !sd->state.ignoretimeout )
@@ -23637,6 +23666,7 @@ void clif_barter_open( map_session_data& sd, npc_data& nd ){
 }
 
 void clif_parse_barter_close( int32 fd, map_session_data* sd ){
+	if( !sd->state.ignoretimeout ){ pending_barter_purchases.erase( sd->id ); }
 #if PACKETVER_MAIN_NUM >= 20190116 || PACKETVER_RE_NUM >= 20190116 || PACKETVER_ZERO_NUM >= 20181226
 	if( sd->state.barter_open ){
 		sd->npc_shopid = 0;
@@ -23644,6 +23674,7 @@ void clif_parse_barter_close( int32 fd, map_session_data* sd ){
 	}
 #endif
 }
+
 
 void clif_parse_barter_buy( int32 fd, map_session_data* sd ){
 #if PACKETVER_MAIN_NUM >= 20190116 || PACKETVER_RE_NUM >= 20190116 || PACKETVER_ZERO_NUM >= 20181226
@@ -23724,7 +23755,41 @@ void clif_parse_barter_buy( int32 fd, map_session_data* sd ){
 		purchases.push_back( purchase );
 	}
 
-	clif_npc_buy_result( sd, npc_barter_purchase( *sd, barter, purchases )  );
+	        // --- Custom: ask for confirmation instead of purchasing immediately ---
+        {
+                uint64 totalZeny = 0;
+
+                for( const s_barter_purchase& purchase : purchases ){
+                        totalZeny += ( (uint64)purchase.item->price * purchase.amount );
+                }
+
+                s_pending_barter_purchase pending;
+                pending.npcid = sd->npc_shopid;
+                pending.barter = barter;
+                pending.purchases = purchases;
+
+                pending_barter_purchases[sd->id] = pending;
+
+                sd->npc_menu = 2;
+                sd->state.ignoretimeout = 1;
+
+                std::string mes_str = barter->confirm_msg;
+
+		{
+			std::string count_str = std::to_string( purchases.size() );
+			std::string zeny_str = std::to_string( totalZeny );
+			size_t pos;
+
+			while( ( pos = mes_str.find( "{count}" ) ) != std::string::npos )
+				mes_str.replace( pos, 7, count_str );
+			while( ( pos = mes_str.find( "{zeny}" ) ) != std::string::npos )
+				mes_str.replace( pos, 6, zeny_str );
+		}
+
+		clif_scriptmes( *sd, sd->npc_shopid, mes_str.c_str() );
+		clif_scriptmenu( *sd, sd->npc_shopid, barter->confirm_menu.c_str() );
+        }
+        // ------------------------------------------------------------------------
 #endif
 }
 
@@ -23807,6 +23872,7 @@ void clif_barter_extended_open( map_session_data& sd, npc_data& nd ){
 }
 
 void clif_parse_barter_extended_close( int32 fd, map_session_data* sd ){
+	if( !sd->state.ignoretimeout ){ pending_barter_purchases.erase( sd->id ); }
 #if PACKETVER_MAIN_NUM >= 20191120 || PACKETVER_RE_NUM >= 20191106 || PACKETVER_ZERO_NUM >= 20191127
 	if( sd->state.barter_extended_open ){
 		sd->npc_shopid = 0;
@@ -23894,7 +23960,41 @@ void clif_parse_barter_extended_buy( int32 fd, map_session_data* sd ){
 		purchases.push_back( purchase );
 	}
 
-	clif_npc_buy_result( sd, npc_barter_purchase( *sd, barter, purchases )  );
+	        // --- Custom: ask for confirmation instead of purchasing immediately ---
+        {
+                uint64 totalZeny = 0;
+
+                for( const s_barter_purchase& purchase : purchases ){
+                        totalZeny += ( (uint64)purchase.item->price * purchase.amount );
+                }
+
+                s_pending_barter_purchase pending;
+                pending.npcid = sd->npc_shopid;
+                pending.barter = barter;
+                pending.purchases = purchases;
+
+                pending_barter_purchases[sd->id] = pending;
+
+                sd->npc_menu = 2;
+                sd->state.ignoretimeout = 1;
+
+                std::string mes_str = barter->confirm_msg;
+
+		{
+			std::string count_str = std::to_string( purchases.size() );
+			std::string zeny_str = std::to_string( totalZeny );
+			size_t pos;
+
+			while( ( pos = mes_str.find( "{count}" ) ) != std::string::npos )
+				mes_str.replace( pos, 7, count_str );
+			while( ( pos = mes_str.find( "{zeny}" ) ) != std::string::npos )
+				mes_str.replace( pos, 6, zeny_str );
+		}
+
+		clif_scriptmes( *sd, sd->npc_shopid, mes_str.c_str() );
+		clif_scriptmenu( *sd, sd->npc_shopid, barter->confirm_menu.c_str() );
+        }
+        // ------------------------------------------------------------------------
 #endif
 }
 

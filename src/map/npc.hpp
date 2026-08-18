@@ -88,13 +88,14 @@ struct s_npc_barter_requirement{
 };
 
 struct s_npc_barter_item{
-	uint16 index;
-	t_itemid nameid;
-	bool stockLimited;
-	uint32 stock;
-	uint32 price;
-	int8 refine;
-	std::map<uint16, std::shared_ptr<s_npc_barter_requirement>> requirements;
+        uint16 index;
+        t_itemid nameid;
+        bool stockLimited;
+        uint32 stock;
+        uint32 price;
+        int8 refine;
+        uint16 rate;
+        std::map<uint16, std::shared_ptr<s_npc_barter_requirement>> requirements;
 };
 
 struct s_npc_barter{
@@ -106,7 +107,8 @@ struct s_npc_barter{
 	int16 sprite;
 	std::map<uint16, std::shared_ptr<s_npc_barter_item>> items;
 	int32 npcid;
-
+	std::string confirm_msg;
+	std::string confirm_menu;
 	~s_npc_barter();
 };
 

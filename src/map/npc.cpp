@@ -13,6 +13,7 @@
 #include <common/ers.hpp>
 #include <common/malloc.hpp>
 #include <common/nullpo.hpp>
+#include <common/random.hpp>
 #include <common/showmsg.hpp>
 #include <common/strlib.hpp>
 #include <common/timer.hpp>
@@ -406,6 +407,29 @@ uint64 BarterDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		barter = std::make_shared<s_npc_barter>();
 		barter->name = npcname;
 		barter->npcid = 0;
+		barter->confirm_msg = "Craft {count} item type(s) for {zeny} zeny total?";
+
+		barter->confirm_menu = "Craft it:Cancel";
+	}
+
+	if( this->nodeExists( node, "Confirm" ) ){
+		std::string confirm;
+
+		if( !this->asString( node, "Confirm", confirm ) ){
+			return 0;
+		}
+
+		barter->confirm_msg = confirm;
+	}
+
+	if( this->nodeExists( node, "ConfirmMenu" ) ){
+		std::string confirm_menu;
+
+		if( !this->asString( node, "ConfirmMenu", confirm_menu ) ){
+			return 0;
+		}
+
+		barter->confirm_menu = confirm_menu;
 	}
 
 	if( this->nodeExists( node, "Map" ) ){
@@ -607,6 +631,23 @@ uint64 BarterDatabase::parseBodyNode( const ryml::NodeRef& node ){
 					item->price = 0;
 				}
 			}
+
+
+                        if( this->nodeExists( itemNode, "Rate" ) ){
+                                uint16 rate;
+                                if( !this->asUInt16( itemNode, "Rate", rate ) ){
+                                        return 0;
+                                }
+                                if( rate > 100 ){
+                                        this->invalidWarning( itemNode["Rate"], "barter_parseBodyNode: Rate %hu is too high, capping to 100.\n", rate );
+                                        rate = 100;
+                                }
+                                item->rate = rate;
+                        }else{
+                                if( !item_exists ){
+                                        item->rate = 100;
+                                }
+                        }
 
 			if( this->nodeExists( itemNode, "Refine" ) ){
 				std::shared_ptr<item_data> data = item_db.find( item->nameid );
@@ -3361,46 +3402,73 @@ e_purchase_result npc_barter_purchase( map_session_data& sd, std::shared_ptr<s_n
 			}
 		}
 
-		if( itemdb_isstackable2( purchase.data ) ){
-			struct item it = {};
+		bool success = rnd_chance( purchase.item->rate, (uint16)100 );
 
-			it.nameid = purchase.item->nameid;
-			it.identify = true;
+		if( success ){
+			if( itemdb_isstackable2( purchase.data ) ){
+				struct item it = {};
 
-			if( pc_additem( &sd, &it, purchase.amount, LOG_TYPE_BARTER ) != ADDITEM_SUCCESS ){
-				return e_purchase_result::PURCHASE_FAIL_EXCHANGE_FAILED;
-			}
-		}else{
-			if( purchase.data->type == IT_PETEGG ){
-				for( int32 i = 0; i < purchase.amount; i++ ){
-					if( !pet_create_egg( &sd, purchase.item->nameid ) ){
-						return e_purchase_result::PURCHASE_FAIL_EXCHANGE_FAILED;
-					}
+				it.nameid = purchase.item->nameid;
+				it.identify = true;
+
+				if( pc_additem( &sd, &it, purchase.amount, LOG_TYPE_BARTER ) != ADDITEM_SUCCESS ){
+					return e_purchase_result::PURCHASE_FAIL_EXCHANGE_FAILED;
 				}
 			}else{
-				for( int32 i = 0; i < purchase.amount; i++ ){
-					struct item it = {};
+				if( purchase.data->type == IT_PETEGG ){
+					for( int32 i = 0; i < purchase.amount; i++ ){
+						if( !pet_create_egg( &sd, purchase.item->nameid ) ){
+							return e_purchase_result::PURCHASE_FAIL_EXCHANGE_FAILED;
+						}
+					}
+				}else{
+					for( int32 i = 0; i < purchase.amount; i++ ){
+						struct item it = {};
 
-					it.nameid = purchase.item->nameid;
-					it.identify = true;
-					it.refine = purchase.item->refine;
+						it.nameid = purchase.item->nameid;
+						it.identify = true;
+						it.refine = purchase.item->refine;
 
-					if( pc_additem( &sd, &it, 1, LOG_TYPE_BARTER ) != ADDITEM_SUCCESS ){
-						return e_purchase_result::PURCHASE_FAIL_EXCHANGE_FAILED;
+						if( pc_additem( &sd, &it, 1, LOG_TYPE_BARTER ) != ADDITEM_SUCCESS ){
+							return e_purchase_result::PURCHASE_FAIL_EXCHANGE_FAILED;
+						}
 					}
 				}
 			}
 		}
 
-		// --- Custom: server-wide announce on barter purchase ---
-		{
+				// --- Custom: server-wide announce on barter purchase (skip for 100% items) ---
+		if( purchase.item->rate < 100 ){
+			char output[256];
+			if( success ){
+				if( purchase.amount > 1 ){
+					safesnprintf( output, sizeof(output), "%s bought %ux %s! (%hu%% Chance)", sd.status.name, purchase.amount, purchase.data->ename.c_str(), purchase.item->rate );
+				}else{
+					safesnprintf( output, sizeof(output), "%s bought %s! (%hu%% Chance)", sd.status.name, purchase.data->ename.c_str(), purchase.item->rate );
+				}
+				intif_broadcast2( output, (int32)strlen(output) + 1, 0x9C27B0, FW_NORMAL, 12, 0, 0 );
+			}else{
+				safesnprintf( output, sizeof(output), "%s failed to craft for %s! (%hu%% Chance)", sd.status.name, purchase.data->ename.c_str(), purchase.item->rate );
+				intif_broadcast2( output, (int32)strlen(output) + 1, 0xFF0000, FW_NORMAL, 12, 0, 0 );
+			}
+		}else if( barter->name == "Donation Shop#custom" ){
+			// --- Custom: Donation Shop always broadcasts on 100% purchases, no percentage shown ---
 			char output[256];
 			if( purchase.amount > 1 ){
-				safesnprintf( output, sizeof(output), "%s bought %ux %s!", sd.status.name, purchase.amount, purchase.data->ename.c_str() );
+				safesnprintf( output, sizeof(output), "%s has purchased %ux %s!", sd.status.name, purchase.amount, purchase.data->ename.c_str() );
 			}else{
-				safesnprintf( output, sizeof(output), "%s bought %s!", sd.status.name, purchase.data->ename.c_str() );
+				safesnprintf( output, sizeof(output), "%s has purchased %s!", sd.status.name, purchase.data->ename.c_str() );
 			}
-			intif_broadcast2( output, (int32)strlen(output) + 1, 0xFFCC00, FW_NORMAL, 12, 0, 0 );
+			intif_broadcast2( output, (int32)strlen(output) + 1, 0x9C27B0, FW_NORMAL, 12, 0, 0 );
+		}else if( barter->name.rfind( "Quest Shop#", 0 ) == 0 ){
+			// --- Custom: Quest Shop always broadcasts on 100% purchases, no percentage shown ---
+			char output[256];
+			if( purchase.amount > 1 ){
+				safesnprintf( output, sizeof(output), "%s has crafted %ux %s!", sd.status.name, purchase.amount, purchase.data->ename.c_str() );
+			}else{
+				safesnprintf( output, sizeof(output), "%s has crafted %s!", sd.status.name, purchase.data->ename.c_str() );
+			}
+			intif_broadcast2( output, (int32)strlen(output) + 1, 0x9C27B0, FW_NORMAL, 12, 0, 0 );
 		}
 		// ---------------------------------------------------------
 	}
