@@ -330,7 +330,7 @@ Body:
     Y: 182
     Direction: South
     Sprite: 4_F_KAFRA4
-    Confirm: "Are you sure you want to craft this item?"  
+    Confirm: "Are you sure you want to craft this item? ^FF0000It has a 40% chance of success."  
     ConfirmMenu: "Craft it:Cancel"  
     Items:
       - Index: 0
@@ -428,7 +428,7 @@ Body:
     Y: 182
     Direction: South
     Sprite: 4_F_KAFRA4
-    Confirm: "Are you sure you want to craft this item?"
+    Confirm: "Are you sure you want to craft this item? ^FF0000It has a 30% chance of success." 
     ConfirmMenu: "Craft it:Cancel"    
     Items:
       - Index: 0
