@@ -10,14 +10,20 @@ prontera,155,181,4	script	ItemShopBubble#helper	-1,{
 OnInit:
 	setarray .@npc_name$[0],
 		"Donation Shop#custom",
-		"Quest Shop#qshop",
-		"Quest Shop#aioqshop",
+		"Quest Shop#0002",
+		"Quest Shop#0003",
+		"Quest Shop#0001",
+		"Valkyrie",
+		"PvP-StatsViewer",
 		"Monster Arena";
 
 	setarray .@bubble_text$[0],
 		"Donation Shop",
+		"Quest Shop (40% Chance)",
+		"Quest Shop (30% Chance)",
 		"Quest Shop",
-		"Quest Shop",
+		"Break The Seal Quest",
+		"PVP Rankings",
 		"Monster Arena";
 
 	.@size = getarraysize(.@npc_name$);

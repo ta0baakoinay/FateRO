@@ -37,7 +37,7 @@
 
 // Information NPC
 //============================================================
-prontera,139,182,4	script	WOE Information	835,{
+maintown,155,113,4	script	WOE Information	835,{
 	doevent "WOE_CONTROL::OnMenu";
 	end;
 OnAgitStart:
@@ -93,7 +93,7 @@ OnInit:
 	// Rewards per castle.
 	//   setarray .reward_id[0],     <itemID>{,<itemID>,...}
 	//   setarray .reward_amount[0], <amount>{,<amount>,...}
-	setarray .reward_id[0],14001;
+	setarray .reward_id[0],504;
 	setarray .reward_amount[0],1;
 
 	// Zeny reward:
@@ -286,10 +286,10 @@ function OnWoeTime {
 				if (.@i+4 < .Size) mes " ";
 			}
 			freeloop(0);
-		} else
+		} else 
 			mes "No times are configured.";
 			close;
-
+		
 }
 
 function OnWoeStart {
@@ -322,7 +322,7 @@ function OnWoeStart {
 		warp .Map$[.@index],.MapX[.@index],.MapY[.@index];
 		close2;
 	}
-	}
+	}	
 }
 
 OnReward:
