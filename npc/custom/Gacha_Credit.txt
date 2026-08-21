@@ -1,0 +1,396 @@
+maintown,119,128,3	script	Credit Gacha Machine	562,{
+function Get_Chance; function Add_Gacha;
+
+if(!.Initialize){
+	.name$ = "[ ^FF5500Credit Gacha Machine^000000 ]";
+	.rareannounce = 25;	//0.25%
+	//NAME ,ZENY, POINTNAME ,POINTVAR, PRICE ,COSTITEMID, PRICE				{Item ID, Amount, Chance 1-10000},{Item ID, Amount, Chance 1-10000},{repeat}
+	//NOTE: chance from lowest to highest. 1= 0.01% | 10 = 0.1% | 100 = 1% etc.
+	Add_Gacha("Credit Gacha",0,"","",0,30035,5,
+	120096,1,15,120094,1,15,120093,1,15,120092,1,25,120095,1,300,120097,1,300);
+	.Initialize = 1;
+}
+
+L_Menu:
+	mes .name$;
+	mes "Good day adventurer! I have a very special item for you! Do you want to play our Gachapon ?";
+	next;
+	mes .name$;
+	mes "Welcome to the Credit Gacha Machine! If you would like to play, please select the Gacha you wish to try your luck with!";
+	.@menu$ = "";
+	while(getd(".gacha_"+(.@n++)+"[0]"))
+		.@menu$ = .@menu$ + "[>] " + getd(".gacha_"+(.@n-1)+"_name$") + ":";
+	.@menu$ = .@menu$ + "[>] Exit";
+	.@sel = select(.@menu$) - 1;
+	if (!getd(".gacha_"+.@sel+"[0]")) end;
+	.@cost$ = callsub(OnGetCost, .@sel);
+	next;
+
+	// --- Fixed dialog size so the box doesn't resize awkwardly per item count ---
+	mes " ";
+	clear;
+	.@itemCount = getarraysize(getd(".gacha_"+.@sel+"")) / 3;
+	.@dlg_h = 260 + (.@itemCount * 32);	// base height + ~32px per regular reward line; tune to taste
+	setdialogsize(400,.@dlg_h);
+	// Requires a client/PACKETVER that supports setdialogsize; some older clients ignore it silently.
+
+	mes .name$;
+	mes "Here are the items for " + getd(".gacha_"+.@sel+"_name$") + ":";
+	mes "^FFFFFF_^000000";
+	mes "^00AA00Regular Rewards:^000000";
+	
+	// Display regular gacha items
+	for (.@i = 0; .@i < getarraysize(getd(".gacha_"+.@sel+"")); .@i += 3) {
+		.@itemid = getd(".gacha_"+.@sel+"["+(.@i)+"]");
+		.@amt = getd(".gacha_"+.@sel+"["+(.@i+1)+"]");
+		.@chanceValue = getd(".gacha_"+.@sel+"["+(.@i+2)+"]");
+		.@chance$ = Get_Chance(.@chanceValue);
+		
+		if (.@chanceValue <= 100) { // 1% or below
+			.@color$ = "^ff0000"; // Red
+		} else if (.@chanceValue <= 500) { // 5% or below
+			.@color$ = "^8A2BE2"; // Violet
+		} else if (.@chanceValue <= 1000) { // 10% or below
+			.@color$ = "^FFA500"; // Orange
+		} else if (.@chanceValue <= 4000) { // 40% or below
+			.@color$ = "^0000FF"; // Blue
+		} else {
+			.@color$ = "^32CD32"; // Green for the rest
+		}
+
+		// Name printed explicitly (mesitemicon's 2nd arg isn't rendered as a label), icon appended after
+		mes "-  [ " + .@color$ + .@chance$ + "^000000 ]   " + .@amt + "x  " + getitemname(.@itemid) + "  " + mesitemicon(.@itemid);
+	}
+	
+	mes "^FFFFFF_^000000";
+	mes "^FF8C00Consolation Rewards:^000000";
+	mes "^777777(When regular rewards are not obtained)^000000";
+	
+	// Display consolation items
+	setarray .@consolationItems[0], 13517, 12534, 12103, 985, 984;
+	for (.@i = 0; .@i < getarraysize(.@consolationItems); .@i++) {
+		mes "-  [ ^777777Consolation^000000 ]   1x  " + getitemname(.@consolationItems[.@i]) + "  " + mesitemicon(.@consolationItems[.@i]);
+	}
+	
+	mes "^FFFFFF_^000000";
+	
+	mes "Cost per pull: " + .@cost$;
+	mes "^FFFFFF_^000000";
+	mes "^0055FFSelect your pull option:^000000";
+	
+	// Multi-spin selection menu
+	.@spinOption = select(
+		"[>] Pull x1 Gacha!",
+		"[>] Pull x5 Gacha! (5x cost)",
+		"[>] Pull x10 Gacha! (10x cost)",
+		"[>] Pull x20 Gacha! (20x cost)",
+		"[>] Cancel"
+	);
+	
+	if (.@spinOption == 5) {
+		mes .name$;
+		mes "Alright, just talk to me whenever you want to pull a gacha. ^_~";
+		end;
+	}
+	
+	// Determine spin count based on selection
+	.@spinCount = 1;
+	switch(.@spinOption) {
+		case 2: .@spinCount = 5; break;
+		case 3: .@spinCount = 10; break;
+		case 4: .@spinCount = 20; break;
+	}
+	
+	close2;
+	callsub OnMultiPullGacha, .@sel, .@spinCount;
+end;
+
+OnMultiPullGacha:
+	.@gachaType = getarg(0);
+	.@spinCount = getarg(1);
+	
+	// Check if player has enough resources for all spins
+	if (!callsub(OnCheckMultiPayment, .@gachaType, .@spinCount)) {
+		message strcharinfo(0), "Insufficient Credits for " + .@spinCount + " pull(s)!";
+		end;
+	}
+	
+	// Deduct payment for all spins at once
+	callsub(OnDeductMultiPayment, .@gachaType, .@spinCount);
+	
+	// Initialize arrays to store all results
+	deletearray @multiGachaItems[0];
+	deletearray @multiGachaAmounts[0];
+	deletearray @multiGachaChances[0];
+	.@totalResults = 0;
+	
+	// Perform multiple pulls
+	for (.@spin = 0; .@spin < .@spinCount; .@spin++) {
+		message strcharinfo(0), "Pulling gacha " + (.@spin + 1) + "/" + .@spinCount + "...";
+		specialeffect2 775;
+		sleep2 200; // Small delay between pulls for effect
+		
+		if (callsub(OnRandomPull, .@gachaType)) {
+			@multiGachaItems[.@totalResults] = @gachaid;
+			@multiGachaAmounts[.@totalResults] = @gachaamt;
+			@multiGachaChances[.@totalResults] = @gachachance;
+			.@totalResults++;
+			
+			// Check for rare item announcement
+			if (@gachachance <= .rareannounce) {
+				if (@gachachance <= 100) {
+					.@color = 0xe91f52; // Red
+				} else if (@gachachance <= 500) {
+					.@color = 0xb0a0d9; // Violet
+				} else if (@gachachance <= 1000) {
+					.@color = 0xFFA500; // Orange
+				} else if (@gachachance <= 4000) {
+					.@color = 0x0000FF; // Blue
+				} else {
+					.@color = 0x00FF00; // Green
+				}
+				announce "[ Credit Gacha Machine ] : "+( Sex ? "Mr. ":"Ms. ")+strcharinfo(0)+" have received "+@gachaamt+"x "+getitemname(@gachaid)+" with a chance of [ "+Get_Chance(@gachachance)+" ] when pulling!~",bc_all,.@color;
+			}
+		}
+	}
+	
+	// Display all results
+	mes .name$;
+	mes "^0055FFCongratulations! You pulled " + .@spinCount + " gachas!^000000";
+	mes "^FFFFFF_^000000";
+	mes "^00AA00Your Results:^000000";
+	
+	// Group identical items together
+	deletearray .@displayItems[0];
+	deletearray .@displayAmounts[0];
+	deletearray .@displayChances[0];
+	.@displayCount = 0;
+	
+	for (.@i = 0; .@i < .@totalResults; .@i++) {
+		.@found = 0;
+		for (.@j = 0; .@j < .@displayCount; .@j++) {
+			if (.@displayItems[.@j] == @multiGachaItems[.@i]) {
+				.@displayAmounts[.@j] += @multiGachaAmounts[.@i];
+				.@found = 1;
+				break;
+			}
+		}
+		if (!.@found) {
+			.@displayItems[.@displayCount] = @multiGachaItems[.@i];
+			.@displayAmounts[.@displayCount] = @multiGachaAmounts[.@i];
+			.@displayChances[.@displayCount] = @multiGachaChances[.@i];
+			.@displayCount++;
+		}
+	}
+	
+	// Display grouped results
+	for (.@i = 0; .@i < .@displayCount; .@i++) {
+		.@chanceValue = .@displayChances[.@i];
+		.@chance$ = Get_Chance(.@chanceValue);
+		
+		if (.@chanceValue <= 100) {
+			.@color$ = "^ff0000";
+		} else if (.@chanceValue <= 500) {
+			.@color$ = "^8A2BE2";
+		} else if (.@chanceValue <= 1000) {
+			.@color$ = "^FFA500";
+		} else if (.@chanceValue <= 4000) {
+			.@color$ = "^0000FF";
+		} else {
+			.@color$ = "^32CD32";
+		}
+		
+		mes "- " + .@color$ + .@displayAmounts[.@i] + "x  " + getitemname(.@displayItems[.@i]) + "  " + mesitemicon(.@displayItems[.@i]) + "^000000 [ " + .@color$ + .@chance$ + "^000000 ]";
+	}
+	
+	mes "^FFFFFF_^000000";
+	specialeffect2 248;
+	mes "Would you like to pull the same gacha again?";
+	if (select("[>] ^0055FFPull Again^000000:[>] Cancel") == 2) end;
+	close2;
+	goto L_Menu;
+end;
+
+OnCheckMultiPayment:
+	.@n = getarg(0);
+	.@multiplier = getarg(1);
+	
+	// Check Zeny
+	if (getd(".gacha_"+.@n+"_zeny") > 0) {
+		.@totalZeny = getd(".gacha_"+.@n+"_zeny") * .@multiplier;
+		if (zeny < .@totalZeny) return 0;
+	}
+	
+	// Check Points
+	if (atoi(getd(".gacha_"+.@n+"_point$[2]")) > 0) {
+		.@totalPoints = atoi(getd(".gacha_"+.@n+"_point$[2]")) * .@multiplier;
+		if (getd(getd(".gacha_"+.@n+"_point$[1]")) < .@totalPoints) return 0;
+	}
+	
+	// Check Items
+	if (getd(".gacha_"+.@n+"_costid[1]") > 0) {
+		.@totalItems = getd(".gacha_"+.@n+"_costid[1]") * .@multiplier;
+		if (countitem(getd(".gacha_"+.@n+"_costid[0]")) < .@totalItems) return 0;
+	}
+	
+	return 1;
+
+OnDeductMultiPayment:
+	.@n = getarg(0);
+	.@multiplier = getarg(1);
+	
+	// Deduct Zeny
+	if (getd(".gacha_"+.@n+"_zeny") > 0) {
+		.@totalZeny = getd(".gacha_"+.@n+"_zeny") * .@multiplier;
+		Zeny = Zeny - .@totalZeny;
+	}
+	
+	// Deduct Points
+	if (atoi(getd(".gacha_"+.@n+"_point$[2]")) > 0) {
+		.@totalPoints = atoi(getd(".gacha_"+.@n+"_point$[2]")) * .@multiplier;
+		setd getd(".gacha_"+.@n+"_point$[1]"), getd(getd(".gacha_"+.@n+"_point$[1]")) - .@totalPoints;
+	}
+	
+	// Deduct Items
+	if (getd(".gacha_"+.@n+"_costid[1]") > 0) {
+		.@totalItems = getd(".gacha_"+.@n+"_costid[1]") * .@multiplier;
+		delitem getd(".gacha_"+.@n+"_costid[0]"), .@totalItems;
+	}
+	return;
+
+OnPullGacha:
+	.@n = getarg(0);
+	message strcharinfo(0),"Pulling a gacha...";
+	specialeffect2 775;
+	//progressbar "00FF00",1;
+
+	//Check Payment
+	if( getd(".gacha_"+.@n+"_zeny") > 0)
+		if(zeny < getd(".gacha_"+.@n+"_zeny")){
+			message strcharinfo(0),"Not Enough Zeny.."; end; }
+	if( atoi(getd(".gacha_"+.@n+"_point$[2]")) > 0 )
+		if(getd(getd(".gacha_"+.@n+"_point$[1]")) < atoi(getd(".gacha_"+.@n+"_point$[2]"))){
+			message strcharinfo(0),"[ Credit Gacha Machine ] - Not Enough "+getd(".gacha_"+.@n+"_point$[0]"); end; }
+	if( getd(".gacha_"+.@n+"_costid[1]") > 0)
+		if(countitem(getd(".gacha_"+.@n+"_costid[0]")) < getd(".gacha_"+.@n+"_costid[1]")){
+			message strcharinfo(0),"[ Credit Gacha Machine ] - You dont have enough Credit"; end; }
+	if(!callsub(OnRandomPull,.@n)) end;
+	if(getd(".gacha_"+.@n+"_zeny")) Zeny = Zeny - getd(".gacha_"+.@n+"_zeny");
+	if(atoi(getd(".gacha_"+.@n+"_point$[2]"))) setd getd(".gacha_"+.@n+"_point$[1]"),getd(getd(".gacha_"+.@n+"_point$[1]"))-atoi(getd(".gacha_"+.@n+"_point$[2]"));
+	if(getd(".gacha_"+.@n+"_costid[1]")) delitem getd(".gacha_"+.@n+"_costid[0]"),getd(".gacha_"+.@n+"_costid[1]");
+	mes .name$;
+	mes "Congratulations!";
+	mes "You received " + @gachaamt+"x  " + getitemname(@gachaid) + "  " + mesitemicon(@gachaid);
+	if( @gachachance <= .rareannounce) {
+		if (@gachachance <= 100) { // 1% or below
+			.@color = 0xe91f52; // Red
+		} else if (@gachachance <= 500) { // Between 1.01% and 5%
+			.@color = 0xb0a0d9; // Violet
+		} else if (@gachachance <= 1000) { // Between 5.01% and 10%
+			.@color = 0xFFA500; // Orange
+		} else if (@gachachance <= 4000) { // Between 10.01% and 40%
+			.@color = 0x0000FF; // Blue
+		} else { // Above 40%
+			.@color = 0x00FF00; // Green
+		}
+		announce "[ Credit Gacha Machine ] : "+( Sex ? "Mr. ":"Ms. ")+strcharinfo(0)+" have received "+@gachaamt+"x "+getitemname(@gachaid)+" with a chance of [ "+Get_Chance(@gachachance)+" ] when pulling!~",bc_all,.@color;
+	}
+	mes "^FFFFFF_^000000";
+	specialeffect2 248;
+	mes "Would you like to pull the same gacha again?.";
+	if(select("[>] ^0055FFPull Again^000000:[>] Cancel") == 2) end;
+	close2;
+	callsub OnPullGacha,.@n;
+end;
+
+OnRandomPull:
+    copyarray .@gacha[0], getd(".gacha_"+getarg(0)+"[0]"), getarraysize(getd(".gacha_"+getarg(0)+""));
+    .@count = getarraysize(.@gacha);
+    .@x = rand(1,10000);
+    deletearray .@id, getarraysize(.@id);
+    deletearray .@amt, getarraysize(.@amt);
+    deletearray .@chance, getarraysize(.@chance);
+
+    for (.@i = 0; .@i < .@count; .@i += 3) {
+        if (.@x <= .@gacha[.@i + 2]) {
+            .@id[.@a++] = .@gacha[.@i];
+            .@amt[.@a-1] = .@gacha[.@i + 1];
+            .@chance[.@a-1] = .@gacha[.@i + 2];
+        }
+    }
+
+    if (.@a > 1) {
+        .@r = rand(0, .@a - 1);
+        .@itemget = .@id[.@r];
+        .@amtget = .@amt[.@r];
+        .@chance = .@chance[.@r];
+    } else if (.@a == 1) {
+        .@itemget = .@id[0];
+        .@amtget = .@amt[0];
+        .@chance = .@chance[0];
+    } else {
+        setarray .@consolationList, 13517, 12534, 12103, 985, 984;
+        .@consolationCount = getarraysize(.@consolationList);
+        .@randomIndex = rand(0, .@consolationCount - 1);
+        .@itemget = .@consolationList[.@randomIndex];
+        .@amtget = 1; // or any logic you want for the amount
+        .@chance = 10000; // or your logic for the chance
+    }
+
+    getitem .@itemget, .@amtget;
+    @gachachance = .@chance;
+    @gachaid = .@itemget;
+    @gachaamt = .@amtget;
+
+    return 1;
+
+
+OnGetCost:
+	.@n = getarg(0);
+	if(getd(".gacha_"+.@n+"_zeny"))
+		.@cost$ = "\n- ^FF5500"+callfunc("F_InsertComma",getd(".gacha_"+.@n+"_zeny"))+"z^000000";
+	if(atoi(getd(".gacha_"+.@n+"_point$[2]")))
+		.@cost$ = "\n- ^FF5500"+callfunc("F_InsertComma",atoi(getd(".gacha_"+.@n+"_point$[2]")))+" "+getd(".gacha_"+.@n+"_point$[0]")+"^000000";
+	if(getd(".gacha_"+.@n+"_costid[1]"))
+		.@cost$ = "\n- ^FF5500"+callfunc("F_InsertComma",getd(".gacha_"+.@n+"_costid[1]"))+" Credit^000000";
+return .@cost$;
+
+function Get_Chance {
+	.@sub$ = ""+getarg(0);
+
+	if(getarg(0)>=10000){
+		return "Over 100%";
+	} else if(getarg(0)>=1000){
+		return substr(.@sub$,0,1)+"."+substr(.@sub$,2,3)+"%";
+	} else if(getarg(0)>=100){
+		return charat(.@sub$,0)+"."+substr(.@sub$,1,2)+"%";
+	} else if(getarg(0)>=10)
+		return "0."+substr(.@sub$,0,1)+"%";
+	else
+		return "0.0"+charat(.@sub$,0)+"%";
+}
+
+function Add_Gacha {
+	setd ".gacha_"+.n+"_name$",getarg(0);	//Gacha Name 
+	setd ".gacha_"+.n+"_zeny",getarg(1);	//Gacha Zeny
+	setd ".gacha_"+.n+"_point$[0]",getarg(2); setd ".gacha_"+.n+"_point$[1]",getarg(3); setd ".gacha_"+.n+"_point$[2]",""+getarg(4);	//Point Name, Point Var, Point Cost
+	setd ".gacha_"+.n+"_costid[0]",getarg(5); setd ".gacha_"+.n+"_costid[1]",getarg(6);	//Cost Item ID, Amount
+	for( .@i = 7; .@i < getargcount(); .@i += 3) {
+		if (getitemname(getarg(.@i)) == "null") {
+			debugmes "Gacha Item #"+getarg(.@i)+" invalid (skipped).";
+			return;
+		} else
+			setarray .@j[.@i-7],getarg(.@i),getarg(.@i+1),getarg(.@i+2);
+	}
+	copyarray getd(".gacha_"+(.n++)+"[0]"),.@j[0],getarraysize(.@j);
+}
+
+OnInit:
+	initnpctimer;
+	end;
+
+OnTimer1000:
+	showscript("Credit Gacha Machine");
+	setnpctimer 0;
+	end;
+}

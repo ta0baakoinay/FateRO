@@ -1,0 +1,491 @@
+maintown,206,127,3	script	Gold Room	4_M_EINMINER,{
+	.@total = (vip_status(VIP_STATUS_ACTIVE,strcharinfo(0)) ? .vip_time : .time);
+
+	set @header$,"[^FF8000 Gold Room ^000000]";
+	mes @header$;
+	mes "^FF0000Notice: Skill OFF this Room!!^000000";
+	mes "I know a place where you can get rich.";
+	next;
+	mes @header$;
+	mes "You just need to kill some birds to acquire points, you can exchange the points into real gold after.";
+	next;
+	mes @header$;
+	mes "But there are strong guardians that are taking care of the birds!";
+	mes "^FF0000Note: You will lose 10% of your points when you get killed^000000";
+	mes "^FF0000Notice: Skill OFF Earn Gold^000000";
+	mes "^FF0000" + .min_points + " to " + .max_points + " per kill monster!^000000";
+	next;
+	
+	// GM Level 99 Menu Option
+	if (getgmlevel() >= 99) {
+		switch(select("> Enter Gold Room:> Check/Exchange Points:> [GM] Rate Control:> [GM] Reset Bot Check")) {
+		case 1: 
+			goto EnterRoom;
+		case 2:
+			goto CheckPoints;
+		case 3:
+			goto GMControl;
+		case 4:
+			goto BotCheckReset;
+		}
+	} else {
+		switch(select("> Enter Gold Room:> Check/Exchange Points")) {
+		case 1: 
+			goto EnterRoom;
+		case 2:
+			goto CheckPoints;
+		}
+	}
+
+EnterRoom:
+	mes @header$;
+	mes "I need ^FF000050,000 Zeny^000000 to bring you into the sacred place.";
+	switch(select("Yes, I have zeny for payment:Maybe next time")) {
+	case 1:
+		next;
+		if(#GR_TIME[gettime(.identfire)] >= .@total){
+			clear;
+			mes @header$;
+			mes "Total:" + .@total + " minute(s)";
+			mes "Used:" + #GR_TIME[gettime(.identfire)] + " minute(s)";
+			mes "You have used all your time in the gold room today!";
+			mes "Please comeback tommorrow!";
+			end;
+		}
+		if(!#GR_TIME[gettime(.identfire)]) deletearray(#GR_TIME,getarraysize(#GR_TIME));
+
+		if (Zeny < 50000) {
+			mes @header$;
+			mes "You don't have 50,000 zeny.";
+			close;
+		}
+
+		Zeny -= 50000;
+		undisguise;
+		sc_end SC_SACRIFICE;
+		sc_end SC_EDP;
+		sc_end SC_AUTOSPELL;
+		warp .Map$,153,153;
+		close2;
+		end;
+	case 2: 
+		next;
+		mes @header$;
+		mes "Just let me know if you want to earn some money.";
+		close;
+	}
+
+CheckPoints:
+	mes @header$;
+	mes "You have ^FF0000"+F_InsertComma(#GoldPoints)+"^000000 Gold Points.";
+	mes " ";
+	mes "How many points do you want to exchange into "+getitemname(.CoinID)+"?";
+	mes " ";
+	mes "1 Gold Point = ^3366FF"+.Rate+"^000000 "+getitemname(.CoinID)+"";
+
+	if (#GoldPoints >= .Rate) {
+		input .@Amount,0,#GoldPoints;
+		
+		if (.@Amount == 0) {
+			next;
+			mes "Exchange canceled.";
+			close;
+		}
+		set .@Calculation,(.@Amount / .Rate);
+		if (.@Calculation) {
+			next;
+			if (countitem(.CoinID) + .@Calculation > 30000) {
+				mes @header$;
+				mes "You can only claim a total of ^FF0000"+F_InsertComma(30000)+"^000000 Gold Bars.";
+				close;
+			}
+			if (!checkweight(.CoinID, .@Calculation)) {
+				mes @header$;
+				mes "You can not carry";
+				mes "any gold bars anymore.";
+				close;
+			}
+			mes @header$;
+			set #GoldPoints,#GoldPoints - (.@Calculation * .Rate);
+			getitem 969,.@Calculation;
+			mes "Gained ^FF0000"+F_InsertComma(.@Calculation)+"^000000 x "+getitemname(.CoinID);
+		}
+	}
+	close;
+
+GMControl:
+	mes "^FF0000[GM Control Panel]^000000";
+	mes "Current Drop Rate: ^0066FF" + .min_points + " - " + .max_points + "^000000 points per kill";
+	mes "Rate Boost Status: " + (.rate_boost ? "^00FF00ACTIVE^000000" : "^FF0000INACTIVE^000000");
+	next;
+	switch(select("Change Drop Rate:Toggle Rate Boost:Reset to Default:Back to Main Menu")) {
+	case 1:
+		mes "^FF0000[Change Drop Rate]^000000";
+		mes "Current: " + .min_points + " - " + .max_points;
+		mes "Enter new minimum points (1-10):";
+		input .@new_min,1,10;
+		next;
+		mes "Enter new maximum points (" + .@new_min + "-10):";
+		input .@new_max,.@new_min,10;
+		next;
+		.min_points = .@new_min;
+		.max_points = .@new_max;
+		mes "^00FF00Drop rate changed successfully!^000000";
+		mes "New rate: " + .min_points + " - " + .max_points + " points per kill";
+		announce "[GM Notice] Gold Room drop rates have been adjusted to " + .min_points + "-" + .max_points + " points per kill!", bc_all, 0x00FF00;
+		close;
+	case 2:
+		.rate_boost = !.rate_boost;
+		mes (.rate_boost ? "^00FF00Rate boost ACTIVATED!^000000" : "^FF0000Rate boost DEACTIVATED!^000000");
+		announce "[GM Notice] Gold Room rate boost has been " + (.rate_boost ? "ACTIVATED" : "DEACTIVATED") + "!", bc_all, 0x00FF00;
+		close;
+	case 3:
+		.min_points = 1;
+		.max_points = 3;
+		.rate_boost = 0;
+		mes "^00FF00Rates reset to default (1-3 points)!^000000";
+		announce "[GM Notice] Gold Room rates have been reset to default (1-3 points)!", bc_all, 0x00FF00;
+		close;
+	case 4:
+		goto L_Start;
+	}
+
+L_Start:
+	goto EnterRoom;
+
+BotCheckReset:
+	#BOTMOBKILL_1369 = 0;
+	#BOTMOBKILLCOUNT_1369 = 0;
+	#BOTCHECK = 0;
+	set @BOTCHECK_INPROGRESS, 0;
+	mes "^FF0000[GM]^000000";
+	mes "^00FF00Bot check variables reset for this character.^000000";
+	mes "Kill counter: 0";
+	mes "Kill target: 0 (will re-sync to " + .botcheck_interval + " on next kill)";
+	mes "Bot check flag: cleared";
+	close;
+
+OnTimer60000:
+	freeloop(1);
+	.@size = getmapunits(BL_PC,.Map$,.@SD);
+	.@c = gettime(.identfire);
+	for(.@i=0;.@i<.@size;.@i++){
+		if(!isloggedin(convertpcinfo(.@SD[.@i],CPC_ACCOUNT),convertpcinfo(.@SD[.@i],CPC_CHAR))) continue;
+		
+		.@NAME$ = convertpcinfo(.@SD[.@i],CPC_NAME);
+		.@CID = convertpcinfo(.@SD[.@i],CPC_CHAR);
+		.@AID = convertpcinfo(.@SD[.@i],CPC_ACCOUNT);
+		
+		attachrid(.@AID);
+		if(!attachrid(.@AID)) continue;
+		
+		set #GR_TIME[.@c], #GR_TIME[.@c] + 1;
+		.@total = (vip_status(VIP_STATUS_ACTIVE,.@NAME$) ? .vip_time : .time);
+		.@current = #GR_TIME[.@c];
+		.@left = .@total - .@current;
+
+		if(.@left <= 0){
+			announce "[Gold Room]: You have used all your time today!.",bc_self,0xFFF618;
+			warp "SavePoint",0,0;
+			detachrid;
+			continue;
+		}
+		if(.@left <= .notify_at){
+			announce "Gold Room: You have " + .@left + " Minutes Left!.",bc_self,0xFFF618;
+			detachrid;
+			continue;
+		}
+
+		if(!(.@left%.notify_every)){
+			announce "[Gold Room]: You have " + .@left + " Minutes Left!.",bc_self,0xFFF618;
+			detachrid;
+			continue;
+		}
+		detachrid;
+	}
+	freeloop(0);
+	setnpctimer(0);
+	end;
+
+OnCmd:
+	.@total = (vip_status(VIP_STATUS_ACTIVE,strcharinfo(0)) ? .vip_time : .time);
+	.@left = .@total - #GR_TIME[gettime(.identfire)];
+	dispbottom "[Gold Room] You have " + .@left + " Minutes left today!";
+	end;
+
+OnPCLoadMapEvent:
+	end;
+
+OnInit:
+//	set reward here ... 1st place won 10 red pot, 2nd place won 9 orange pot ... etc ...
+//	setarray .reward, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510;
+//	setarray .amount, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1;
+	setarray .pointsamt, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10;
+	set .Map$,"ordeal_1-2";
+	set .CoinID,969;
+	set .Rate,1;
+
+	// Drop Rate Settings (NEW)
+	.min_points = 1;  // Default minimum points per kill
+	.max_points = 3;  // Default maximum points per kill
+	.rate_boost = 0;  // Rate boost toggle (0 = off, 1 = on)
+
+	// Bot Check Settings
+	.botcheck_interval = 0;  // trigger a check every N kills
+	.botcheck_timelimit = 30;  // seconds allowed per attempt
+	.botcheck_attempts = 3;    // attempts allowed before failing
+
+// Timer Settings
+	.identfire = DT_DAYOFYEAR;//don't change this.
+	bindatcmd("gtime",strnpcinfo(3) + "::OnCmd");
+	bindatcmd("ladder",strnpcinfo(3) + "::OnTest");
+	.time = 180; //Normal Players time in minutes per day.
+	.vip_time = 360; //VIP Players time in minutes per day.
+	.notify_at = 1; //start notifcation at 5 minutes left.
+	.notify_every = 1; //notifcation every 3 minutes.
+
+	initnpctimer;
+	startnpctimer;
+
+	// Gold Monsters
+	monster .Map$,0,0,"Little Goldeco",1369,100,strnpcinfo(0)+"::OnMobKilled";
+	monster .Map$,0,0,"Little Goldeco",1369,100,strnpcinfo(0)+"::OnMobKilled";
+	monster .Map$,0,0,"Little Goldeco",1369,100,strnpcinfo(0)+"::OnMobKilled";
+	monster .Map$,0,0,"Little Goldeco",1369,100,strnpcinfo(0)+"::OnMobKilled";
+	monster .Map$,0,0,"Little Goldeco",1369,100,strnpcinfo(0)+"::OnMobKilled";
+	monster .Map$,0,0,"Little Goldeco",1369,100,strnpcinfo(0)+"::OnMobKilled";
+	monster .Map$,0,0,"Little Goldeco",1369,100,strnpcinfo(0)+"::OnMobKilled";
+	monster .Map$,0,0,"Little Goldeco",1369,100,strnpcinfo(0)+"::OnMobKilled";
+	monster .Map$,0,0,"Little Goldeco",1369,100,strnpcinfo(0)+"::OnMobKilled";
+	monster .Map$,0,0,"Little Goldeco",1369,100,strnpcinfo(0)+"::OnMobKilled";
+
+	// Guardians
+	monster .Map$,0,0,"Gold Guardian",1950,50,strnpcinfo(0)+"::OnGuardianMobKilled";
+	monster .Map$,0,0,"Little Guardian",1369,150,strnpcinfo(0)+"::OnGuardianMobKilled";
+	monster .Map$,0,0,"Little Guardian",1369,50,strnpcinfo(0)+"::OnGuardianMobKilled";
+	monster .Map$,0,0,"Little Guardian",1369,10,strnpcinfo(0)+"::OnGuardianMobKilled";
+	monster .Map$,0,0,"Little Guardian",1369,10,strnpcinfo(0)+"::OnGuardianMobKilled";
+	monster .Map$,0,0,"Little Guardian",1369,10,strnpcinfo(0)+"::OnGuardianMobKilled";
+	end;
+
+OnMobKilled:
+	// Use the configurable drop rates
+	.@base_points = rand(.min_points, .max_points);
+	.@final_points = .rate_boost ? (.@base_points * 2) : .@base_points;
+	@points = .@final_points;  // Remove the redundant conditional
+	
+	set #GoldPoints,#GoldPoints + (@points * ($BONUSPT_GOLD ? 1 : 1));
+	monster .Map$,0,0,"Little Goldeco",1369,1,strnpcinfo(0)+"::OnMobKilled";
+	
+	if (.rate_boost && $GOLDROOM_HOTIME) {
+		dispbottom "[RATE BOOST] HOT TIME PERIOD!! You gained " + @points + " points! Total: " + #GoldPoints + " gold points.";
+	} else if (.rate_boost) {
+		dispbottom "[RATE BOOST] You gained " + @points + " points! Total: " + #GoldPoints + " gold points.";
+	} else if ($GOLDROOM_HOTIME) {
+		dispbottom "HOT TIME PERIOD!! You gained " + @points + " points! Total: " + #GoldPoints + " gold points.";
+	} else {
+		dispbottom "You gained " + @points + " points! Total: " + #GoldPoints + " gold points.";
+	}
+
+	// --- Bot Check: only relevant while inside Gold Room ---
+	if (strcharinfo(3) != .Map$) end;
+	if (@BOTCHECK_INPROGRESS) end;
+
+	if (#BOTMOBKILLCOUNT_1369 != .botcheck_interval)
+		#BOTMOBKILLCOUNT_1369 = .botcheck_interval;
+
+	if (#BOTMOBKILL_1369 < #BOTMOBKILLCOUNT_1369) {
+		#BOTMOBKILL_1369++;
+		end;
+	} else if (#BOTMOBKILL_1369 >= #BOTMOBKILLCOUNT_1369 && !#BOTCHECK) {
+		#BOTCHECK = true;
+		#BOTMOBCLEAR = 1369;
+		doevent(strnpcinfo(0) + "::OnBotCheckTrigger");
+		end;
+	} else end;
+
+OnGuardianMobKilled:
+	// Use the configurable drop rates for guardians too
+	.@base_points = rand(.min_points, .max_points);
+	.@final_points = .rate_boost ? (.@base_points * 2) : .@base_points;
+	@points = .@final_points; // Remove the redundant conditional
+	
+	set #GoldPoints,#GoldPoints + (@points * ($BONUSPT_GOLD ? 1 : 1));
+	monster .Map$,0,0,"Gold Guardian",1369,1,strnpcinfo(0)+"::OnGuardianMobKilled";
+	
+	if (.rate_boost && $GOLDROOM_HOTIME) {
+		dispbottom "[RATE BOOST] HOT TIME PERIOD!! You gained " + @points + " points! Total: " + #GoldPoints + " gold points.";
+	} else if (.rate_boost) {
+		dispbottom "[RATE BOOST] You gained " + @points + " points! Total: " + #GoldPoints + " gold points.";
+	} else if ($GOLDROOM_HOTIME) {
+		dispbottom "HOT TIME PERIOD!! You gained " + @points + " points! Total: " + #GoldPoints + " gold points.";
+	} else {
+		dispbottom "You gained " + @points + " points! Total: " + #GoldPoints + " gold points.";
+	}
+	end;
+
+OnPCDieEvent:
+	if (strcharinfo(3) == .Map$) {
+		#GoldPoints -= (#GoldPoints * 10) / 100;
+		// #GoldPoints = 0;
+		dispbottom "You lose 10% of your Gold Points.Total: ["+#GoldPoints+"]";
+	}
+	end;
+
+// ============================================================
+//  Integrated Bot Check — only ever reached from OnMobKilled
+//  above, which already confirmed the player is on .Map$
+// ============================================================
+OnBotCheckTrigger:
+	if (@BOTCHECK_INPROGRESS) end;
+	set @BOTCHECK_INPROGRESS, 1;
+
+	.@name$ = strcharinfo(0);
+	.@charid = getcharid(0);
+
+	.@a = rand(1,50);
+	.@b = rand(1,50);
+	.@op = rand(1,2);
+	if (.@op == 1) {
+		.@answer = .@a + .@b;
+		.@op$ = "+";
+	} else {
+		if (.@a < .@b) {
+			.@tmp = .@a; .@a = .@b; .@b = .@tmp;
+		}
+		.@answer = .@a - .@b;
+		.@op$ = "-";
+	}
+
+	.@attempts = 0;
+
+BotCheckRetry:
+	.@attempts++;
+
+	mes "[^FF0000Gold Room Verification^000000]";
+	mes "We've detected unusual activity in the Gold Room.";
+	mes "Please solve the following to continue:";
+	mes " ";
+	mes "^0066FF" + .@a + " " + .@op$ + " " + .@b + " = ?^000000";
+	mes " ";
+	mes "You have ^FF0000" + .botcheck_timelimit + " seconds^000000 to answer.";
+	mes "Attempt " + .@attempts + " / " + .botcheck_attempts + "";
+
+	set @BOTCHECK_TIMEDOUT, 0;
+	addtimer(.botcheck_timelimit * 1000, strnpcinfo(3) + "::OnBotCheckTimeout");
+
+	input .@userinput, -99999, 99999;
+
+	deltimer strnpcinfo(3) + "::OnBotCheckTimeout";
+
+	if (@BOTCHECK_TIMEDOUT) {
+		goto BotCheckFail;
+	}
+
+	if (.@userinput == .@answer) {
+		goto BotCheckPass;
+	}
+
+	next;
+	mes "[^FF0000Gold Room Verification^000000]";
+	mes "That answer is incorrect.";
+
+	if (.@attempts < .botcheck_attempts) {
+		next;
+		goto BotCheckRetry;
+	}
+
+BotCheckFail:
+	set @BOTCHECK_INPROGRESS, 0;
+	set @BOTCHECK_TIMEDOUT, 0;
+
+	announce "[Gold Room] " + .@name$ + " failed verification and was removed as a suspected bot.", bc_all, 0xFF0000;
+	logmes "[GoldRoom BotCheck] FAILED - Char: " + .@name$ + " (CID:" + .@charid + ")";
+
+	// Removed from Gold Room entirely on failure
+	warp "SavePoint", 0, 0;
+	close2;
+
+	// #BOTCHECK stays TRUE so they're re-challenged if they come back and hit another interval
+	end;
+
+BotCheckPass:
+	next;
+	mes "[^0000FFGold Room Verification^000000]";
+	mes "Thank you, verification successful.";
+	mes "You may continue farming.";
+
+	set #BOTCHECK, 0;
+	set @BOTCHECK_INPROGRESS, 0;
+
+	// Reset kill counter so the next .botcheck_interval kills start counting fresh
+	set #BOTMOBKILL_1369, 0;
+
+	close;
+
+OnBotCheckTimeout:
+	set @BOTCHECK_TIMEDOUT, 1;
+	if (attachrid(getcharid(3))) {
+		dispbottom "[Gold Room] You ran out of time to respond.";
+	}
+	end;
+}
+
+// Warps
+ordeal_1-2,128,154,0	warp	pxpxord321-1	1,1,ordeal_1-2,23,142
+ordeal_1-2,136,136,0	warp	pxpxord321-2	1,1,ordeal_1-2,24,24
+ordeal_1-2,136,172,0	warp	pxpxord321-3	1,1,ordeal_1-2,24,284
+ordeal_1-2,153,128,0	warp	pxpxord321-4	1,1,ordeal_1-2,144,23
+ordeal_1-2,153,180,0	warp	pxpxord321-5	1,1,ordeal_1-2,144,284
+ordeal_1-2,172,135,0	warp	pxpxord321-6	1,1,ordeal_1-2,284,24
+ordeal_1-2,172,172,0	warp	pxpxord321-7	1,1,ordeal_1-2,284,284
+ordeal_1-2,180,154,0	warp	pxpxord321-8	1,1,ordeal_1-2,284,164
+ordeal_1-2,130,193,0	warp	pxpxord321-9	3,3,ordeal_1-2,154,154
+ordeal_1-2,106,154,0	warp	pxpxord321-10	3,3,ordeal_1-2,154,154
+ordeal_1-2,201,129,0	warp	pxpxord321-11	3,3,ordeal_1-2,154,154
+ordeal_1-2,177,193,0	warp	pxpxord321-12	3,3,ordeal_1-2,154,154
+ordeal_1-2,23,164,0	warp	pxpxord321-13	3,3,ordeal_1-2,154,154
+ordeal_1-2,43,24,0	warp	pxpxord321-14	3,3,ordeal_1-2,154,154
+ordeal_1-2,43,284,0	warp	pxpxord321-15	3,3,ordeal_1-2,154,154
+ordeal_1-2,164,23,0	warp	pxpxord321-16	3,3,ordeal_1-2,154,154
+ordeal_1-2,144,262,0	warp	pxpxord321-17	3,3,ordeal_1-2,154,154
+ordeal_1-2,263,24,0	warp	pxpxord321-18	3,3,ordeal_1-2,154,154
+ordeal_1-2,263,284,0	warp	pxpxord321-19	3,3,ordeal_1-2,154,154
+ordeal_1-2,263,164,0	warp	pxpxord321-20	3,3,ordeal_1-2,154,154
+ordeal_1-2,290,129,0	warp	pxpxord321-21	3,3,ordeal_1-2,154,154
+ordeal_1-2,241,281,0	warp	pxpxord321-22	3,3,ordeal_1-2,154,154
+ordeal_1-2,66,25,0	warp	pxpxord321-23	3,3,ordeal_1-2,154,154
+ordeal_1-2,74,265,0	warp	pxpxord321-24	3,3,ordeal_1-2,154,154
+
+// Exit
+ordeal_1-2,158,158,3	script	Exit#GR	101,{
+	set @header$,"[^FF8000 Exit ^000000]";
+	mes @header$;
+	mes "Do you want to leave Gold Room now?";
+	next;
+	switch(select("Yes:No")) {
+	case 1:
+		warp "SavePoint",0,0;
+		break;
+	case 2:
+		mes @header$;
+		mes "Goodbye!";
+		close;
+	}
+}
+
+// Mapflags
+ordeal_1-2	mapflag	nosave	SavePoint
+ordeal_1-2	mapflag	nomemo
+ordeal_1-2	mapflag	nomobloot
+ordeal_1-2	mapflag	nobranch
+ordeal_1-2	mapflag	noexp
+ordeal_1-2	mapflag	nodrop
+ordeal_1-2	mapflag	nochat
+ordeal_1-2	mapflag	novending
+ordeal_1-2	mapflag	nowarpto
+ordeal_1-2	mapflag	nowarp
+ordeal_1-2	mapflag	noskill
+ordeal_1-2	mapflag	nopenalty
+ordeal_1-2	mapflag	nobranch
+ordeal_1-2	mapflag	pvp	on

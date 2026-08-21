@@ -1,0 +1,47 @@
+//===== rAthena Script =======================================
+//= Item Exchange - Barter Shop Router
+//===== Description: =========================================
+//= Single front-end NPC that routes players into hidden
+//= barter shop NPCs via callshop(). The actual barter shops
+//= are defined in barters.yml with no Map/X/Y, so they never
+//= spawn as visible/clickable entities on their own — this
+//= is the only NPC the player ever sees or clicks.
+//=============================================================
+
+maintown,173,182,4	script	QuestItems	117,{
+
+	// Menu labels (what the player sees)
+	setarray .@label$[0],
+		"Headgears",
+		"Wings",
+		"Headgears - (30% Success)",
+		"Headgears - (40% Success)";
+
+	// Matching barter shop NPC names (must exactly match "Name:" in barters.yml)
+	setarray .@shop$[0],
+		"questshop0010001",
+		"questshop0010002",
+		"questshop0010003",
+		"questshop0010004";
+
+	.@count = getarraysize(.@label$);
+
+	mes "[Item Exchange]";
+	mes "What would you like to browse?";
+	next;
+	.@i = select(implode(.@label$, ":")) - 1;
+	close2;
+
+	if (.@i < 0 || .@i >= .@count) {
+		end;
+	}
+
+	if (!callshop(.@shop$[.@i], 1)) {
+		// callshop returns 0 if the name doesn't match any loaded
+		// shop/barter NPC — almost always a typo or a shop that
+		// isn't imported yet.
+		dispbottom "That shop is currently unavailable. Please contact a GM.";
+	}
+
+	end;
+}
