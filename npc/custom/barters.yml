@@ -135,10 +135,10 @@ Body:
             Item: Donation_Card
             Amount: 30
 
-  - Name: Quest Shop#0001
-    Map: maintown
-    X: 177
-    Y: 182
+  - Name: Barter Qshop#0001
+    Map: sec_in01
+    X: 164
+    Y: 181
     Direction: South
     Sprite: 4_F_KAFRA4        # replace with your NPC sprite/view id
     Confirm: "Are you sure you want to craft this item?"
@@ -324,10 +324,10 @@ Body:
   # Shop 2 - 40% success rate
   # 30x Jellopy + 30x Gold + 30x Steel + 30,000,000z each
   # ============================================================
-  - Name: Quest Shop#0002
-    Map: maintown
-    X: 172
-    Y: 182
+  - Name: Barter Qshop#0002
+    Map: sec_in01
+    X: 166
+    Y: 181
     Direction: South
     Sprite: 4_F_KAFRA4
     Confirm: "Are you sure you want to craft this item? ^FF0000It has a 40% chance of success."  
@@ -422,10 +422,10 @@ Body:
   # Shop 3 - 30% success rate
   # 30x Jellopy + 30x Gold + 30x Steel + 30,000,000z each
   # ============================================================
-  - Name: Quest Shop#0003
-    Map: maintown
-    X: 179
-    Y: 182
+  - Name: Barter Qshop#0003
+    Map: sec_in01
+    X: 168
+    Y: 181
     Direction: South
     Sprite: 4_F_KAFRA4
     Confirm: "Are you sure you want to craft this item? ^FF0000It has a 30% chance of success." 
@@ -476,6 +476,97 @@ Body:
       - Index: 3
         Item: Mid_Hollow
         Rate: 30
+        Zeny: 30000000
+        RequiredItems:
+          - Index: 0
+            Item: Jellopy
+            Amount: 30
+          - Index: 1
+            Item: Gold
+            Amount: 30
+          - Index: 2
+            Item: Steel
+            Amount: 30
+  # ============================================================
+  # Shop 4 - 100% success rate
+  # 30x Jellopy + 30x Gold + 30x Steel + 30,000,000z each
+  # ============================================================
+  - Name: Barter Qshop#0004
+    Map: sec_in01
+    X: 166
+    Y: 181
+    Direction: South
+    Sprite: 4_F_KAFRA4        # replace with your NPC sprite/view id
+    Confirm: "Are you sure you want to craft this item?"
+    ConfirmMenu: "Craft it:Cancel"    
+    Items:
+      - Index: 0
+        Item: Fire Headprotector
+        Zeny: 30000000
+        RequiredItems:
+          - Index: 0
+            Item: Jellopy
+            Amount: 30
+          - Index: 1
+            Item: Gold
+            Amount: 30
+          - Index: 2
+            Item: Steel
+            Amount: 30
+      - Index: 1
+        Item: Wind Headprotector
+        Zeny: 30000000
+        RequiredItems:
+          - Index: 0
+            Item: Jellopy
+            Amount: 30
+          - Index: 1
+            Item: Gold
+            Amount: 30
+          - Index: 2
+            Item: Steel
+            Amount: 30
+      - Index: 2
+        Item: Earth Headprotector
+        Zeny: 30000000
+        RequiredItems:
+          - Index: 0
+            Item: Jellopy
+            Amount: 30
+          - Index: 1
+            Item: Gold
+            Amount: 30
+          - Index: 2
+            Item: Steel
+            Amount: 30
+      - Index: 3
+        Item: Water Headprotector
+        Zeny: 30000000
+        RequiredItems:
+          - Index: 0
+            Item: Jellopy
+            Amount: 30
+          - Index: 1
+            Item: Gold
+            Amount: 30
+          - Index: 2
+            Item: Steel
+            Amount: 30
+      - Index: 4
+        Item: Sound Headprotector
+        Zeny: 30000000
+        RequiredItems:
+          - Index: 0
+            Item: Jellopy
+            Amount: 30
+          - Index: 1
+            Item: Gold
+            Amount: 30
+          - Index: 2
+            Item: Steel
+            Amount: 30
+      - Index: 5
+        Item: Lightning Headprotector
         Zeny: 30000000
         RequiredItems:
           - Index: 0

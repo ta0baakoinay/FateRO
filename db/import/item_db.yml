@@ -3512,7 +3512,7 @@ Body:
     Name: Cygnus Helm
     Type: Armor
     Weight: 500
-    Defense: 2
+    Defense: 5
     Slots: 1
     Locations:
       Head_Top: true
@@ -3520,7 +3520,9 @@ Body:
     ArmorLevel: 1
     View: 2741
     Script: |
-      bonus bStr,0;
+      bonus2 bSubRace,RC_DemiHuman,10;
+      if (Class == Job_Archer || Class == Job_Thief)
+        bonus bLongAtkRate,10;
 
   - Id: 120099
     AegisName: Traveler's Hat
@@ -3698,14 +3700,20 @@ Body:
     AegisName: Phoenix Wings
     Name: Phoenix Wings
     Type: Armor
-    Weight: 500
-    Defense: 1
+    Weight: 100
+    Defense: 2
     Locations:
       Head_Low: true
     ArmorLevel: 1
     View: 2751
     Script: |
-      bonus bStr,0;
+      bonus bVit,10;
+      bonus bMaxHPrate,5;
+      bonus2 bSubRace,RC_DemiHuman,3;
+      bonus2 bSubEle,Ele_Water,-5;
+      bonus2 bSubEle,Ele_Fire,10;
+      bonus2 bAddEff,Eff_Blind,500;
+      
   - Id: 120109
     AegisName: Torn Wings
     Name: Torn Wings
@@ -3728,38 +3736,51 @@ Body:
     AegisName: Arctic Wings
     Name: Arctic Wings
     Type: Armor
-    Weight: 500
-    Defense: 1
+    Weight: 100
+    Defense: 2
     Locations:
       Head_Low: true
     ArmorLevel: 1
     View: 2753
     Script: |
-      bonus bStr,0;
+      bonus bInt,10;
+      bonus2 bSubEle,Ele_Water,10;
+      bonus2 bAddEff,Eff_Freeze,500;
+      bonus2 bSubEle,Ele_Wind,-5;
+      bonus bInt,getrefine();
+
   - Id: 120111
     AegisName: Black Butterfly Wings
     Name: Black Butterfly Wings
     Type: Armor
-    Weight: 500
-    Defense: 1
+    Weight: 100
+    Defense: 2
     Locations:
       Head_Low: true
     ArmorLevel: 1
     View: 2754
     Script: |
-      bonus bStr,0;
+      bonus bAgi,10;
+      bonus bStr,5;
+      bonus bSpeedRate,10;
+      bonus bStr,getrefine();
+
   - Id: 120112
     AegisName: Demon Wings
     Name: Demon Wings
     Type: Armor
-    Weight: 500
-    Defense: 1
+    Weight: 100
+    Defense: 2
     Locations:
       Head_Low: true
     ArmorLevel: 1
     View: 2755
     Script: |
-      bonus bStr,0;
+      bonus bStr,10;
+      bonus2 bAddRace,RC_DemiHuman,3;
+      bonus2 bSubEle,Ele_Dark,10;
+      bonus2 bSubEle,Ele_Holy,-5;
+      bonus2 bAddEff,Eff_Bleeding,500;
 
   - Id: 120113
     AegisName: Black Dragon Wing
@@ -3867,38 +3888,49 @@ Body:
     AegisName: Gargoyle Wings
     Name: Gargoyle Wings
     Type: Armor
-    Weight: 500
-    Defense: 1
+    Weight: 100
+    Defense: 2
     Locations:
       Head_Low: true
     ArmorLevel: 1
     View: 2762
     Script: |
-      bonus bStr,0;
+      bonus bDex,10;
+      bonus2 bSubRace,RC_Undead,10;
+      bonus2 bAddEff,Eff_Stone,500;
+
   - Id: 120120
     AegisName: Icarus Wings
     Name: Icarus Wings
     Type: Armor
-    Weight: 500
-    Defense: 1
+    Weight: 100
+    Defense: 4
     Locations:
       Head_Low: true
     ArmorLevel: 1
     View: 2763
     Script: |
-      bonus bStr,0;
+      bonus bAgi,10;
+      bonus bMaxHPrate,2;
+      bonus2 bSubEle,Ele_All,10;
+      bonus2 bSubEle,Ele_Neutral,-10;
+
   - Id: 120121
     AegisName: White Butterfly Wings
     Name: White Butterfly Wings
     Type: Armor
-    Weight: 500
-    Defense: 1
+    Weight: 100
+    Defense: 2
     Locations:
       Head_Low: true
+    Refineable: true
     ArmorLevel: 1
     View: 2764
     Script: |
-      bonus bStr,0;
+      bonus bAgi,10;
+      bonus bFlee,25;
+      bonus bFlee,getrefine();
+      bonus bSpeedRate,-10;
 
 #  - Id: 120122
 #    AegisName: Black Cyclop's Eye
@@ -4061,93 +4093,123 @@ Body:
     AegisName: Black Valkyrie Helm
     Name: Black Valkyrie Helm
     Type: Armor
-    Weight: 500
-    Defense: 3
+    Weight: 100
+    Defense: 6
     Slots: 1
     Locations:
       Head_Top: true
     Refineable: true
     ArmorLevel: 1
+    EquipLevelMin: 50
     View: 2776
     Script: |
-      bonus bStr,0;
+      bonus bVit,10;
+      bonus2 bSubRace,RC_DemiHuman,10;
+      bonus2 bSubEle,Ele_Earth,-10;
+      bonus2 bSubRace,RC_All,getrefine()/2;
+
   - Id: 120134
     AegisName: Valkyrie Helm
     Name: Valkyrie Helm
     Type: Armor
-    Weight: 500
-    Defense: 3
+    Weight: 100
+    Defense: 6
     Slots: 1
     Locations:
       Head_Top: true
     Refineable: true
     ArmorLevel: 1
+    EquipLevelMin: 50
     View: 2777
     Script: |
-      bonus bStr,0;
+      bonus bStr,10;
+      bonus2 bSubRace,RC_DemiHuman,10;
+      bonus2 bSubEle,Ele_Dark,-10;
+      bonus bAtkRate,getrefine()/2;
+
   - Id: 120135
     AegisName: Cyan Valkyrie Helm
     Name: Cyan Valkyrie Helm
     Type: Armor
-    Weight: 500
-    Defense: 3
+    Weight: 100
+    Defense: 6
     Slots: 1
     Locations:
       Head_Top: true
     Refineable: true
     ArmorLevel: 1
+    EquipLevelMin: 50
     View: 2778
     Script: |
-      bonus bStr,0;
+      bonus bInt,10;
+      bonus2 bSubRace,RC_DemiHuman,10;
+      bonus2 bSubEle,Ele_Fire,-10;
+      bonus bMatkRate,getrefine()/2;
+
   - Id: 120136
     AegisName: Gold Valkyrie Helm
     Name: Gold Valkyrie Helm
     Type: Armor
-    Weight: 500
-    Defense: 3
+    Weight: 100
+    Defense: 6
     Slots: 1
     Locations:
       Head_Top: true
     Refineable: true
     ArmorLevel: 1
+    EquipLevelMin: 50
     View: 2779
     Script: |
-      bonus bStr,0;
+      bonus bVit,5;
+      for (.@i = Ele_Water; .@i <= Ele_Undead; .@i++)
+        bonus2 bSubEle,.@i,2;
+      bonus2 bSubRace,RC_DemiHuman,10;
+      bonus2 bSubEle,Ele_Fire,-10;
+      bonus bMaxHPrate,getrefine()/2;
+
   - Id: 120137
     AegisName: Green Valkyrie Helm
     Name: Green Valkyrie Helm
     Type: Armor
-    Weight: 500
-    Defense: 3
+    Weight: 100
+    Defense: 6
     Slots: 1
     Locations:
       Head_Top: true
     Refineable: true
     ArmorLevel: 1
+    EquipLevelMin: 50
     View: 2780
     Script: |
-      bonus bStr,0;
+      bonus bLuk,10;
+      bonus2 bSubRace,RC_DemiHuman,10;
+      bonus2 bSubEle,Ele_Dark,-10;
+      bonus bCritAtkRate,getrefine()/2;
+
   - Id: 120138
     AegisName: Red Valkyrie Helm
     Name: Red Valkyrie Helm
     Type: Armor
-    Weight: 500
-    Defense: 3
+    Weight: 100
+    Defense: 6
     Slots: 1
     Locations:
       Head_Top: true
     Refineable: true
     ArmorLevel: 1
+    EquipLevelMin: 50
     View: 2781
     Script: |
-      bonus bStr,0;
+      bonus bDex,10;
+      bonus2 bSubRace,RC_DemiHuman,10;
+      bonus2 bSubEle,Ele_Wind,-10;
 
   - Id: 5135
     AegisName: Cyclops_Visor
     Name: Cyclop's Eye
     Type: Armor
-    Weight: 500
-    Defense: 3
+    Weight: 200
+    Defense: 0
     Slots: 1
     Jobs:
       All: true
@@ -4159,7 +4221,11 @@ Body:
     EquipLevelMin: 75
     View: 207
     Script: |
-      bonus bMaxSP,50;
+      bonus bAllStats,3;
+      bonus bFlee,20;
+      bonus bMatk,3;
+      bonus2 bAddClass,Class_All,3;
+      bonus bDelayRate,-100;
 
   - Id: 120139
     AegisName: Banryu
@@ -5294,13 +5360,19 @@ Body:
     AegisName: Hat_Creed
     Name: Hat_Creed
     Type: Armor
+    Weight: 500
+    Defense: 2
     Slots: 1
     Locations:
       Head_Top: true
     ArmorLevel: 1
     View: 2782
     Script: |
-      bonus bStr,0;
+      bonus bMdef,10;
+      bonus bVit,10;
+      bonus2 bSubRace,RC_DemiHuman,10;
+      bonus2 bSubEle,Ele_Ghost,-10;
+      bonus bMaxHPrate,getrefine()/2;
 
   - Id: 120178
     AegisName: Hat_Danzo
@@ -5353,36 +5425,51 @@ Body:
     Script: |
       bonus bStr,3;
       bonus2 bAddSize,Size_Medium,5;
+
   - Id: 120182
     AegisName: Angeling_Wings
     Name: Angeling Wings
     Type: Armor
+    Weight: 100
+    Defense: 1
     Locations:
       Head_Low: true
     ArmorLevel: 1
     View: 2787
     Script: |
-      bonus bStr,0;
+      bonus bAgi,5;
+      bonus bAspd,7;
+
   - Id: 120183
     AegisName: ArchAngel_Wings
     Name: ArchAngel Wings
     Type: Armor
+    Weight: 100
+    Defense: 1
     Locations:
       Head_Low: true
     ArmorLevel: 1
     View: 2788
     Script: |
-      bonus bStr,0;
+      bonus bAgi,3;
+      bonus bDex,3;
+      bonus2 bResEff,Eff_Stun,1000;
+
   - Id: 120184
     AegisName: ArchDevil_Wings
     Name: ArchDevil Wings
     Type: Armor
+    Weight: 100
+    Defense: 1
     Locations:
       Head_Low: true
     ArmorLevel: 1
     View: 2789
     Script: |
-      bonus bStr,0;
+      bonus bStr,3;
+      bonus bInt,3;
+      bonus2 bAddEff,Eff_Blind,500;
+
   - Id: 120185
     AegisName: Devil_Wings
     Name: Devil Wings
@@ -5403,6 +5490,7 @@ Body:
         bonus2 bAddClass,Class_All,25;
         bonus2 bAddEle,Ele_Dark,25;
       }
+
   - Id: 120186
     AegisName: Deviling_Wings
     Name: Deviling Wings
@@ -5412,8 +5500,44 @@ Body:
     ArmorLevel: 1
     View: 2791
     Script: |
-      bonus bStr,0;
+      bonus bLuk,3;
+      bonus bVit,3;
+      bonus bFlee2,3;
 
+  - Id: 5101
+    AegisName: Takius_Blindfold
+    Name: Takius's Blindfold
+    Type: Armor
+    Slots: 1
+    Buy: 20
+    Weight: 100
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 184
+    Script: |
+      bonus bInt,3;
+      bonus bDex,3;
+      bonus bMdef,3;
+
+  - Id: 5104
+    AegisName: Dark_Blindfold
+    Name: Dark Blinder
+    Type: Armor
+    Slots: 1
+    Buy: 20
+    Weight: 100
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 187
+    Script: |
+      bonus bStr,3;
+      bonus bVit,3;     
 #Body:
 # THQ Quest Items
 #=============================================================
