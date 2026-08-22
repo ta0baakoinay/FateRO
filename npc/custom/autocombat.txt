@@ -2,8 +2,13 @@
 //= Auto Combat
 //===== By: ==================================================
 //= jsn (discord: jasonch35)
+//===== Modified: ============================================
+//= Added daily AP timer (2 hours/day) gating Auto Combat,
+//= with item-based AP top-up support. AP is tracked in
+//= minutes and drains once per minute while auto combat
+//= (SC_AUTOCOMBAT) is active. Resets daily per character.
 //===== Current Version: =====================================
-//= 20241211
+//= 20241211 (+AP timer patch)
 //===== Description: =========================================
 //= Inspired by Ragnarok:EL
 //= Duration variable is either:
@@ -12,6 +17,54 @@
 //= depending on AUTOCOMBAT_DURATION_CONFIG in autocombat.hpp
 //= If set, AC duration is automatically calculated based on
 //=		on the remaining VIP duration.
+//=
+//= AP TIMER NOTES:
+//= - .ap_daily     = daily AP allowance in minutes (default 120 = 2 hours)
+//= - .ap_ceiling   = absolute max AP can ever hold, including potion top-ups
+//= - AP is tracked ACCOUNT-WIDE via #AC_AP / #AC_MaxAP / #AC_LastReset$
+//=   ('#' = permanent account variable, shared by every character on
+//=   the same login, per rAthena's variable scoping). This means all
+//=   characters on one account draw from the same 120-minute pool —
+//=   playing Auto Combat on one character spends the same AP that
+//=   would be available on any other character on that account.
+//= - Ap / MaxAp (no '#', native per-character stat) are kept in sync
+//=   with the account pool on every reset check and every drain tick,
+//=   purely so the client-side AP bar (via your WARP patch) displays
+//=   the correct number for whichever character is currently active.
+//=   The account variables (#AC_AP / #AC_MaxAP) are the source of
+//=   truth; Ap/MaxAp are just a mirrored display value.
+//= - If you ever run multiple server groups sharing one login server
+//=   and want the pool to be global across all of them (not just this
+//=   server group), switch '#' to '##' throughout (permanent GLOBAL
+//=   account variable).
+//= - The AP drain timer uses addtimer/deltimer (OnApTick), NOT
+//=   initnpctimer. initnpctimer is bound to the NPC object itself
+//=   (shared across all players), so it has no attached player when
+//=   it later fires -> "player not attached" errors, and would also
+//=   collide between players sharing this singleton NPC. addtimer
+//=   captures the currently attached RID and re-attaches it
+//=   automatically each time OnApTick fires, so it's safe per-player.
+//=
+//= PERSISTENCE ACROSS SERVER RESTARTS:
+//= - #AC_AP, #AC_MaxAP, and #AC_LastReset$ are ordinary account-
+//=   persistent values (same DB-backed save mechanism as character
+//=   variables, just scoped to the account instead), so daily AP
+//=   allowance and remaining balance are NOT lost or reset by a
+//=   server restart.
+//= - What does NOT survive a restart: the live SC_AUTOCOMBAT status,
+//=   the addon's own mob/skill/loot selections (tracked in its
+//=   compiled runtime state, not script variables), and the addtimer
+//=   countdown. These are wiped along with all other server memory
+//=   on restart, same as any disconnect. There's no safe way to
+//=   silently resume real combat behavior after that, since we don't
+//=   have access to what mobs/skills/loot rules were configured.
+//= - #AC_SessionActive is a permanent account-wide flag used only to
+//=   detect this case: if it's still set to 1 when any character on
+//=   the account logs back in, we know their session was cut short
+//=   (crash/restart) rather than ended cleanly, so we clear it and
+//=   tell them to restart Auto Combat with @acstart. Their AP total
+//=   is unaffected either way — it only reflects minutes actually
+//=   ticked while combat was really running.
 //============================================================
 -	script	AutoCombat	FAKE_NPC,{
 function skill_menu;
@@ -21,8 +74,11 @@ OnInit:
 	// or an item id
 	.max_duration = 0;
 	.max_duration_vip = 0; // set to 0 to disable
-	bindatcmd "acstart",strnpcinfo(3)+"::OnAutoCombatStart";
-	bindatcmd "acend",strnpcinfo(3)+"::OnAutoCombatEnd";
+
+	// ---- AP timer settings ----
+	.ap_daily = 120;    // daily AP allowance in minutes (2 hours)
+	.ap_ceiling = 120;  // hard cap on Ap even with potion top-ups (4 hours)
+
 
 	//===== DO NOT TOUCH BELOW ==================================================
 	.on$ = "^007000"; .off$ = "^FF0000"; .post$ = "^000000";
@@ -31,18 +87,68 @@ OnInit:
 	.box3$ = "[  "+.off$+"x"+.post$+"  ]  ";
 	end;
 
+OnPCLoginEvent:
+	callsub L_CheckApReset;
+	if (#AC_SessionActive) {
+		// Session flag was still set from before we last saw this account —
+		// either the server restarted mid-session or the map server crashed.
+		// We do NOT try to silently resume real combat (mob/skill/loot config
+		// lives in the addon's own runtime state, not in script variables),
+		// so we just clear the flag and let them know to restart it manually.
+		#AC_SessionActive = 0;
+		message strcharinfo(0), "Your Auto Combat session was interrupted. Your AP was not affected. use @settings to resume.";
+	}
+	end;
+
+L_CheckApReset:
+	.@today$ = gettimestr("%Y%m%d", 20);
+	if (#AC_LastReset$ != .@today$) {
+		#AC_AP = .ap_daily;
+		#AC_LastReset$ = .@today$;
+	}
+	#AC_MaxAP = .ap_daily;
+	if (#AC_AP > .ap_ceiling)
+		#AC_AP = .ap_ceiling;
+	// sync account-wide pool into this character's native AP stat/bar
+	MaxAp = #AC_MaxAP;
+	Ap = #AC_AP;
+	return;
+
 OnAutoCombatEnd:
 	sc_end(SC_AUTOCOMBAT);
+	#AC_SessionActive = 0;
+	deltimer strnpcinfo(3)+"::OnApTick";
+	end;
+
+OnApTick:
+	if (!getstatus(SC_AUTOCOMBAT)) {
+		#AC_SessionActive = 0;
+		end;
+	}
+	#AC_AP = #AC_AP - 1;
+	MaxAp = #AC_MaxAP; // sync native ceiling every tick (fixes mid-session max_ap=0 clamp bug)
+	Ap = #AC_AP;
+	if (#AC_AP <= 0) {
+		#AC_AP = 0;
+		Ap = 0;
+		sc_end(SC_AUTOCOMBAT);
+		#AC_SessionActive = 0;
+		message strcharinfo(0), "AP depleted for today (shared across all characters on this account). Auto Combat stopped.";
+		end;
+	}
+	addtimer(60000, strnpcinfo(3)+"::OnApTick");
 	end;
 
 OnAutoCombatStart:
 	sc_end(SC_AUTOCOMBAT);
+	callsub L_CheckApReset;
 	if ((.@dur = getautocombatduration(.max_duration, .max_duration_vip)) >= 0) {
 		if (.@dur <= 1)
 			message strcharinfo(0), "Your Auto Combat duration has expired.";
 		else
 			message strcharinfo(0), "You have "+callfunc("F_InsertComma", .@dur)+" seconds remaining for Auto Combat.";
 	}
+	message strcharinfo(0), "AP remaining: "+#AC_AP+"/"+.ap_daily+" minutes.";
 	while(!.@while) {
 		switch(select("Auto Combat","Attack Menu","Support Buffs","Item Loot","Teleport & Misc","Regeneration")) {
 		case 1:
@@ -67,6 +173,11 @@ OnAutoCombatStart:
 					.@select$ += "Clear Selected";
 					.@s = select(.@select$) - 2;
 					if (.@s == -1) {
+						callsub L_CheckApReset;
+						if (#AC_AP <= 0) {
+							message strcharinfo(0), "You're out of AP for today (shared across all characters on this account). Use an AP item or wait for tomorrow's reset.";
+							break;
+						}
 						getmapxy(mapMA$, .@y, .@x, BL_PC);
 						if (.@dur == -1) {
 							sc_start(SC_AUTOCOMBAT, 1, 1);
@@ -78,6 +189,10 @@ OnAutoCombatStart:
 							}
 							sc_start(SC_AUTOCOMBAT, (.@dur * 1000), 0);
 						}
+						message strcharinfo(0), "AP remaining: "+#AC_AP+"/"+.ap_daily+" minutes.";
+						deltimer strnpcinfo(3)+"::OnApTick"; // avoid stacking timers on repeat use
+						#AC_SessionActive = 1;
+						addtimer(60000, strnpcinfo(3)+"::OnApTick");
 						.@while = 1;
 						break;
 					}

@@ -10652,9 +10652,10 @@ bool pc_setparam(map_session_data *sd,int64 type,int64 val_tmp)
 			clif_updatestatus(*sd, SP_SP);
 		}
 		break;
-	case SP_AP:
-		sd->battle_status.ap = cap_value(val, 0, (int32)sd->battle_status.max_ap);
-		break;
+        case SP_AP:
+                sd->battle_status.ap = cap_value(val, 0, (int32)sd->battle_status.max_ap);
+                clif_updatestatus(*sd, SP_AP);
+                break;
 	case SP_MAXAP:
 		sd->battle_status.max_ap = cap_value(val, 1, battle_config.max_ap);
 

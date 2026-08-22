@@ -69,7 +69,22 @@ OnSettingsStart:
 			break;
 		case 4:
 			close2;
-			doevent "AutoCombat::OnAutoCombatStart";
+			if (getstatus(SC_AUTOCOMBAT)) {
+				switch (select("Stop Auto Combat:Reconfigure Auto Combat:Cancel")) {
+				case 1:
+					doevent "AutoCombat::OnAutoCombatEnd";
+					message strcharinfo(0), "Auto Combat stopped.";
+					break;
+				case 2:
+					doevent "AutoCombat::OnAutoCombatStart";
+					end;
+				case 3:
+					break;
+				}
+			} else {
+				doevent "AutoCombat::OnAutoCombatStart";
+				end;
+			}
 			end;
 		case 5:
 			close2;
@@ -306,9 +321,6 @@ OnCommandsList:
 	mes "^FF8000Player / General^000000";
 	mes "^0000FF@settings^000000 - Open personal settings, filters, and utility shortcuts.";
 	mes "^0000FF@hideheadgear^000000 - Toggle whether your headgear sprites are shown or hidden.";
-	mes "^0000FF@abstart^000000 - Open the Auto Buff Start/Stop/Configuration menu.";
-	mes "^0000FF@abconfig^000000 - Jump directly to Auto Buff configuration.";
-	mes "^0000FF@abend^000000 - Stop Auto Buff immediately.";
 	mes "^0000FF@rates^000000 - Show server rates.";
 	mes "^0000FF@vip^000000 - Show VIP status, bonuses, and VIP command access.";
 	mes "^0000FF@resist^000000 - Show element, damage-type, and status resistances.";

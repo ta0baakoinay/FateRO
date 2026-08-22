@@ -14,6 +14,14 @@
 //	@abend remains a quick direct stop; @abconfig still jumps straight
 //	to the Configuration screen.
 //
+//	UPDATED 5: AutoBuff now shares the account-wide AP pool (#AC_AP)
+//	with AutoCombat (see npc/custom/autocombat.txt). Starting AutoBuff
+//	drains 1 AP-minute per real minute via a per-player timer, exactly
+//	like AutoCombat's OnApTick. Both systems are mutually exclusive —
+//	starting one while the other is active is blocked, and neither can
+//	start with #AC_AP <= 0. This prevents the two systems from ever
+//	running simultaneously and double-draining the same pool.
+//
 
 function	script	F_autobufftoggle	{
 set @eac, eaclass();
@@ -67,6 +75,7 @@ main_menu:
     if(.@current_state && !getstatus(SC_AUTOBUFF, 5)) {
         // State says ON but no actual buff status - force clear
         sc_end SC_AUTOBUFF;
+        deltimer "AutoBuffCommands::OnApTick";
         sleep2 100;
         .@current_state = 0; // Update local state
     }
@@ -77,10 +86,25 @@ main_menu:
         case 1:
             if(.@current_state) {
                 sc_end SC_AUTOBUFF;
+                deltimer "AutoBuffCommands::OnApTick"; // stop shared AP drain
                 sleep2 200; // Give time for cleanup
                 goto(main_menu); // Return to menu after stopping
             } else {
+                if (getstatus(SC_AUTOCOMBAT, 5)) {
+                    mes .@menu$;
+                    mes "Auto Combat is currently running. Stop it first — Auto Combat and Auto Buff share the same AP pool and can't run at the same time.";
+                    close;
+                }
+                if (#AC_AP <= 0) {
+                    mes .@menu$;
+                    mes "You have no AP remaining today. AP is shared between Auto Combat and Auto Buff.";
+                    close;
+                }
                 autobuff_start(86400); // Start AutoBuff directly, no item required
+                MaxAp = #AC_MaxAP; // sync native MaxAp ceiling BEFORE writing Ap (fixes max_ap=0 clamp bug)
+                Ap = #AC_AP; // keep the character's AP bar synced on start
+                addtimer(60000, "AutoBuffCommands::OnApTick"); // begin shared AP drain
+                dispbottom "AutoBuff started. AP remaining: " + #AC_AP + " minutes (shared with Auto Combat).";
                 close; // Auto-close after starting
             }
             break;
@@ -1378,13 +1402,21 @@ buffitems_menu:
 //  Players never need to own or interact with any item to use these
 //  commands - they call the custom autobuff_start(<seconds>) source
 //  command directly, which starts SC_AUTOBUFF with no item check.
+//
+//  AP NOTES:
+//  - AutoBuff shares the account-wide AP pool (#AC_AP) with
+//    AutoCombat, defined and drained in npc/custom/autocombat.txt.
+//  - OnApTick below mirrors AutoCombat's own OnApTick: fires once per
+//    real minute while SC_AUTOBUFF is active, decrements #AC_AP by 1,
+//    mirrors it into the native Ap stat for client display, and stops
+//    the buff session automatically when AP hits 0.
+//  - AutoCombat and AutoBuff are mutually exclusive: each checks the
+//    other's status before starting, so only one timer can ever be
+//    draining #AC_AP at a time.
 // ============================================================
 //
 -	script	AutoBuffCommands	FAKE_NPC,{
 OnInit:
-	bindatcmd "abstart",strnpcinfo(3)+"::OnAbStart";
-	bindatcmd "abend",strnpcinfo(3)+"::OnAbEnd";
-	bindatcmd "abconfig",strnpcinfo(3)+"::OnAbConfig";
 	end;
 
 OnAbConfig:
@@ -1407,7 +1439,25 @@ OnAbEnd:
 	}
 
 	sc_end SC_AUTOBUFF;
+	deltimer strnpcinfo(3)+"::OnApTick"; // stop shared AP drain
 	sleep2 200;
 	dispbottom "AutoBuff stopped.";
+	end;
+
+OnApTick: // per-player timer, fires once per minute while SC_AUTOBUFF is active
+	if (!getstatus(SC_AUTOBUFF, 5)) {
+		end;
+	}
+	#AC_AP = #AC_AP - 1;
+	MaxAp = #AC_MaxAP; // sync native ceiling every tick (fixes mid-session max_ap=0 clamp bug, e.g. after warp/recall)
+	Ap = #AC_AP;
+	if (#AC_AP <= 0) {
+		#AC_AP = 0;
+		Ap = 0;
+		sc_end SC_AUTOBUFF;
+		message strcharinfo(0), "AP depleted for today (shared with Auto Combat). Auto Buff stopped.";
+		end;
+	}
+	addtimer(60000, strnpcinfo(3)+"::OnApTick");
 	end;
 }
