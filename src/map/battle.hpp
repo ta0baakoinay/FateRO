@@ -612,6 +612,26 @@ struct Battle_Config
 	int32 feature_autotrade_sit;
 	int32 feature_autotrade_open_delay;
 
+	// Autobuff
+	int32 feature_autobuff_prefixname;
+	int32 feature_autobuff_hateffect;
+	int32 feature_autobuff_bskill_delay;
+	int32 feature_autobuff_teleportiflost;
+	int32 feature_autobuff_drop_rate_penalty;
+	int32 feature_autobuff_base_exp_penalty;
+	int32 feature_autobuff_job_exp_penalty;		
+	int32 feature_autobuff_drop_ratio;
+	int32 feature_autobuff_exp_ratio;
+	int32 feature_autobuff_allow_town;
+	int32 feature_autobuff_allow_pvp;
+	int32 feature_autobuff_allow_gvg;
+	int32 feature_autobuff_allow_bg;
+	int32 feature_autobuff_duration_type;
+	int32 feature_autobuff_timer;
+	int32 feature_autobuff_iplimit;
+	int32 feature_autobuff_gepardlimit;
+
+
 	// Fame points
 	int32 fame_taekwon_mission;
 	int32 fame_refine_lv1;

@@ -5538,6 +5538,9 @@ Body:
     Script: |
       bonus bStr,3;
       bonus bVit,3;     
+
+
+
 #Body:
 # THQ Quest Items
 #=============================================================

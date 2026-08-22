@@ -29,6 +29,7 @@
 #include <common/utilities.hpp>
 #include <common/utils.hpp>
 
+#include "autobuff.hpp"
 #include "achievement.hpp"
 #include "atcommand.hpp" // get_atcommand_level()
 #include "battle.hpp" // battle_config
@@ -2344,9 +2345,32 @@ bool pc_authok(map_session_data *sd, uint32 login_id2, time_t expiration_time, i
 	}
 	emote_load(sd);
 
+	if ((sd->class_ & MAPID_BASEMASK) == MAPID_ACOLYTE
+		|| (sd->class_ & MAPID_UPPERMASK) == MAPID_CRUSADER
+		|| (sd->class_ & MAPID_UPPERMASK) == MAPID_BARDDANCER
+		|| (sd->class_ & MAPID_UPPERMASK) == MAPID_ALCHEMIST)
+		ab_load(sd);
+ 
+
 	// Request all registries (auth is considered completed whence they arrive)
 	intif_request_registry(sd,7);
 	return true;
+}
+
+uint32 pc_getrental_search_inventory(map_session_data *sd, t_itemid nameid) {
+	short i;
+	uint32 expire_time = 0;
+	nullpo_retr(-1, sd);
+
+	for (i = 0; i < MAX_INVENTORY; i++) {
+		if (sd->inventory.u.items_inventory[i].nameid == nameid) {
+			if (sd->inventory.u.items_inventory[i].expire_time > 0) {
+				expire_time = sd->inventory.u.items_inventory[i].expire_time;
+			}
+		}
+	}
+
+	return expire_time;
 }
 
 /*==========================================
@@ -2586,6 +2610,11 @@ void pc_reg_received(map_session_data *sd)
 
 			clif_changeoption( sd );
 		}
+	}
+
+	//autobuff
+	if (sd->ab.duration_ > 0) {
+		add_timer(gettick() + 5000, ab_delayed_restore_timer, sd->id, 0);
 	}
 
 	channel_autojoin(sd);
@@ -6993,13 +7022,24 @@ enum e_setpos pc_setpos(map_session_data* sd, uint16 mapindex, int32 x, int32 y,
 		return SETPOS_MAPINDEX;
 	}
 
-	if ( sd->state.autotrade && (sd->vender_id || sd->buyer_id) ) // Player with autotrade just causes clif glitch! @ FIXME
+	if ( sd->state.autotrade && (sd->vender_id || sd->buyer_id) && !sd->state.autobuff ) // Player with autotrade just causes clif glitch! @ FIXME
 		return SETPOS_AUTOTRADE;
 
 	if( battle_config.revive_onwarp && pc_isdead(sd) ) { //Revive dead people before warping them
 		pc_setstand(sd, true);
 		pc_setrestartvalue(sd,1);
 	}
+// Save AutoBuff state before warping
+if (sd->state.autobuff && sd->sc.getSCE(SC_AUTOBUFF)) {
+	struct status_change_entry* sce = sd->sc.getSCE(SC_AUTOBUFF);
+	if (sce && sce->timer != INVALID_TIMER) {
+		int remaining_time = DIFF_TICK(get_timer(sce->timer)->tick, gettick());
+		if (remaining_time > 1000) { // Only save if more than 1 second left
+			sd->ab.duration_ = remaining_time;
+			pc_setaccountreg(sd, add_str("#ab_duration"), sd->ab.duration_);
+		}
+	}
+}
 
 	int16 m = map_mapindex2mapid(mapindex);
 	struct map_data *mapdata = map_getmapdata(m);
@@ -8523,6 +8563,16 @@ void pc_gainexp(map_session_data *sd, block_list *src, t_exp base_exp, t_exp job
 	    base_exp = base_exp * battle_config.autocombat_base_exp_penalty / 100;
 	    job_exp = job_exp * battle_config.autocombat_job_exp_penalty / 100;
 	}
+
+
+
+	// Apply AutoBuff EXP penalties
+	if (sd->state.autobuff) {
+		base_exp = base_exp * battle_config.feature_autobuff_base_exp_penalty / 100;
+		job_exp = job_exp * battle_config.feature_autobuff_job_exp_penalty / 100;
+	}
+
+
 
 
 	if (!(exp_flag&2)) {

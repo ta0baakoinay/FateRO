@@ -1,0 +1,1413 @@
+//
+//
+//	Author		Shakto
+//	Version		2024/09/01
+//	Web		https://ronovelty.com/
+//
+//	UPDATED: Added @abstart / @abend atcommands as alternatives to the
+//	item-triggered Start/Stop menu options. See the "AutoBuffCommands"
+//	NPC at the bottom of this file.
+//
+//	UPDATED 4: @abstart now opens the same [Start]/[Stop]/[Configuration]
+//	menu as before, instead of immediately starting AutoBuff with a
+//	fixed duration. Pick "[Start]" from that menu to actually begin.
+//	@abend remains a quick direct stop; @abconfig still jumps straight
+//	to the Configuration screen.
+//
+
+function	script	F_autobufftoggle	{
+set @eac, eaclass();
+
+if((@eac&EAJ_BASEMASK) != EAJ_ACOLYTE
+	&& (@eac&EAJ_UPPERMASK) != EAJ_ALCHEMIST
+	&& (@eac&EAJ_UPPERMASK) != EAJ_CRUSADER
+	&& (@eac&EAJ_UPPERMASK) != EAJ_BARDDANCER
+	) {
+	mes "This feature is only allowed for acolyte, crusader, alchemist or bard/dancer based jobs.";
+	close;
+}
+
+if(getcharid(1) == 0){
+	mes "You need to be in a party to use AutoBuff.";
+	close;
+}
+
+.@config_mode = 0;
+if(getargcount() > 0)
+	.@config_mode = getarg(0);
+
+if(.@config_mode == 1)
+	goto(config_menu);
+goto(main_menu);
+end;
+
+// Replace your main_menu section with this corrected version:
+main_menu:
+    .@menu$ = "[Auto Buff Configuration]";
+    mes .@menu$;
+
+    if((@eac&EAJ_BASEMASK) != EAJ_ACOLYTE
+        && (@eac&EAJ_UPPERMASK) != EAJ_ALCHEMIST
+        && (@eac&EAJ_UPPERMASK) != EAJ_CRUSADER
+        && (@eac&EAJ_UPPERMASK) != EAJ_BARDDANCER
+        ) {
+        mes "This feature is only allowed for acolyte, crusader, alchemist or bard/dancer based jobs.";
+        close;
+    }
+
+    if(getcharid(1) == 0){
+        mes "You need to be in a party to use the AutoBuff Device";
+        close;
+    }
+
+    // State verification and cleanup inline
+    .@current_state = ab_getstate();
+
+    // Check for inconsistent state and force cleanup if needed
+    if(.@current_state && !getstatus(SC_AUTOBUFF, 5)) {
+        // State says ON but no actual buff status - force clear
+        sc_end SC_AUTOBUFF;
+        sleep2 100;
+        .@current_state = 0; // Update local state
+    }
+
+    .@main_menu = select(.@current_state ? "[Stop]" : "[Start]", "[Configuration]", "[Cancel]");
+
+        switch(.@main_menu){
+        case 1:
+            if(.@current_state) {
+                sc_end SC_AUTOBUFF;
+                sleep2 200; // Give time for cleanup
+                goto(main_menu); // Return to menu after stopping
+            } else {
+                autobuff_start(86400); // Start AutoBuff directly, no item required
+                close; // Auto-close after starting
+            }
+            break;
+        case 2:
+            goto(config_menu);
+            break;
+    }
+    end;
+config_menu:
+	clear;
+	.@menu$ = "[Auto Buff Configuration]";
+	mes .@menu$;
+
+
+	if(BaseClass == Job_Acolyte){ // Acolyte base job
+	// To disable an option, comment the line
+	menu	"Return",main_menu,
+			" ~ Regeneration",regeneration_menu,
+			" ~ Buff Skills",buffskills_menu,
+			" ~ Buff Items",buffitems_menu,
+			" ~ Follow",follow_menu,
+			" ~ Resurection",resurection_menu,
+			" ~ PM orders",pm_menu,
+			" ~ Party",party_menu,
+			" ~ Return to save point",save_point_menu,
+			" ~ Token of Siegfried",siegfried_menu,
+			" ~ Priorize buff",priorizebuff_menu,
+			" ~ Reset all",reset_all;
+	} else {
+	// To disable an option, comment the line
+	menu	"Return",main_menu,
+			" ~ Regeneration",regeneration_menu,
+			" ~ Buff Skills",buffskills_menu,
+			" ~ Buff Items",buffitems_menu,
+			" ~ Follow",follow_menu,
+			" ~ PM orders",pm_menu,
+			" ~ Party",party_menu,
+			" ~ Return to save point",save_point_menu,
+			" ~ Token of Siegfried",siegfried_menu,
+			" ~ Priorize buff",priorizebuff_menu,
+			" ~ Reset all",reset_all;
+	}
+
+	end;
+
+priorizebuff_menu:
+	clear;
+	.@menu$ = "[Priorize buff]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes ab_getautobuffstring(11,0);
+
+	.@priorizebuff_menu = select(ab_getautobuffint(9,0)?"Disable":"Enable","[Cancel]");
+	switch(.@priorizebuff_menu){
+		case 1:
+			if(ab_getautobuffint(9,0))
+				ab_setautobuff("13;0");
+			else
+				ab_setautobuff("13;1");
+			break;
+		case 2:
+			goto(config_menu);
+			break;
+	}
+	goto(priorizebuff_menu);
+
+	end;
+
+siegfried_menu:
+	clear;
+	.@menu$ = "[Token of Siegfried]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes ab_getautobuffstring(9,0);
+
+	.@siegfried_menu = select(ab_getautobuffint(7,0)?"Disable":"Enable","[Cancel]");
+	switch(.@siegfried_menu){
+		case 1:
+			if(ab_getautobuffint(7,0))
+				ab_setautobuff("11;0");
+			else
+				ab_setautobuff("11;1");
+			break;
+		case 2:
+			goto(config_menu);
+			break;
+	}
+	goto(siegfried_menu);
+
+	end;
+
+save_point_menu:
+	clear;
+	.@menu$ = "[Return to save point]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes ab_getautobuffstring(8,0);
+
+	.@save_point_menu = select(ab_getautobuffint(6,0)?"Disable":"Enable","[Cancel]");
+	switch(.@save_point_menu){
+		case 1:
+			if(ab_getautobuffint(6,0))
+				ab_setautobuff("9;0");
+			else
+				ab_setautobuff("9;1");
+			break;
+		case 2:
+			goto(config_menu);
+			break;
+	}
+	goto(save_point_menu);
+
+	end;
+
+party_menu:
+	clear;
+	.@menu$ = "[Party]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes ab_getautobuffstring(10,0);
+
+	.@party_menu = select(ab_getautobuffint(8,0)?"Disable":"Enable","[Cancel]");
+	switch(.@party_menu){
+		case 1:
+			if(ab_getautobuffint(8,0))
+				ab_setautobuff("12;0");
+			else
+				ab_setautobuff("12;1");
+			break;
+		case 2:
+			goto(config_menu);
+			break;
+	}
+	goto(party_menu);
+
+	end;
+
+pm_menu:
+	clear;
+	.@menu$ = "[PM orders]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes ab_getautobuffstring(6,0);
+
+	.@pm_menu = select("Enable Entire Party","Enable Party Leader only","Enable Specific Party Members","Disable","[Cancel]");
+	switch(.@pm_menu){
+		case 1:
+			ab_setautobuff("7;0");
+			break;
+		case 2:
+			ab_setautobuff("7;1");
+			break;
+		case 3:
+			ab_setautobuff("7;3");
+			.@pm_stoploopplayer = 0;
+			clear;
+
+			mes .@menu$;
+			//deletearray .@player_pm_ids;
+			//deletearray .@player_pm_state;
+			//deletearray .@player_pm_list$;
+			mes ab_getautobuffstring(6,0);
+
+			if(getarraysize(.@player_pm_ids) == 0){
+				mes .@menu$;
+				mes "Sorry, you're the only player in the party";
+				next;
+				goto(pm_menu);
+			}
+
+			.@i = select( .@player_pm_list$ );
+
+			if(.@player_pm_state[.@player_pm_ids[.@i]])
+				ab_setautobuff("7;0;" + .@player_pm_ids[.@i]);
+			else
+				ab_setautobuff("7;1;" + .@player_pm_ids[.@i]);
+
+			goto(pm_menu);
+			break;
+		case 4:
+			ab_setautobuff("7;2");
+			break;
+		case 5:
+			goto(config_menu);
+			break;
+	}
+
+	goto(pm_menu);
+	end;
+
+resurection_menu:
+	clear;
+	.@menu$ = "[Resurection]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+
+	if (BaseJob != Job_Priest && !(Class == Job_Arch_Bishop || Class == Job_Arch_Bishop_T || Class == Job_Baby_Arch_Bishop) && Class != Job_Cardinal) {
+		mes "This feature is only allowed for priest based job";
+		close;
+	}
+
+	mes ab_getautobuffstring(2,0);
+
+	.@resu_menu = select(ab_getautobuffint(2,0)?"Disable":"Enable","[Cancel]");
+	switch(.@resu_menu){
+		case 1:
+			if(ab_getautobuffint(2,0))
+				ab_setautobuff("6;0");
+			else
+				ab_setautobuff("6;1");
+			break;
+		case 2:
+			goto(config_menu);
+			break;
+	}
+
+	goto(resurection_menu);
+	end;
+
+follow_menu:
+	clear;
+	.@menu$ = "[Follow]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes "test";
+	mes ab_getautobuffstring(4,0);
+	.@distance_menu$ = "";
+	.@player_follow_list$ = "";
+
+	.@follow_menu = select("Change the distance with the followed player","Change the player to follow","[Cancel]");
+	if( .@follow_menu == 1 ){
+		clear;
+		mes .@menu$;
+		mes "Set the distance with the followed player (min 2, max 8)";
+
+		for (.@i = 2; .@i <= 8; .@i++)
+			.@distance_menu$ = .@distance_menu$ + (.@i > 2 ? ":" : "") + (.@follow_distance_value[0] == .@i ? "^008000* " + .@i + " cells^000000" : .@i + " cells");
+
+		.@j = select(.@distance_menu$) +1;
+		ab_setautobuff("4;"+ .@j);
+
+		goto(follow_menu);
+	}
+	if( .@follow_menu == 2 ){
+		//deletearray .@player_follow_ids;
+		//deletearray .@player_follow_state;
+		//deletearray .@player_follow_list$;
+
+		clear;
+		mes .@menu$;
+		mes "Choose the name of the player to follow";
+		mes ab_getautobuffstring(4,1);
+
+		if(getarraysize(.@player_follow_ids) == 0){
+			next;
+			goto(follow_menu);
+		}
+
+		.@i = select( .@player_follow_list$ );
+		ab_setautobuff("2;"+ .@player_follow_ids[.@i]);
+		goto(follow_menu);
+	}
+
+	goto(config_menu);
+	end;
+
+reset_all:
+	clear;
+	.@menu$ = "[Reset settings]";
+	mes .@menu$;
+
+	.@reset_menu = select("Confirm the reset of all settings","[Cancel]");
+
+	switch(.@reset_menu){
+		case 1:
+			ab_setautobuff("10;0");
+			break;
+	}
+
+	goto(config_menu);
+	end;
+
+regeneration_menu:
+	mes "Clear menu";
+	clear;
+	.@menu$ = "[Regeneration]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes ab_getautobuffstring(7,0);  // Show potions status
+
+	if ((@eac&EAJ_UPPERMASK) != EAJ_ALCHEMIST){
+		menu	"Return",config_menu,
+				" ~ Auto-Heal",heal_menu,
+				" ~ " + (ab_getautobuffint(4,0)?"Disable":"Enable") + " Potions",potions_toggle_menu,
+				" ~ HP / SP Potions",potion_menu;
+	} else {
+		menu	"Return",config_menu,
+				" ~ Auto-Heal",heal_menu,
+				" ~ " + (ab_getautobuffint(4,0)?"Disable":"Enable") + " Potions",potions_toggle_menu,
+				" ~ Potion Pitcher",potion_pitcher_menu,
+				" ~ Slim Potion Pitcher",slim_potion_pitcher_menu,
+				" ~ HP / SP Potions",potion_menu;
+	}
+	end;
+
+potions_toggle_menu:
+	clear;
+	.@menu$ = "[Potions Toggle]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes ab_getautobuffstring(7,0);
+
+	.@potions_toggle_menu = select(ab_getautobuffint(4,0)?"Disable":"Enable","[Cancel]");
+	switch(.@potions_toggle_menu){
+		case 1:
+			if(ab_getautobuffint(4,0))
+				ab_setautobuff("8;0");  // Disable potions
+			else
+				ab_setautobuff("8;1");  // Enable potions
+			break;
+		case 2:
+			goto(regeneration_menu);
+			break;
+	}
+	goto(regeneration_menu);
+	end;
+
+potion_pitcher_menu:
+	clear;
+	.@menu$ = "[Potion Pitcher]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes "You can add / modify or remove the following skills";
+
+	setarray .@lheal_skill[0],231;
+
+	.@healskill_menu1$ = "";
+	.@j = 0;
+
+	// Check if the player have the skills
+	for (.@i = 0; .@i < getskilllv(.@lheal_skill[0]); .@i++)
+		.@lheal_skill2[.@i] = .@lheal_skill[0];
+
+	if(getarraysize(.@lheal_skill2) == 0){
+		clear;
+		mes .@menu$;
+		mes "Sorry, you don't have any kind of heal skills allowed";
+		next;
+		goto(regeneration_menu);
+	}
+
+	for (.@i = 0; .@i < getarraysize(.@lheal_skill2); .@i++)
+		.@healskill_menu1$ = .@healskill_menu1$ + (.@i > 0 ? ":" : "") + ab_getautobuffstring(12,.@lheal_skill2[.@i],1,.@i);
+
+	.@healskill_menu1$ = "[Cancel]:" + .@healskill_menu1$;
+	.@i = select(.@healskill_menu1$);
+
+	if(.@i == 1)
+		goto(regeneration_menu);
+	else
+		.@i = .@i - 2;
+
+	.@heal_skilllv = .@i + 1;
+
+	if(.@skill_menu_state[.@heal_skilllv]){
+		.@heal_menu = select("Modify","Disable","[Cancel]");
+		switch(.@heal_menu){
+			case 1 :
+				do {
+					clear;
+					mes .@menu$;
+					if(.@heal_skilllv == 5)
+						mes "Choose the value of SP % to use the skill (ex : 10 to use skill if sp are below 10%)";
+					else
+						mes "Choose the value of HP % to use the skill (ex : 10 to use skill if hp are below 10%)";
+					mes "Min value is 5, Max value is 90";
+					input .@heal_minhpvalue;
+				} while(.@heal_minhpvalue < 5 || .@heal_minhpvalue > 90);
+
+				clear;
+				mes .@menu$;
+				mes "Choose your potion pitch configuration";
+				.@heal_prio = select("Pitch Self Only","Pitch Party Leader Only","Pitch Specific Party Members","Pitch Everyone Except Self","Pitch Entire Party","[Cancel]");
+
+				switch(.@heal_prio){
+					case 1:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";0");
+						break;
+					case 2:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";1");
+						break;
+					case 3:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";2");
+
+						do {
+							clear;
+							mes .@menu$;
+							mes ab_getautobuffstring(12,0,.@lheal_skill2[.@i],.@heal_skilllv);
+
+							if(getarraysize(.@player_heal_ids) == 0){
+								mes .@menu$;
+								mes "Sorry, you're the only player in the party";
+								next;
+								goto(potion_pitcher_menu);
+							}
+
+							.@k = select( .@player_heal_list$ ) - 1;
+
+							if(.@player_heal_state[.@player_heal_ids[.@k]])
+								ab_setautobuff("14;"+ .@lheal_skill2[.@i] + ";0;" + .@player_heal_ids[.@k] +";"+ .@heal_skilllv);
+							else
+								ab_setautobuff("14;"+ .@lheal_skill2[.@i] + ";1;" + .@player_heal_ids[.@k] +";"+ .@heal_skilllv);
+
+							clear;
+							mes ab_getautobuffstring(12,0,.@lheal_skill2[.@i],.@heal_skilllv);
+
+							.@l = select("Change another player","[Cancel]");
+							if(.@l == 2)
+								goto(potion_pitcher_menu);
+
+						} while(1);
+						goto(potion_pitcher_menu);
+						break;
+					case 4:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";3");
+						break;
+					case 5:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";4");
+						break;
+				}
+				goto(potion_pitcher_menu);
+				break;
+			case 2:
+				ab_setautobuff("14;0;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";0;0");
+				goto(potion_pitcher_menu);
+				break;
+			case 3:
+				goto(potion_pitcher_menu);
+				break;
+		}
+	} else {
+		.@heal_menu = select("Enable","[Cancel]");
+		switch(.@heal_menu){
+			case 1 :
+				do {
+					clear;
+					mes .@menu$;
+					if(.@heal_skilllv == 5)
+						mes "Choose the value of SP % to use the skill (ex : 10 to use skill if sp are below 10%)";
+					else
+						mes "Choose the value of HP % to use the skill (ex : 10 to use skill if hp are below 10%)";
+					mes "Min value is 5, Max value is 90";
+					input .@heal_minhpvalue;
+				} while(.@heal_minhpvalue < 5 || .@heal_minhpvalue > 90);
+
+				clear;
+				mes .@menu$;
+				mes "Choose your potion pitch configuration";
+				.@heal_prio = select("Pitch Self Only","Pitch Party Leader Only","Pitch Specific Party Members","Pitch Everyone Except Self","Pitch Entire Party","[Cancel]");
+
+				switch(.@heal_prio){
+					case 1:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";0");
+						break;
+					case 2:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";1");
+						break;
+					case 3:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";2");
+
+						do {
+							clear;
+							mes .@menu$;
+							mes ab_getautobuffstring(12,0,.@lheal_skill2[.@i],.@heal_skilllv);
+
+							if(getarraysize(.@player_heal_ids) == 0){
+								mes .@menu$;
+								mes "Sorry, you're the only player in the party";
+								next;
+								goto(potion_pitcher_menu);
+							}
+
+							.@k = select( .@player_heal_list$ ) - 1;
+
+							if(.@player_heal_state[.@player_heal_ids[.@k]])
+								ab_setautobuff("14;"+ .@lheal_skill2[.@i] + ";0;" + .@player_heal_ids[.@k] +";"+ .@heal_skilllv);
+							else
+								ab_setautobuff("14;"+ .@lheal_skill2[.@i] + ";1;" + .@player_heal_ids[.@k] +";"+ .@heal_skilllv);
+
+							clear;
+							mes ab_getautobuffstring(12,0,.@lheal_skill2[.@i],.@heal_skilllv);
+							.@l = select("Change another player","[Cancel]");
+							if(.@l == 2)
+								goto(potion_pitcher_menu);
+
+						} while(1);
+						goto(potion_pitcher_menu);
+						break;
+					case 4:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";3");
+						break;
+					case 5:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";4");
+						break;
+				}
+				goto(potion_pitcher_menu);
+				break;
+			case 2:
+				goto(potion_pitcher_menu);
+				break;
+		}
+	}
+
+	goto(regeneration_menu);
+	end;
+
+slim_potion_pitcher_menu:
+	clear;
+	.@menu$ = "[Slim Potion Pitcher]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes "You can add / modify or remove the following skills";
+
+	setarray .@lheal_skill[0],478;
+
+	.@healskill_menu1$ = "";
+	.@j = 0;
+
+	// Check if the player have the skills
+	for (.@i = 0; .@i < getskilllv(.@lheal_skill[0]); .@i++)
+		.@lheal_skill2[.@i] = .@lheal_skill[0];
+
+	if(getarraysize(.@lheal_skill2) == 0){
+		clear;
+		mes .@menu$;
+		mes "Sorry, you don't have any kind of heal skills allowed";
+		next;
+		goto(regeneration_menu);
+	}
+
+	for (.@i = 0; .@i < getarraysize(.@lheal_skill2); .@i++)
+		.@healskill_menu1$ = .@healskill_menu1$ + (.@i > 0 ? ":" : "") + ab_getautobuffstring(12,.@lheal_skill2[.@i],1,.@i);
+
+	.@healskill_menu1$ = "[Cancel]:" + .@healskill_menu1$;
+	.@i = select(.@healskill_menu1$);
+
+	if(.@i == 1)
+		goto(regeneration_menu);
+	else
+		.@i = .@i - 2;
+
+	.@heal_skilllv = .@i + 1;
+
+	if(.@skill_menu_state[.@heal_skilllv]){
+		.@heal_menu = select("Modify","Disable","[Cancel]");
+		switch(.@heal_menu){
+			case 1 :
+				do {
+					clear;
+					mes .@menu$;
+					mes "Choose the value of HP % to use the skill (ex : 10 to use skill if hp are below 10%)";
+					mes "Min value is 5, Max value is 90";
+					input .@heal_minhpvalue;
+				} while(.@heal_minhpvalue < 5 || .@heal_minhpvalue > 90);
+
+				clear;
+				mes .@menu$;
+				mes "Choose your potion pitch configuration";
+				.@heal_prio = select("Pitch Self Only","Pitch Party Leader Only","Pitch Specific Party Members","Pitch Everyone Except Self","Pitch Entire Party","[Cancel]");
+
+				switch(.@heal_prio){
+					case 1:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";0");
+						break;
+					case 2:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";1");
+						break;
+					case 3:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";2");
+
+						do {
+							clear;
+							mes .@menu$;
+							mes ab_getautobuffstring(12,0,.@lheal_skill2[.@i],.@heal_skilllv);
+
+							if(getarraysize(.@player_heal_ids) == 0){
+								mes .@menu$;
+								mes "Sorry, you're the only player in the party";
+								next;
+								goto(slim_potion_pitcher_menu);
+							}
+
+							.@k = select( .@player_heal_list$ ) - 1;
+
+							if(.@player_heal_state[.@player_heal_ids[.@k]])
+								ab_setautobuff("14;"+ .@lheal_skill2[.@i] + ";0;" + .@player_heal_ids[.@k] +";"+ .@heal_skilllv);
+							else
+								ab_setautobuff("14;"+ .@lheal_skill2[.@i] + ";1;" + .@player_heal_ids[.@k] +";"+ .@heal_skilllv);
+
+							clear;
+							mes ab_getautobuffstring(12,0,.@lheal_skill2[.@i],.@heal_skilllv);
+
+							.@l = select("Change another player","[Cancel]");
+							if(.@l == 2)
+								goto(slim_potion_pitcher_menu);
+
+						} while(1);
+						goto(slim_potion_pitcher_menu);
+						break;
+					case 4:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";3");
+						break;
+					case 5:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";4");
+						break;
+				}
+				goto(slim_potion_pitcher_menu);
+				break;
+			case 2:
+				ab_setautobuff("14;0;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";0;0");
+				goto(slim_potion_pitcher_menu);
+				break;
+			case 3:
+				goto(slim_potion_pitcher_menu);
+				break;
+		}
+	} else {
+		.@heal_menu = select("Enable","[Cancel]");
+		switch(.@heal_menu){
+			case 1 :
+				do {
+					clear;
+					mes .@menu$;
+					mes "Choose the value of HP % to use the skill (ex : 10 to use skill if hp are below 10%)";
+					mes "Min value is 5, Max value is 90";
+					input .@heal_minhpvalue;
+				} while(.@heal_minhpvalue < 5 || .@heal_minhpvalue > 90);
+
+				clear;
+				mes .@menu$;
+				mes "Choose your potion pitch configuration";
+				.@heal_prio = select("Pitch Self Only","Pitch Party Leader Only","Pitch Specific Party Members","Pitch Everyone Except Self","Pitch Entire Party","[Cancel]");
+
+				switch(.@heal_prio){
+					case 1:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";0");
+						break;
+					case 2:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";1");
+						break;
+					case 3:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";2");
+
+						do {
+							clear;
+							mes .@menu$;
+							mes ab_getautobuffstring(12,0,.@lheal_skill2[.@i],.@heal_skilllv);
+
+							if(getarraysize(.@player_heal_ids) == 0){
+								mes .@menu$;
+								mes "Sorry, you're the only player in the party";
+								next;
+								goto(slim_potion_pitcher_menu);
+							}
+
+							.@k = select( .@player_heal_list$ ) - 1;
+
+							if(.@player_heal_state[.@player_heal_ids[.@k]])
+								ab_setautobuff("14;"+ .@lheal_skill2[.@i] + ";0;" + .@player_heal_ids[.@k] +";"+ .@heal_skilllv);
+							else
+								ab_setautobuff("14;"+ .@lheal_skill2[.@i] + ";1;" + .@player_heal_ids[.@k] +";"+ .@heal_skilllv);
+
+							clear;
+							mes ab_getautobuffstring(12,0,.@lheal_skill2[.@i],.@heal_skilllv);
+							.@l = select("Change another player","[Cancel]");
+							if(.@l == 2)
+								goto(slim_potion_pitcher_menu);
+
+						} while(1);
+						goto(slim_potion_pitcher_menu);
+						break;
+					case 4:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";3");
+						break;
+					case 5:
+						ab_setautobuff("14;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";4");
+						break;
+				}
+				goto(slim_potion_pitcher_menu);
+				break;
+			case 2:
+				goto(slim_potion_pitcher_menu);
+				break;
+		}
+	}
+
+	goto(regeneration_menu);
+	end;
+
+heal_menu:
+	clear;
+	.@menu$ = "[Auto-Heal]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes "You can add / modify or remove the following skills";
+
+	if(BaseClass == Job_Acolyte)
+		setarray .@lheal_skill[0],28,2051,2043,70;
+	else
+		setarray .@lheal_skill[0],28;
+
+	.@healskill_menu1$ = "";
+	.@j = 0;
+
+	// Check if the player have the skills
+	for (.@i = 0; .@i < getarraysize(.@lheal_skill); .@i++){
+		if(getskilllv(.@lheal_skill[.@i]))
+			.@lheal_skill2[.@j++] = .@lheal_skill[.@i];
+	}
+
+	if(getarraysize(.@lheal_skill2) == 0){
+		clear;
+		mes .@menu$;
+		mes "Sorry, you don't have any kind of heal skills allowed";
+		next;
+		goto(regeneration_menu);
+	}
+
+	for (.@i = 0; .@i < getarraysize(.@lheal_skill2); .@i++)
+		.@healskill_menu1$ = .@healskill_menu1$ + (.@i > 0 ? ":" : "") + ab_getautobuffstring(0,.@lheal_skill2[.@i],1);
+
+	.@healskill_menu1$ = "[Cancel]:" + .@healskill_menu1$;
+	.@i = select(.@healskill_menu1$);
+
+	if(.@i == 1)
+		goto(regeneration_menu);
+	else
+		.@i = .@i - 2;
+
+	if(.@skill_menu_state[.@lheal_skill2[.@i]]){
+		.@heal_menu = select("Modify","Disable","[Cancel]");
+		switch(.@heal_menu){
+			case 1 :
+				do{
+					clear;
+					mes .@menu$;
+					mes "Choose the skill lv to use";
+					mes "Max lv : " + getskilllv(.@lheal_skill2[.@i]);
+					mes "";
+					mes "Current configuration : ";
+					mes ab_getautobuffstring(0,.@lheal_skill2[.@i],0);
+					input .@heal_skilllv;
+				} while(.@heal_skilllv < 1 || .@heal_skilllv > getskilllv(.@lheal_skill2[.@i]));
+
+				do {
+					clear;
+					mes .@menu$;
+					mes "Choose the value of HP % to use the skill (ex : 10 to use skill if hp are below 10%)";
+					mes "Min value is 5, Max value is 90";
+					input .@heal_minhpvalue;
+				} while(.@heal_minhpvalue < 5 || .@heal_minhpvalue > 90);
+
+				clear;
+				mes .@menu$;
+				mes "Choose your heal configuration";
+				.@heal_prio = select("Heal Self Only","Heal Party Leader Only","Heal Specific Party Members","Heal Everyone Except Self","Heal Entire Party","[Cancel]");
+
+				switch(.@heal_prio){
+					case 1:
+						ab_setautobuff("0;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";0");
+						break;
+					case 2:
+						ab_setautobuff("0;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";1");
+						break;
+					case 3:
+						ab_setautobuff("0;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";2");
+
+						do {
+							clear;
+							mes .@menu$;
+							mes ab_getautobuffstring(0,0,.@lheal_skill2[.@i]);
+
+							if(getarraysize(.@player_heal_ids) == 0){
+								mes .@menu$;
+								mes "Sorry, you're the only player in the party";
+								next;
+								goto(heal_menu);
+							}
+
+							.@k = select( .@player_heal_list$ ) - 1;
+
+							if(.@player_heal_state[.@player_heal_ids[.@k]])
+								ab_setautobuff("0;"+ .@lheal_skill2[.@i] + ";0;" + .@player_heal_ids[.@k]);
+							else
+								ab_setautobuff("0;"+ .@lheal_skill2[.@i] + ";1;" + .@player_heal_ids[.@k]);
+
+							clear;
+							mes ab_getautobuffstring(0,0,.@lheal_skill2[.@i]);
+
+							.@l = select("Change another player","[Cancel]");
+							if(.@l == 2)
+								goto(heal_menu);
+
+						} while(1);
+						goto(heal_menu);
+						break;
+					case 4:
+						ab_setautobuff("0;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";3");
+						break;
+					case 5:
+						ab_setautobuff("0;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";4");
+						break;
+				}
+				goto(heal_menu);
+				break;
+			case 2:
+				ab_setautobuff("0;0;"+ .@lheal_skill[.@i] + ";0;0;0");
+				goto(heal_menu);
+				break;
+			case 3:
+				goto(heal_menu);
+				break;
+		}
+	} else {
+		.@heal_menu = select("Enable","[Cancel]");
+		switch(.@heal_menu){
+			case 1 :
+				do{
+					clear;
+					mes .@menu$;
+					mes "Choose the skill lv to use";
+					mes "Max lv : " + getskilllv(.@lheal_skill2[.@i]);
+					mes "";
+					mes "Current configuration : ";
+					mes ab_getautobuffstring(0,.@lheal_skill2[.@i],0);
+					input .@heal_skilllv;
+				} while(.@heal_skilllv < 1 || .@heal_skilllv > getskilllv(.@lheal_skill2[.@i]));
+
+				do {
+					clear;
+					mes .@menu$;
+					mes "Choose the value of HP % to use the skill (ex : 10 to use skill if hp are below 10%)";
+					mes "Min value is 5, Max value is 90";
+					input .@heal_minhpvalue;
+				} while(.@heal_minhpvalue < 5 || .@heal_minhpvalue > 90);
+
+				clear;
+				mes .@menu$;
+				mes "Choose your heal configuration";
+				.@heal_prio = select("Heal Self Only","Heal Party Leader Only","Heal Specific Party Members","Heal Everyone Except Self","Heal Entire Party","[Cancel]");
+
+				switch(.@heal_prio){
+					case 1:
+						ab_setautobuff("0;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";0");
+						break;
+					case 2:
+						ab_setautobuff("0;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";1");
+						break;
+					case 3:
+						ab_setautobuff("0;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";2");
+
+						do {
+							clear;
+							mes .@menu$;
+							mes ab_getautobuffstring(0,0,.@lheal_skill2[.@i]);
+
+							if(getarraysize(.@player_heal_ids) == 0){
+								mes .@menu$;
+								mes "Sorry, you're the only player in the party";
+								next;
+								goto(heal_menu);
+							}
+
+							.@k = select( .@player_heal_list$ ) - 1;
+
+							if(.@player_heal_state[.@player_heal_ids[.@k]])
+								ab_setautobuff("0;"+ .@lheal_skill2[.@i] + ";0;" + .@player_heal_ids[.@k]);
+							else
+								ab_setautobuff("0;"+ .@lheal_skill2[.@i] + ";1;" + .@player_heal_ids[.@k]);
+
+							clear;
+							mes ab_getautobuffstring(0,0,.@lheal_skill2[.@i]);
+							.@l = select("Change another player","[Cancel]");
+							if(.@l == 2)
+								goto(heal_menu);
+
+						} while(1);
+						goto(heal_menu);
+						break;
+					case 4:
+						ab_setautobuff("0;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";3");
+						break;
+					case 5:
+						ab_setautobuff("0;1;"+ .@lheal_skill2[.@i] + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue + ";4");
+						break;
+				}
+				goto(heal_menu);
+				break;
+			case 2:
+				goto(heal_menu);
+				break;
+		}
+	}
+
+	goto(regeneration_menu);
+	end;
+
+potion_menu:
+	clear;
+	.@menu$ = "[HP / SP Potions]";
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes "You can add / modify or remove the following potion";
+
+	//deletearray .@potion_menu_ids;
+	//deletearray .@potion_menu_state;
+	//deletearray .@potion_menu_list$;
+	mes ab_getautobuffstring(1,0);
+
+	if(getarraysize(.@potion_menu_ids) == 0){
+		clear;
+		mes .@menu$;
+		mes "Sorry, you don't have any kind of heal items";
+		next;
+		goto(regeneration_menu);
+	}
+
+	.@potion_menu_list$ = "[Cancel]:" + .@potion_menu_list$;
+	.@i = select( .@potion_menu_list$ );
+
+	if(.@i == 1)
+		goto(regeneration_menu);
+	else
+		.@i--;
+
+	// Function to determine potion type based on item ID
+	// Returns: 1=HP only, 2=SP only, 3=Both HP and SP
+	function getPotionType {
+		.@item_id = getarg(0);
+
+		// HP-only potions (common healing items)
+		setarray .@hp_potions[0], 12021, 12022, 12026, 12027, 501, 502, 503, 504, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 525, 526, 545, 546, 547, 569, 570, 571, 572, 573, 574, 575, 11501;
+
+		// SP-only potions (mana/sp restoration items)
+		setarray .@sp_potions[0], 531, 505, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 11502;
+
+		// Both HP and SP potions (special items like Yggdrasil)
+		setarray .@both_potions[0], 607, 608, 526;
+
+		// Check HP-only potions
+		for(.@j = 0; .@j < getarraysize(.@hp_potions); .@j++) {
+			if(.@hp_potions[.@j] == .@item_id) return 1;
+		}
+
+		// Check SP-only potions
+		for(.@j = 0; .@j < getarraysize(.@sp_potions); .@j++) {
+			if(.@sp_potions[.@j] == .@item_id) return 2;
+		}
+
+		// Check Both HP and SP potions
+		for(.@j = 0; .@j < getarraysize(.@both_potions); .@j++) {
+			if(.@both_potions[.@j] == .@item_id) return 1;
+		}
+
+		// Default to both if unknown (safer option)
+		return 1;
+	}
+
+	// Get the potion type for the selected item
+	.@potion_type = getPotionType(.@potion_menu_ids[.@i]);
+
+	if(.@potion_menu_state[.@potion_menu_ids[.@i]]){
+		.@potion_menu2 = select("Modify","Disable","[Cancel]");
+		switch(.@potion_menu2){
+			case 1:
+				// Initialize values to 0
+				.@potion_minhpvalue = 0;
+				.@potion_minspvalue = 0;
+
+				// Configure based on potion type
+				if(.@potion_type == 1 || .@potion_type == 3) { // HP only or Both
+					do {
+						clear;
+						mes .@menu$;
+						mes "Choose the value of HP % to use the consumable (ex : 10 to use it if hp are below 10%)";
+						mes "Min value is 5, Max value is 90";
+						input .@potion_minhpvalue;
+					} while(.@potion_minhpvalue < 5 || .@potion_minhpvalue > 90);
+				}
+
+				if(.@potion_type == 2 || .@potion_type == 3) { // SP only or Both
+					do {
+						clear;
+						mes .@menu$;
+						mes "Choose the value of SP % to use the consumable (ex : 10 to use it if sp are below 10%)";
+						mes "Min value is 5, Max value is 90";
+						input .@potion_minspvalue;
+					} while(.@potion_minspvalue < 5 || .@potion_minspvalue > 90);
+				}
+
+				ab_setautobuff("1;1;"+ .@potion_menu_ids[.@i] + ";" + .@potion_minhpvalue + ";" + .@potion_minspvalue);
+				goto(potion_menu);
+				break;
+			case 2:
+				ab_setautobuff("1;0;"+ .@potion_menu_ids[.@i] + ";0;0");
+				goto(potion_menu);
+				break;
+			case 3:
+				goto(potion_menu);
+				break;
+		}
+	}
+	else{
+		.@potion_menu2 = select("Add","[Cancel]");
+		switch(.@potion_menu2){
+			case 1:
+				// Initialize values to 0
+				.@potion_minhpvalue = 0;
+				.@potion_minspvalue = 0;
+
+				// Configure based on potion type
+				if(.@potion_type == 1 || .@potion_type == 3) { // HP only or Both
+					do {
+						clear;
+						mes .@menu$;
+						mes "Choose the value of HP % to use the consumable (ex : 10 to use it if hp are below 10%)";
+						mes "Min value is 5, Max value is 90";
+						input .@potion_minhpvalue;
+					} while(.@potion_minhpvalue < 5 || .@potion_minhpvalue > 90);
+				}
+
+				if(.@potion_type == 2 || .@potion_type == 3) { // SP only or Both
+					do {
+						clear;
+						mes .@menu$;
+						mes "Choose the value of SP % to use the consumable (ex : 10 to use it if sp are below 10%)";
+						mes "Min value is 5, Max value is 90";
+						input .@potion_minspvalue;
+					} while(.@potion_minspvalue < 5 || .@potion_minspvalue > 90);
+				}
+
+				ab_setautobuff("1;1;"+ .@potion_menu_ids[.@i] + ";" + .@potion_minhpvalue + ";" + .@potion_minspvalue);
+				goto(potion_menu);
+				break;
+			case 2:
+				goto(potion_menu);
+				break;
+		}
+	}
+
+	goto(regeneration_menu);
+	end;
+
+buffskills_menu:
+	clear;
+	.@menu$ = "[Buff Skills]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	mes "You can add / modify or remove the following skills";
+	//deletearray .@skill_menu_ids;
+	//deletearray .@skill_menu_state;
+	//deletearray .@skill_menu_list$;
+	mes ab_getautobuffstring(3,0);
+
+	if(getarraysize(.@skill_menu_ids) == 0){
+		mes .@menu$;
+		mes "Sorry, you don't have any kind of buff skills";
+		next;
+		goto(config_menu);
+	}
+
+	.@skill_menu_list$ = "[Cancel]:" + .@skill_menu_list$;
+	.@i = select( .@skill_menu_list$ );
+
+	if(.@i == 1)
+		goto(config_menu);
+	else
+		.@i--;
+
+	if(.@skill_menu_state[.@skill_menu_ids[.@i]]){
+		.@skill_menu2 = select("Modify","Disable","[Cancel]");
+		switch(.@skill_menu2){
+			case 1:
+				// CHANGED: Automatically use maximum skill level instead of asking user
+				.@buff_skilllv = getskilllv(.@skill_menu_ids[.@i]);
+
+				clear;
+				mes .@menu$;
+				mes "Auto-selected maximum skill level: " + .@buff_skilllv;
+				mes "Choose your buff configuration";
+
+				//if(ab_skillinfo(0,.@skill_menu_ids[.@i])){
+				//	ab_setautobuff("3;1;"+ .@skill_menu_ids[.@i] + ";" + .@buff_skilllv + ";0");
+				//	goto(buffskills_menu);
+				//} else
+					.@buff_prio = select("[Cancel]","Buff Self Only","Buff Party Leader Only","Buff Specific Party Members","Buff Everyone Except Self","Buff Entire Party");
+
+				switch(.@buff_prio){
+					case 2:
+						if(ab_skillinfo(1,.@skill_menu_ids[.@i])){
+							mes "You can't select Self on this skill";
+							next;
+							goto(buffskills_menu);
+						}
+
+						ab_setautobuff("3;1;"+ .@skill_menu_ids[.@i] + ";" + .@buff_skilllv + ";0");
+						break;
+					case 3:
+						ab_setautobuff("3;1;"+ .@skill_menu_ids[.@i] + ";" + .@buff_skilllv + ";1");
+						break;
+					case 4:
+						ab_setautobuff("3;1;"+ .@skill_menu_ids[.@i] + ";" + .@buff_skilllv + ";2");
+
+						do {
+							clear;
+							mes .@menu$;
+							mes ab_getautobuffstring(3,.@skill_menu_ids[.@i], 1);
+
+							if(getarraysize(.@player_buff_ids) == 0){
+								mes .@menu$;
+								mes "Sorry, you're the only player in the party";
+								next;
+								goto(buffskills_menu);
+							}
+
+							.@k = select( .@player_buff_list$ ) ;
+
+							if(.@player_buff_state[.@player_buff_ids[.@k]])
+								ab_setautobuff("3;"+ .@skill_menu_ids[.@i] + ";0;" + .@player_buff_ids[.@k]);
+							else
+								ab_setautobuff("3;"+ .@skill_menu_ids[.@i] + ";1;" + .@player_buff_ids[.@k]);
+
+							clear;
+							mes ab_getautobuffstring(3,.@skill_menu_ids[.@i], 1);
+							.@l = select("Change another player","[Cancel]");
+							if(.@l == 2)
+								goto(buffskills_menu);
+
+						} while(1);
+
+						goto(buffskills_menu);
+						break;
+					case 5:
+						ab_setautobuff("3;1;"+ .@skill_menu_ids[.@i] + ";" + .@buff_skilllv + ";3");
+						break;
+					case 6:
+						ab_setautobuff("3;1;"+ .@skill_menu_ids[.@i] + ";" + .@buff_skilllv + ";4");
+						break;
+				}
+				goto(buffskills_menu);
+				break;
+			case 2:
+				ab_setautobuff("3;0;"+ .@skill_menu_ids[.@i] + ";0;0");
+				goto(buffskills_menu);
+				break;
+			case 3:
+				goto(config_menu);
+				break;
+		}
+	}
+	else{
+		.@skill_menu2 = select("Add","[Cancel]");
+		switch(.@skill_menu2){
+			case 1:
+				// CHANGED: Automatically use maximum skill level instead of asking user
+				.@buff_skilllv = getskilllv(.@skill_menu_ids[.@i]);
+
+				clear;
+				mes .@menu$;
+				mes "Auto-selected maximum skill level: " + .@buff_skilllv;
+				mes "Choose your buff configuration";
+
+				//if(ab_skillinfo(0,.@skill_menu_ids[.@i])){
+				//	ab_setautobuff("3;1;"+ .@skill_menu_ids[.@i] + ";" + .@buff_skilllv + ";0");
+				//	goto(buffskills_menu);
+				//} else
+					.@buff_prio = select("[Cancel]","Buff Self Only","Buff Party Leader Only","Buff Specific Party Members","Buff Everyone Except Self","Buff Entire Party");
+
+				switch(.@buff_prio){
+					case 2:
+						if(ab_skillinfo(1,.@skill_menu_ids[.@i])){
+							mes "You can't select Self on this skill";
+							next;
+							goto(buffskills_menu);
+						}
+						ab_setautobuff("3;1;"+ .@skill_menu_ids[.@i] + ";" + .@buff_skilllv + ";0");
+						break;
+					case 3:
+						ab_setautobuff("3;1;"+ .@skill_menu_ids[.@i] + ";" + .@buff_skilllv + ";1");
+						break;
+					case 4:
+						ab_setautobuff("3;1;"+ .@skill_menu_ids[.@i] + ";" + .@buff_skilllv + ";2");
+
+						do {
+							clear;
+							mes .@menu$;
+							mes ab_getautobuffstring(3,.@skill_menu_ids[.@i], 1);
+
+							if(getarraysize(.@player_buff_ids) == 0){
+								mes .@menu$;
+								mes "Sorry, you're the only player in the party";
+								next;
+								goto(buffskills_menu);
+							}
+
+							.@k = select( .@player_buff_list$ );
+
+							if(.@player_buff_state[.@player_buff_ids[.@k]])
+								ab_setautobuff("3;"+ .@skill_menu_ids[.@i] + ";0;" + .@player_buff_ids[.@k]);
+							else
+								ab_setautobuff("3;"+ .@skill_menu_ids[.@i] + ";1;" + .@player_buff_ids[.@k]);
+
+							clear;
+							mes ab_getautobuffstring(3,.@skill_menu_ids[.@i], 1);
+							.@l = select("Change another player","[Cancel]");
+							if(.@l == 2)
+								goto(buffskills_menu);
+
+						} while(1);
+
+						goto(buffskills_menu);
+						break;
+					case 5:
+						ab_setautobuff("3;1;"+ .@skill_menu_ids[.@i] + ";" + .@buff_skilllv + ";3");
+						break;
+					case 6:
+						ab_setautobuff("3;1;"+ .@skill_menu_ids[.@i] + ";" + .@buff_skilllv + ";4");
+						break;
+				}
+				goto(buffskills_menu);
+				break;
+			case 2:
+				goto(config_menu);
+				break;
+		}
+	}
+
+	goto(config_menu);
+	end;
+
+buffitems_menu:
+	clear;
+	.@menu$ = "[Buff Items]";
+
+	mes .@menu$;
+	mes "--- Current configuration ---";
+	setarray .@lbuff_item[0],645,656,657,12208,12210;
+	setarray .@lbuff_sc[0],SC_ASPDPOTION0,SC_ASPDPOTION1,SC_ASPDPOTION2,SC_EXPBOOST,SC_ITEMBOOST;
+	.@buffitems_menu1$ = "";
+
+	for (.@i = 0; .@i < getarraysize(.@lbuff_item); .@i++)
+		.@buffitems_menu1$ = .@buffitems_menu1$ + (.@i > 0 ? ":" : "") + ab_getautobuffstring(5,.@lbuff_item[.@i]);
+
+	.@i = select(.@buffitems_menu1$) -1;
+
+	.@buffitems_menu = select(.@buffitem_menu_state[.@lbuff_item[.@i]] ? "Disable" : "Enable","[Cancel]");
+	if( .@buffitems_menu == 1 ){
+		if(.@buffitem_menu_state[.@lbuff_item[.@i]])
+			ab_setautobuff("5;0;"+ .@lbuff_item[.@i] + ";" + .@lbuff_sc[.@i]);
+		else
+			ab_setautobuff("5;1;"+ .@lbuff_item[.@i] + ";" + .@lbuff_sc[.@i]);
+		goto(buffitems_menu);
+	}
+	else if( .@buffitems_menu == 2 ){
+		ab_setautobuff("5;0;"+ .@lbuff_item[.@i] + ";0");
+		goto(buffitems_menu);
+	}
+
+	goto(config_menu);
+	end;
+
+}
+
+//
+// ============================================================
+//  @abstart / @abend atcommands
+//  Alternative entry points into the F_autobufftoggle system.
+//  Placed in an invisible, always-loaded NPC so bindatcmd fires
+//  once on server start. Enforces the same job/party restrictions
+//  as the item-based Start/Stop menu.
+//
+//  Players never need to own or interact with any item to use these
+//  commands - they call the custom autobuff_start(<seconds>) source
+//  command directly, which starts SC_AUTOBUFF with no item check.
+// ============================================================
+//
+-	script	AutoBuffCommands	FAKE_NPC,{
+OnInit:
+	bindatcmd "abstart",strnpcinfo(3)+"::OnAbStart";
+	bindatcmd "abend",strnpcinfo(3)+"::OnAbEnd";
+	bindatcmd "abconfig",strnpcinfo(3)+"::OnAbConfig";
+	end;
+
+OnAbConfig:
+	callfunc "F_autobufftoggle",1;
+	end;
+
+OnAbStart:
+	callfunc "F_autobufftoggle";
+	end;
+
+OnAbEnd:
+	.@current_state = ab_getstate();
+	if(.@current_state && !getstatus(SC_AUTOBUFF, 5)){
+		.@current_state = 0;
+	}
+
+	if(!.@current_state){
+		dispbottom "AutoBuff is not currently running.";
+		end;
+	}
+
+	sc_end SC_AUTOBUFF;
+	sleep2 200;
+	dispbottom "AutoBuff stopped.";
+	end;
+}

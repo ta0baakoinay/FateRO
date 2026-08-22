@@ -16,6 +16,7 @@
 #include <common/timer.hpp>
 
 #include "battle.hpp"
+#include "autobuff.hpp"
 #include "clan.hpp"
 #include "clif.hpp"
 #include "emote.hpp"
@@ -341,6 +342,13 @@ int32 chrif_save(map_session_data *sd, int32 flag) {
 	if (sd->achievement_data.save)
 		intif_achievement_save(sd);
 	emote_save(sd);
+
+	if ((sd->class_ & MAPID_BASEMASK) == MAPID_ACOLYTE
+		|| (sd->class_ & MAPID_UPPERMASK) == MAPID_CRUSADER
+		|| (sd->class_ & MAPID_UPPERMASK) == MAPID_BARDDANCER
+		|| (sd->class_ & MAPID_UPPERMASK) == MAPID_ALCHEMIST)
+		ab_save(sd);
+
 
 	return 0;
 }

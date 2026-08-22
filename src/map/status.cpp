@@ -20,6 +20,7 @@
 #include <common/utils.hpp>
 
 #include "autocombat.hpp" // [jsn] Auto Combat
+#include "autobuff.hpp"
 #include "battle.hpp"
 #include "battleground.hpp"
 #include "clif.hpp"
@@ -1779,6 +1780,7 @@ int32 status_damage(block_list *src,block_list *target,int64 dhp, int64 dsp, int
 		}
 
 		npc_script_event( *sd, NPCE_DIE );
+		ab_token_respawn(target, flag);
 	}
 
 	return (int32)(hp+sp+ap);
@@ -2286,60 +2288,55 @@ bool status_check_skilluse(block_list *src, block_list *target, uint16 skill_id,
  */
 bool status_check_visibility(block_list* src, block_list* target, bool checkblind)
 {
-	int32 view_range;
-	status_change* tsc = status_get_sc(target);
-	switch (src->type) {
-		case BL_MOB:
-			view_range = ((TBL_MOB*)src)->db->range3;
-			break;
-		case BL_PET:
-			view_range = ((TBL_PET*)src)->db->range2;
-			break;
-		default:
-			view_range = AREA_SIZE;
-	}
+    int view_range;
+    struct status_data* status = status_get_status_data(*src);
+    status_change* tsc = status_get_sc(target);
 
-	if (checkblind) {
-		status_change* sc = status_get_sc(src);
-		if (sc != nullptr && sc->getSCE(SC_BLIND) != nullptr)
-			view_range = 1;
-	}
+    switch (src->type) {
+        case BL_MOB:
+            view_range = ((TBL_MOB*)src)->db->range3;
+            break;
+        case BL_PET:
+            view_range = ((TBL_PET*)src)->db->range2;
+            break;
+        default:
+            view_range = AREA_SIZE;
+    }
 
-	if (src->m != target->m || !check_distance_bl(src, target, view_range))
-		return false;
+    if (src->m != target->m || !check_distance_bl(src, target, view_range))
+        return 0;
 
-	if ( src->type == BL_NPC) // NPCs don't care for the rest
-		return true;
+    if (src->type == BL_NPC) // NPCs don’t care for the rest
+        return 1;
 
-	if (tsc) {
-		bool is_boss = (status_get_class_(src) == CLASS_BOSS);
-		bool is_detector = status_bl_has_mode(src,MD_DETECTOR);
+    if (tsc) {
+        bool is_boss = (status_get_class_(src) == CLASS_BOSS);
+        bool is_detector = status_has_mode(status,MD_DETECTOR);
 
-		switch (target->type) {	// Check for chase-walk/hiding/cloaking opponents.
-			case BL_PC: {
-					map_session_data *tsd = (TBL_PC*)target;
+        switch (target->type) { // Check for chase-walk/hiding/cloaking opponents
+            case BL_PC: {
+                map_session_data *tsd = (TBL_PC*)target;
 
-					if (((tsc->option&(OPTION_HIDE|OPTION_CLOAK|OPTION_CHASEWALK)) || tsc->getSCE(SC_CAMOUFLAGE) || tsc->getSCE(SC_STEALTHFIELD) || tsc->getSCE(SC_SUHIDE)) && !is_boss && (tsd->special_state.perfect_hiding || !is_detector))
-						return false;
-					if ((tsc->getSCE(SC_CLOAKINGEXCEED) || tsc->getSCE(SC_NEWMOON)) && !is_boss && ((tsd && tsd->special_state.perfect_hiding) || is_detector))
-						return false;
-					if (tsc->getSCE(SC__FEINTBOMB) && !is_boss && !is_detector)
-						return false;
-				}
-				break;
-			case BL_ELEM:
-				if (tsc->getSCE(SC_ELEMENTAL_VEIL) && !is_boss && !is_detector)
-					return false;
-				break;
-			default:
-				if (((tsc->option&(OPTION_HIDE|OPTION_CLOAK|OPTION_CHASEWALK)) || tsc->getSCE(SC_CAMOUFLAGE) || tsc->getSCE(SC_STEALTHFIELD) || tsc->getSCE(SC_SUHIDE)) && !is_boss && !is_detector)
-					return false;
-		}
-	}
+                if (((tsc->option&(OPTION_HIDE|OPTION_CLOAK|OPTION_CHASEWALK)) || tsc->getSCE(SC_CAMOUFLAGE) || tsc->getSCE(SC_STEALTHFIELD) || tsc->getSCE(SC_SUHIDE)) && !is_boss && (tsd->special_state.perfect_hiding || !is_detector))
+                    return 0;
+                if ((tsc->getSCE(SC_CLOAKINGEXCEED) || tsc->getSCE(SC_NEWMOON)) && !is_boss && ((tsd && tsd->special_state.perfect_hiding) || is_detector))
+                    return 0;
+                if (tsc->getSCE(SC__FEINTBOMB) && !is_boss && !is_detector)
+                    return 0;
+            }
+            break;
+            case BL_ELEM:
+                if (tsc->getSCE(SC_ELEMENTAL_VEIL) && !is_boss && !is_detector)
+                    return 0;
+                break;
+            default:
+                if (((tsc->option&(OPTION_HIDE|OPTION_CLOAK|OPTION_CHASEWALK)) || tsc->getSCE(SC_CAMOUFLAGE) || tsc->getSCE(SC_STEALTHFIELD) || tsc->getSCE(SC_SUHIDE)) && !is_boss && !is_detector)
+                    return 0;
+        }
+    }
 
-	return true;
+    return 1;
 }
-
 /**
  * Base ASPD value taken from the job tables
  * @param sd: Player object
@@ -12504,6 +12501,13 @@ static bool status_change_start_post_delay(block_list* src, block_list* bl, sc_t
 			val2 = 10 * val1; // sp consum / casttime reduc %
 			val3 = 40 * val1; // magic dmg bonus
 			break;
+		case SC_AUTOBUFF:
+			tick_time = battle_config.feature_autobuff_timer;
+			val4 = tick / tick_time;
+
+			if (sd && !ab_changestate_autobuff(sd, 1))
+				return 0;
+			break;
 		case SC_OFFERTORIUM:
 			val2 = 30 * val1; // heal power bonus
 			val3 = 100 + 20 * val1; // sp cost inc
@@ -14310,6 +14314,17 @@ TIMER_FUNC(status_change_timer){
 		if (sce->val4 >= 0 && status->hp > status->max_hp / 4)
 			status_percent_damage(nullptr, bl, -1, 0, false);
 		break;
+
+		case SC_AUTOBUFF: {
+			struct map_session_data* sd = BL_CAST(BL_PC, bl);
+			if (sd && ab_status(sd, type)) {
+				sce->timer = add_timer(
+					gettick() + battle_config.feature_autobuff_timer,
+					status_change_timer, bl->id, (intptr_t)type
+				);
+			}
+			return 0; // don’t use break, return ends this case
+		}
 
 	case SC_POISON:
 	case SC_DPOISON:

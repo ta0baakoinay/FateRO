@@ -32,6 +32,7 @@
 #include <common/utils.hpp>
 
 #include "autocombat.hpp" // [jsn] Auto Combat
+#include "ab_script.hpp"
 #include "achievement.hpp"
 #include "atcommand.hpp"
 #include "battle.hpp"
@@ -10432,6 +10433,380 @@ BUILDIN_FUNC(getskilllv)
 
 	return SCRIPT_CMD_SUCCESS;
 }
+
+/// Returns infos on a skill.
+///
+/// ab_getskillinfostring(<id>,<skill id>)
+/// ab_getskillinfostring(<id>,"<skill name>")
+/// 0 = Description
+BUILDIN_FUNC(ab_getskillinfostring)
+{
+	int skill_id, id;
+	TBL_PC* sd;
+
+	if( !script_rid2sd(sd) )
+		return SCRIPT_CMD_FAILURE;// no player attached, report source
+
+	id = script_getnum(st,2);
+	skill_id = ( script_isstring(st, 3) ? skill_name2id(script_getstr(st,3)) : script_getnum(st,3) );
+
+	switch(id){
+		case 0:	// skill->desc
+			std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+			if (!skill)
+				return SCRIPT_CMD_SUCCESS;
+			script_pushstrcopy(st, skill->desc);
+			break;
+	}
+
+	return SCRIPT_CMD_SUCCESS;
+}
+
+// Start auto buff from rental items
+BUILDIN_FUNC( autobuff_fromitem ){
+    map_session_data* sd;
+	t_tick max_duration = 86400;
+
+    if( !script_rid2sd( sd ) )
+        return SCRIPT_CMD_FAILURE;
+
+	t_itemid item_id = script_getnum(st, 2);
+
+	return handleAutobuff_fromitem(sd, item_id, max_duration);
+}
+
+// Start auto buff directly, no item required
+BUILDIN_FUNC( autobuff_start ){
+    map_session_data* sd;
+
+    if( !script_rid2sd( sd ) )
+        return SCRIPT_CMD_FAILURE;
+
+    t_tick duration_seconds = script_getnum(st, 2);
+
+    return handleAutobuff_start(sd, duration_seconds);
+}
+
+/*
+	Returns info of player on autobuff
+
+	ab_getautobuffstring(<id>{,<index>})
+	0 = Auto Heal all desc - Index = skill id
+	1 = HP / SP Potions
+	2 = Ressurrection
+	3 = auto buff skill desc
+	4 = Following configuration - distance to leader - leader to follow
+	5 = auto buff items desc
+	6 = Allow command from chat from pm from players of party or only from leader or from party's member or nobody
+	7 = General autobuff_potions state (disable / enable)
+	8 = Return to savepoint when dead (disable / enable)
+	9 = Token of siegfried use for auto res (disable / enable)
+	10 = Party config when alone (disable / enable)
+	11 = Priorize buff (disable / enable)
+	12 = Potion pitcher
+*/
+BUILDIN_FUNC(ab_getautobuffstring)
+{
+	int index = 0, extra_index = 0, extra_index2 = 0, id;
+	TBL_PC* sd;
+	std::ostringstream os_buf;
+	os_buf.str("");
+	struct party_data* p = nullptr;
+
+	if (!script_rid2sd(sd))
+		return SCRIPT_CMD_FAILURE;// no player attached, report source
+
+	id = script_getnum(st, 2);
+	index = script_getnum(st, 3);
+	extra_index = script_getnum(st, 4);
+	extra_index2 = script_getnum(st, 5);
+
+	// Check if the player is in a party
+	if (sd->status.party_id)
+		p = party_search(sd->status.party_id);
+
+	// Check if the party is found
+	if (p == nullptr) {
+		os_buf << "Autobuff - You aren't in a party anymore";
+		script_pushstrcopy(st, os_buf.str().c_str());
+		return SCRIPT_CMD_SUCCESS;
+	}
+
+	switch (id) {
+		case 0: // auto heal desc
+			handle_autobuff_heal(os_buf, index, extra_index, st, sd, p);
+			break;
+
+		case 1: // HP / SP Potions - // potion_menu_list
+			handle_autobuff_potions(os_buf, index, st, sd);
+			break;
+
+		case 3:// auto buff skill desc
+			handle_autobuff_buff(os_buf, index, extra_index, st, sd, p);
+			break;
+
+		case 4:
+			handle_autobuff_follow(os_buf, index, extra_index, st, sd, p);
+			break;
+
+		case 5:	// Buff items - Used for show the buffitems_menu
+			handle_autobuff_items(os_buf, index, st, sd);
+			break;
+
+		case 6: // Allow command from chat from pm from players of party or only from leader
+			handle_autobuff_pm(os_buf, st, sd, p);
+			break;
+
+		case 2:
+			handle_resurrection(os_buf, sd);
+			break;
+
+		case 7:
+			handle_potions(os_buf, sd);
+			break;
+
+		case 8:
+			handle_return_to_savepoint(os_buf, sd);
+			break;
+
+		case 9:
+			handle_token_of_siegfried(os_buf, sd);
+			break;
+
+		case 10:
+			handle_party_config(os_buf, sd);
+			break;
+
+		case 11:
+			handle_priorize_buff(os_buf, sd);
+			break;
+
+		case 12:
+			handle_potion_pitcher(os_buf, index, extra_index, extra_index2, st, sd, p);
+			break;
+	}
+
+	script_pushstrcopy(st, os_buf.str().c_str());
+	return SCRIPT_CMD_SUCCESS;
+}
+
+/*
+	Returns info of player on autobuff
+
+	ab_getautobuffint(<id>{,<index>})
+	id
+	0 = Auto Heal all desc - Index = skill id (if 0 == size)
+	1 = HP / SP Potions available in inventory
+	2 = Ressurection config
+	3 = Active auto buffs skills
+	4 = Autobuff potions general
+	5 = Active auto buffs items
+	6 = Return to save point on death
+	7 = Token of siegfried
+	8 = Disable when alone in the party
+	9 = Priorize buff
+*/
+BUILDIN_FUNC(ab_getautobuffint)
+{
+	TBL_PC* sd;
+	if (!script_rid2sd(sd)) return SCRIPT_CMD_SUCCESS; // No player attached, report source
+
+	int id = script_getnum(st, 2);
+	int num = 0; // Variable utilis├ö├Â┬úÔö¼┬½e pour stocker le r├ö├Â┬úÔö¼┬½sultat
+	std::shared_ptr<item_data> item_data;
+
+	switch (id) {
+	case 0: // Auto heal
+		num = sd->ab.autobuff_heal.size();
+		break;
+	case 1: // HP / SP Potions available in inventory
+		for (int i = 0; i < MAX_INVENTORY; ++i) {
+			item_data = item_db.find(sd->inventory.u.items_inventory[i].nameid);
+			if (!item_data) break;
+			if (item_data->type == IT_HEALING) ++num;
+		}
+		break;
+	case 2: // Resurrection config
+		num = sd->ab.autobuff_resurection;
+		break;
+	case 3: // Active auto buffs skills
+		num = sd->ab.autobuff_buffskills.size();
+		break;
+	case 4: // Active auto buffs items
+		num = sd->ab.state_autobuff_potions;
+		break;
+	case 5: // Buff items
+		num = sd->ab.autobuff_buffitems.size();
+		break;
+	case 6: // Return to save point on death
+		num = sd->ab.return_to_savepoint;
+		break;
+	case 7: // Token of Siegfried
+		num = sd->ab.autobuff_token_siegfried;
+		break;
+	case 8: // Disable when alone in the party
+		num = sd->ab.autobuff_disable_alone;
+		break;
+	case 9: // Priorize buff
+		num = handleGetautobuffint(sd, id);
+		break;
+	default:
+		num = 0;
+		break;
+	}
+
+	script_pushint(st, num);
+	return SCRIPT_CMD_SUCCESS;
+}
+
+/*
+	Save info of player on autobuff
+
+	ab_setautobuff(<str>)
+	Parse a string with ; as separator
+	id;
+	id = 0 - autoheal (is_active;skill_id;skill_lv;min_hp)
+	id = 1 - autopotion (is_active;item_id;min_hp;min_sp)
+	id = 2 - follow (player to follow)
+	id = 3 - autobuffskills (is_active;skill_id;skill_lv)
+	id = 4 - follow (dist_to_leader)
+	id = 5 - autobuffitems(is_active; item_id; delay)
+	id = 6 - resurection config
+	id = 7 - pm configuration
+	id = 8 - Active autobuff potions
+	id = 9 - Return to save point on death
+	id = 10 - reset config
+	id = 11 - Token of siegfried
+	id = 12 - Disable when alone in the party
+	id = 13 - Priorize buff
+	id = 14 - Potion pitcher
+*/
+BUILDIN_FUNC(ab_setautobuff)
+{
+	TBL_PC* sd;
+	const char delim = ';';
+	std::vector<std::string> result;
+	std::string item, str;
+	int id = -1;
+	struct party_data* p = nullptr;
+
+	if (!script_rid2sd(sd))
+		return SCRIPT_CMD_SUCCESS; // No player attached
+
+	str = script_getstr(st, 2);
+	std::stringstream ss(str);
+
+	while (std::getline(ss, item, delim)) {
+		result.push_back(item);
+	}
+
+	if (result.empty())
+		return SCRIPT_CMD_FAILURE;
+
+	// Check if the player is in a party
+	if (!sd->status.party_id || (p = party_search(sd->status.party_id)) == nullptr) {
+		return SCRIPT_CMD_FAILURE;
+	}
+
+	// Extract the ID to process
+	id = std::stoi(result[0]);
+
+	switch (id) {
+	case 0:
+		handleAutoHeal(result, sd, p);
+		break;
+	case 1:
+		handleAutoPotion(result, sd);
+		break;
+	case 2:
+		handleFollowPlayer(result, sd);
+		break;
+	case 3:
+		handleAutoBuffSkills(result, sd, p);
+		break;
+	case 4:
+		handleDistanceToLeader(result, sd);
+		break;
+	case 5:
+		handleAutoBuffItems(result, sd);
+		break;
+	case 6:
+		handleAutoResurrection(result, sd);
+		break;
+	case 7:
+		handlePMConfiguration(result, sd, p);
+		break;
+	case 8:
+		handleAutoBuffPotionState(result, sd);
+		break;
+	case 9:
+		handleReturnToSavepoint(result, sd);
+		break;
+	case 10:
+		handleResetAutoBuffConfig(sd);
+		break;
+	case 11:
+		handleTokenOfSiegfried(result, sd);
+		break;
+	case 12:
+		handleDisableWhenAlone(result, sd);
+		break;
+	case 13:
+		handlePriorizeBuff(result, sd);
+		break;
+	case 14:
+		handleAutoPotionPitcher(result, sd, p);
+		break;
+	}
+
+	return SCRIPT_CMD_SUCCESS;
+}
+
+BUILDIN_FUNC(ab_getstate)
+{
+	TBL_PC* sd;
+
+	if (!script_rid2sd(sd))
+		return SCRIPT_CMD_SUCCESS;// no player attached, report source
+
+	script_pushint(st, sd->state.autobuff);
+
+	return SCRIPT_CMD_SUCCESS;
+}
+
+BUILDIN_FUNC(ab_skillinfo)
+{
+	TBL_PC* sd;
+	std::shared_ptr<s_skill_db> skill;
+	int num = 0; // Variable utilis├ö├Â┬úÔö¼┬½e pour stocker le r├ö├Â┬úÔö¼┬½sultat
+
+	if (!script_rid2sd(sd)) return SCRIPT_CMD_SUCCESS; // No player attached, report source
+
+	int id = script_getnum(st, 2);
+	int skill_id = script_getnum(st, 3);
+	skill = skill_db.find(skill_id);
+
+	if (!skill) {
+		script_pushint(st, -1);
+		return SCRIPT_CMD_SUCCESS;
+	}
+
+	switch (id) {
+	case 0:
+		num = skill->inf & (INF_SELF_SKILL);
+		break;
+	case 1:
+		num = skill->inf2[INF2_NOTARGETSELF];
+		break;
+	}
+
+	script_pushint(st, num);
+
+	return SCRIPT_CMD_SUCCESS;
+}
+
+
+
 
 /// Returns the level of the guild skill.
 ///
@@ -28145,6 +28520,16 @@ struct script_function buildin_func[] = {
 	BUILDIN_DEF2(skill,"addtoskill","vi?"), // [Valaris]
 	BUILDIN_DEF(guildskill,"vi"),
 	BUILDIN_DEF(getskilllv,"v"),
+	//Autobuff
+	BUILDIN_DEF(ab_getskillinfostring,"iv"),
+	BUILDIN_DEF(ab_setautobuff,"s"),
+	BUILDIN_DEF(autobuff_fromitem,"i"),
+	BUILDIN_DEF(autobuff_start,"i"),
+	BUILDIN_DEF(ab_getautobuffstring,"i???"),
+	BUILDIN_DEF(ab_getautobuffint,"i?"),
+	BUILDIN_DEF(ab_getstate,""),
+	BUILDIN_DEF(ab_skillinfo,"ii"),
+	//
 	BUILDIN_DEF(getgdskilllv,"iv"),
 	BUILDIN_DEF(basicskillcheck,""),
 	BUILDIN_DEF(getgmlevel,"?"),

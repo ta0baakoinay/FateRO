@@ -3176,6 +3176,11 @@ int32 mob_dead(mob_data *md, block_list *src, int32 type)
 			if ((base_exp > 0 || job_exp > 0) && entry.flag == MDLF_HOMUN && homkillonly && battle_config.hom_idle_no_share && pc_isidle_hom(tmpsd[i]))
 				base_exp = job_exp = 0;
 
+			if (sd && sd->state.autobuff) {
+				base_exp = base_exp * battle_config.feature_autobuff_exp_ratio / 100;
+				job_exp = job_exp * battle_config.feature_autobuff_exp_ratio / 100;
+			}
+
 			if ( ( temp = tmpsd[i]->status.party_id)>0 ) {
 				int32 j;
 				for( j = 0; j < pnum && pt[j].id != temp; j++ ); //Locate party.
@@ -3287,6 +3292,14 @@ int32 mob_dead(mob_data *md, block_list *src, int32 type)
 					else
 						//it's positive, then it goes as it is
 						drop_rate = it.rate;
+					
+					// Apply AutoBuff drop rate penalty
+						if (sd && sd->state.autobuff)
+						drop_rate = drop_rate * battle_config.feature_autobuff_drop_rate_penalty / 100;
+
+					// Skip this drop if rate check fails
+					if (rnd()%10000 >= drop_rate)
+						continue;
 
 					if (rnd()%10000 >= drop_rate)
 						continue;

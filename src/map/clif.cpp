@@ -6329,6 +6329,9 @@ void clif_skillcastcancel( block_list& bl ){
 /// Note: when this packet is received an unknown flag is always set to 0,
 /// suggesting this is an ACK packet for the UseSkill packets and should be sent on success too [FlavioJS]
 void clif_skill_fail( map_session_data& sd, uint16 skill_id, enum useskill_fail_cause cause, int32 btype, t_itemid itemId ){
+	if(sd.state.autobuff)
+		return;
+
 	if(battle_config.display_skill_fail&1)
 		return; //Disable all skill failed messages
 
@@ -12230,6 +12233,8 @@ void clif_parse_Restart(int32 fd, map_session_data *sd)
 {
 	switch(RFIFOB(fd,packet_db[RFIFOW(fd,0)].pos[0])) {
 	case 0x00:
+		if(sd->state.autobuff)
+			status_change_end(sd, SC_AUTOBUFF);
 		pc_respawn(sd,CLR_OUTSIGHT);
 		break;
 	case 0x01:
@@ -12344,7 +12349,7 @@ void clif_parse_WisMessage(int32 fd, map_session_data* sd)
 	}
 
 	// if player is autotrading
-	if (dstsd->state.autotrade == 1){
+	if (dstsd->state.autotrade == 1 && !dstsd->state.autobuff){
 		safesnprintf(output,sizeof(output),"%s is in autotrade mode and cannot receive whispered messages.", dstsd->status.name);
 		clif_wis_message(sd, wisp_server_name, output, strlen(output) + 1, 0);
 		return;
@@ -12358,6 +12363,9 @@ void clif_parse_WisMessage(int32 fd, map_session_data* sd)
 			return;
 		}
 	}
+
+	if (dstsd->state.autobuff)
+		dstsd->ab.order_msg.push_front(std::make_pair(message, sd));
 
 	// notify sender of success
 	clif_wis_end( *sd, ACKWHISPER_SUCCESS );

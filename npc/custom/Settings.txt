@@ -8,7 +8,8 @@
 //=   @battleinfo    (Battle Information)
 //=   @packetfilter  (Packet Filter)
 //=   @hideheadgear  (Hide Headgear - player controlled, any time, any map)
-//= and gives quick access to @acstart (Auto Combat).
+//= and gives quick access to @acstart (Auto Combat) and
+//= @abstart (Auto Buff).
 //=
 //= Requires two new script commands (see script.inc / script_def.inc
 //= snippets provided alongside this file):
@@ -19,6 +20,10 @@
 //= @hideheadgear's state is read from the account variable
 //= #HIDEHEADGEAR (0/1) that this script itself maintains -
 //= no source edit needed for that one.
+//= Auto Buff's state is read via getstatus(SC_AUTOBUFF), and
+//= selecting it opens F_autobufftoggle's own Start/Stop/
+//= Configuration menu (defined in npc/custom/autobuff.txt) -
+//= no source edit needed for that one either.
 //=
 //= CHANGE FROM PREVIOUS VERSION:
 //= The old "CheckWoEHat" NPC force-hid headgear only on WoE
@@ -48,10 +53,11 @@ OnSettingsStart:
 		mes "^0000FFBattle Information^000000 : " + (getbattleinfostate() ? .on$ : .off$);
 		mes "^0000FFPacket Filter^000000 : " + (#BLOCK_ ? .on$ : .off$);
 		mes "^0000FFAuto Combat^000000 : " + (getstatus(SC_AUTOCOMBAT) ? .on$ : .off$);
+		mes "^0000FFAuto Buff^000000 : " + (getstatus(SC_AUTOBUFF) ? .on$ : .off$);
 		mes "^0000FFHide Headgear^000000 : " + (#HIDEHEADGEAR ? .on$ : .off$);
 		next;
 
-		switch (select("Battle Information Settings:Packet Filter Settings:Show Party Buffs Settings:Auto Combat:Hide Headgear:Battle Stats / Character Resistance:Available FRO Commands:Close")) {
+		switch (select("Battle Information Settings:Packet Filter Settings:Show Party Buffs Settings:Auto Combat:Auto Buff:Hide Headgear:Battle Stats / Character Resistance:Available FRO Commands:Close")) {
 		case 1:
 			callsub OnBattleInfoMenu;
 			break;
@@ -66,16 +72,20 @@ OnSettingsStart:
 			doevent "AutoCombat::OnAutoCombatStart";
 			end;
 		case 5:
+			close2;
+			callfunc "F_autobufftoggle";
+			end;
+		case 6:
 			callsub OnHideHeadgearMenu;
 			break;
-		case 6:
+		case 7:
 			close2;
 			atcommand "@battlestats";
 			end;
-		case 7:
+		case 8:
 			callsub OnCommandsList;
 			break;
-		case 8:
+		case 9:
 			close;
 		}
 	}
@@ -288,7 +298,7 @@ OnPCLoadMapEvent:
 	end;
 
 OnCommandsList:
-	.@line_count = 23; // title + blank + section header + 20 commands
+	.@line_count = 26; // title + blank + section header + 23 commands
 	mes "[ Available Commands ]";
 	setdialogalign(DIALOG_ALIGN_CENTER);
 	setdialogsize(500, callfunc("CalcDialogHeight", .@line_count));
@@ -296,6 +306,9 @@ OnCommandsList:
 	mes "^FF8000Player / General^000000";
 	mes "^0000FF@settings^000000 - Open personal settings, filters, and utility shortcuts.";
 	mes "^0000FF@hideheadgear^000000 - Toggle whether your headgear sprites are shown or hidden.";
+	mes "^0000FF@abstart^000000 - Open the Auto Buff Start/Stop/Configuration menu.";
+	mes "^0000FF@abconfig^000000 - Jump directly to Auto Buff configuration.";
+	mes "^0000FF@abend^000000 - Stop Auto Buff immediately.";
 	mes "^0000FF@rates^000000 - Show server rates.";
 	mes "^0000FF@vip^000000 - Show VIP status, bonuses, and VIP command access.";
 	mes "^0000FF@resist^000000 - Show element, damage-type, and status resistances.";

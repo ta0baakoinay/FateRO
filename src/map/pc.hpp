@@ -15,6 +15,7 @@
 #include <common/timer.hpp>
 
 #include "autocombat.hpp" // [jsn] Auto Combat
+#include "autobuff.hpp"
 #include "battleground.hpp"
 #include "buyingstore.hpp" // struct s_buyingstore
 #include "clif.hpp" //e_wip_block
@@ -423,10 +424,14 @@ public:
 	status_change sc;
 	struct regen_data regen;
 	struct regen_data_sub sregen, ssregen;
+	struct s_autobuff ab;  // Instance de la structure
 	struct s_auto_combat ac; // [jsn] Auto Combat
 	//NOTE: When deciding to add a flag to state or special_state, take into consideration that state is preserved in
 	//status_calc_pc, while special_state is recalculated in each call. [Skotlex]
 	struct s_state {
+		uint32 autobuff : 1;
+		uint32 ab_stop : 1;
+		uint32 ab_stay : 1;
 		uint32 active : 1; //Marks active player (not active is logging in/out, or changing map servers)
 		uint32 menu_or_input : 1;// if a script is waiting for feedback from the player
 		uint32 dead_sit : 2;
@@ -1459,6 +1464,7 @@ void pc_makesavestatus(map_session_data *sd);
 void pc_respawn(map_session_data* sd, clr_type clrtype);
 void pc_setnewpc(map_session_data *sd, uint32 account_id, uint32 char_id, int32 login_id1, t_tick client_tick, int32 sex, int32 fd);
 bool pc_authok(map_session_data *sd, uint32 login_id2, time_t expiration_time, int32 group_id, struct mmo_charstatus *st, bool changing_mapservers);
+uint32 pc_getrental_search_inventory(map_session_data* sd, t_itemid nameid);
 void pc_authfail(map_session_data *sd);
 void pc_reg_received(map_session_data *sd);
 void pc_close_npc(map_session_data *sd,int32 flag);
