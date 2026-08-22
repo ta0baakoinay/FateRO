@@ -14666,30 +14666,30 @@ Body:
     View: 2
     Script: |
       bonus2 bSubSize,Size_Large,5;
-#  - Id: 2115
-#    AegisName: Valkyrja's_Shield
-#    Name: Valkyrja's Shield
-#    Type: Armor
-#    Buy: 30000
-#    Weight: 500
-#    Defense: 3
-#    Slots: 1
-#    Jobs:
-#      All: true
-#      Novice: false
-#      SuperNovice: false
-#    Locations:
-#      Left_Hand: true
-#    ArmorLevel: 1
-#    EquipLevelMin: 65
-#    Refineable: true
-#    View: 4
-#    Script: |
-#      bonus2 bSubEle,Ele_Water,20;
-#      bonus2 bSubEle,Ele_Fire,20;
-#      bonus2 bSubEle,Ele_Dark,20;
-#      bonus2 bSubEle,Ele_Undead,20;
-#      bonus bMdef,5;
+  - Id: 2115
+    AegisName: Valkyrja's_Shield
+    Name: Valkyrja's Shield
+    Type: Armor
+    Buy: 30000
+    Weight: 500
+    Defense: 3
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Locations:
+      Left_Hand: true
+    ArmorLevel: 1
+    EquipLevelMin: 65
+    Refineable: true
+    View: 4
+    Script: |
+      bonus2 bSubEle,Ele_Water,20;
+      bonus2 bSubEle,Ele_Fire,20;
+      bonus2 bSubEle,Ele_Dark,20;
+      bonus2 bSubEle,Ele_Undead,20;
+      bonus bMdef,5;
   - Id: 2116
     AegisName: Angel's_Safeguard
     Name: Angelic Guard
@@ -17767,31 +17767,31 @@ Body:
     Script: |
       bonus bMdef,5;
       bonus2 bResEff,Eff_Blind,8000;
-#  - Id: 2357
-#    AegisName: Valkyrie_Armor
-#    Name: Valkyrian Armor
-#    Type: Armor
-#    Weight: 2800
-#    Defense: 6
-#    Slots: 1
-#    Jobs:
-#      All: true
-#      Novice: false
-#      SuperNovice: false
-#    Classes:
-#      Upper: true
-#    Locations:
-#      Armor: true
-#    ArmorLevel: 1
-#    EquipLevelMin: 1
-#    Refineable: true
-#    Script: |
-#      bonus bAllStats,1;
-#      bonus bUnbreakableArmor;
-#      if (BaseClass == Job_Mage || BaseClass == Job_Archer || BaseClass == Job_Acolyte)
-#         bonus2 bResEff,Eff_Silence,5000;
-#      else if (BaseClass == Job_Swordman || BaseClass == Job_Merchant || BaseClass == Job_Thief)
-#         bonus2 bResEff,Eff_Stun,5000;
+  - Id: 2357
+    AegisName: Valkyrie_Armor
+    Name: Valkyrian Armor
+    Type: Armor
+    Weight: 2800
+    Defense: 6
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Classes:
+      Upper: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 1
+    Refineable: true
+    Script: |
+      bonus bAllStats,1;
+      bonus bUnbreakableArmor;
+      if (BaseClass == Job_Mage || BaseClass == Job_Archer || BaseClass == Job_Acolyte)
+         bonus2 bResEff,Eff_Silence,5000;
+      else if (BaseClass == Job_Swordman || BaseClass == Job_Merchant || BaseClass == Job_Thief)
+         bonus2 bResEff,Eff_Stun,5000;
   - Id: 2358
     AegisName: Dress_Of_Angel
     Name: Angel's Dress
@@ -18894,23 +18894,23 @@ Body:
     Refineable: true
     Script: |
       bonus bMdef,5;
-#  - Id: 2410
-#    AegisName: Sleipnir
-#    Name: Sleipnir
-#    Type: Armor
-#    Buy: 20
-#    Weight: 3500
-#    Defense: 5
-#    Locations:
-#      Shoes: true
-#    ArmorLevel: 1
-#    EquipLevelMin: 94
-#    Script: |
-#      bonus bMdef,10;
-#      bonus bMaxHPrate,20;
-#      bonus bMaxSPrate,20;
-#      bonus bSPrecovRate,15;
-#      bonus bSpeedRate,25;
+  - Id: 2410
+    AegisName: Sleipnir
+    Name: Sleipnir
+    Type: Armor
+    Buy: 20
+    Weight: 3500
+    Defense: 5
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 94
+    Script: |
+      bonus bMdef,10;
+      bonus bMaxHPrate,20;
+      bonus bMaxSPrate,20;
+      bonus bSPrecovRate,15;
+      bonus bSpeedRate,25;
   - Id: 2411
     AegisName: Grave
     Name: Greaves
@@ -19084,30 +19084,30 @@ Body:
     Refineable: true
     Script: |
       bonus bMaxHP,100;
-#  - Id: 2421
-#    AegisName: Valkyrie_Shoes
-#    Name: Valkyrian Shoes
-#    Type: Armor
-#    Weight: 500
-#    Defense: 4
-#    Slots: 1
-#    Jobs:
-#      All: true
-#      Novice: false
-#      SuperNovice: false
-#    Classes:
-#      Upper: true
-#    Locations:
-#      Shoes: true
-#    ArmorLevel: 1
-#    EquipLevelMin: 1
-#    Refineable: true
-#    Script: |
-#      bonus bUnbreakableShoes;
-#      if (BaseClass == Job_Mage || BaseClass == Job_Archer || BaseClass == Job_Acolyte)
-#         bonus bMaxHP,(BaseLevel*5);
-#      else if (BaseClass == Job_Swordman || BaseClass == Job_Merchant || BaseClass == Job_Thief)
-#         bonus bMaxSP,(JobLevel*2);
+  - Id: 2421
+    AegisName: Valkyrie_Shoes
+    Name: Valkyrian Shoes
+    Type: Armor
+    Weight: 500
+    Defense: 4
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Classes:
+      Upper: true
+    Locations:
+      Shoes: true
+    ArmorLevel: 1
+    EquipLevelMin: 1
+    Refineable: true
+    Script: |
+      bonus bUnbreakableShoes;
+      if (BaseClass == Job_Mage || BaseClass == Job_Archer || BaseClass == Job_Acolyte)
+         bonus bMaxHP,(BaseLevel*5);
+      else if (BaseClass == Job_Swordman || BaseClass == Job_Merchant || BaseClass == Job_Thief)
+         bonus bMaxSP,(JobLevel*2);
   - Id: 2422
     AegisName: High_Fashion_Sandals
     Name: High Fashion Sandals
@@ -20176,30 +20176,30 @@ Body:
     Refineable: true
     Script: |
       bonus bMdef,1;
-#  - Id: 2524
-#    AegisName: Valkyrie_Manteau
-#    Name: Valkyrian Manteau
-#    Type: Armor
-#    Weight: 500
-#    Defense: 3
-#    Slots: 1
-#    Jobs:
-#      All: true
-#      Novice: false
-#      SuperNovice: false
-#    Classes:
-#      Upper: true
-#    Locations:
-#      Garment: true
-#    ArmorLevel: 1
-#    EquipLevelMin: 1
-#    Refineable: true
-#    Script: |
-#      bonus bUnbreakableGarment;
-#      if (BaseClass == Job_Mage || BaseClass == Job_Archer || BaseClass == Job_Acolyte)
-#         bonus bFlee2,5+(getequiprefinerycnt(EQI_GARMENT)*2);
-#      else if (BaseClass == Job_Swordman || BaseClass == Job_Merchant || BaseClass == Job_Thief)
-#         bonus bShortWeaponDamageReturn,5+(getequiprefinerycnt(EQI_GARMENT)*2);
+  - Id: 2524
+    AegisName: Valkyrie_Manteau
+    Name: Valkyrian Manteau
+    Type: Armor
+    Weight: 500
+    Defense: 3
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Classes:
+      Upper: true
+    Locations:
+      Garment: true
+    ArmorLevel: 1
+    EquipLevelMin: 1
+    Refineable: true
+    Script: |
+      bonus bUnbreakableGarment;
+      if (BaseClass == Job_Mage || BaseClass == Job_Archer || BaseClass == Job_Acolyte)
+         bonus bFlee2,5+(getequiprefinerycnt(EQI_GARMENT)*2);
+      else if (BaseClass == Job_Swordman || BaseClass == Job_Merchant || BaseClass == Job_Thief)
+         bonus bShortWeaponDamageReturn,5+(getequiprefinerycnt(EQI_GARMENT)*2);
   - Id: 2525
     AegisName: Cape_Of_Ancient_Lord_
     Name: Ancient Cape
@@ -26972,49 +26972,49 @@ Body:
     ArmorLevel: 1
     Refineable: true
     View: 20
-#  - Id: 5137
-#    AegisName: Alice_Doll
-#    Name: Alice Doll
-#    Type: Armor
-#    Buy: 20
-#    Weight: 500
-#    Slots: 1
-#    Jobs:
-#      All: true
-#      Novice: false
-#      SuperNovice: false
-#    Locations:
-#      Head_Top: true
-#    ArmorLevel: 1
-#    EquipLevelMin: 30
-#    View: 208
-#    Script: |
-#      bonus bStr,1;
-#      bonus2 bAddRace,RC_DemiHuman,10;
-#      bonus2 bAddRace,RC_Player_Human,10;
-#      bonus2 bAddEff2,Eff_Sleep,10;
-#  - Id: 5138
-#    AegisName: Magic_Eyes
-#    Name: Magic Eyes
-#    Type: Armor
-#    Buy: 20
-#    Weight: 300
-#    Defense: 1
-#    Jobs:
-#      Mage: true
-#      Sage: true
-#      SoulLinker: true
-#      Wizard: true
-#    Locations:
-#      Head_Top: true
-#    ArmorLevel: 1
-#    EquipLevelMin: 30
-#    Refineable: true
-#    View: 209
-#    Script: |
-#      bonus bMdef,5;
-#      bonus bCastrate,-10;
-#      bonus bUseSPrate,20;
+  - Id: 5137
+    AegisName: Alice_Doll
+    Name: Alice Doll
+    Type: Armor
+    Buy: 20
+    Weight: 500
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 30
+    View: 208
+    Script: |
+      bonus bStr,1;
+      bonus2 bAddRace,RC_DemiHuman,10;
+      bonus2 bAddRace,RC_Player_Human,10;
+      bonus2 bAddEff2,Eff_Sleep,10;
+  - Id: 5138
+    AegisName: Magic_Eyes
+    Name: Magic Eyes
+    Type: Armor
+    Buy: 20
+    Weight: 300
+    Defense: 1
+    Jobs:
+      Mage: true
+      Sage: true
+      SoulLinker: true
+      Wizard: true
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 30
+    Refineable: true
+    View: 209
+    Script: |
+      bonus bMdef,5;
+      bonus bCastrate,-10;
+      bonus bUseSPrate,20;
   - Id: 5139
     AegisName: Hibiscus
     Name: Hibiscus

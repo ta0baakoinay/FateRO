@@ -34,22 +34,3 @@ Header:
   Version: 1
 
 Body:
-  - Combos:
-      - Combo:
-          - Valkyrie_Armor
-          - Valkyrie_Manteau
-          - Valkyrie_Shoes
-    Script: |
-        bonus bAtk,3;
-        bonus bMatk,3;
-        bonus bMaxHPrate,3;
-
-  - Combos:
-      - Combo:
-          - Valkyrie_Armor
-          - Valkyrie_Shoes
-          - Sleipnir
-    Script: |
-        bonus bAtk,3;
-        bonus bMatk,3;
-        bonus bMaxHPrate,3;        
