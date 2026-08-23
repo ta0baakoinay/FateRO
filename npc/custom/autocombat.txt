@@ -7,8 +7,12 @@
 //= with item-based AP top-up support. AP is tracked in
 //= minutes and drains once per minute while auto combat
 //= (SC_AUTOCOMBAT) is active. Resets daily per character.
+//= Added AP display resync on death/fly-wing/teleport and
+//= map-load so the client AP bar never goes stale after
+//= SC_AUTOCOMBAT ends for a non-manual reason.
 //===== Current Version: =====================================
 //= 20241211 (+AP timer patch)
+//= 20241212 (+AP display resync patch)
 //===== Description: =========================================
 //= Inspired by Ragnarok:EL
 //= Duration variable is either:
@@ -28,11 +32,20 @@
 //=   playing Auto Combat on one character spends the same AP that
 //=   would be available on any other character on that account.
 //= - Ap / MaxAp (no '#', native per-character stat) are kept in sync
-//=   with the account pool on every reset check and every drain tick,
-//=   purely so the client-side AP bar (via your WARP patch) displays
-//=   the correct number for whichever character is currently active.
-//=   The account variables (#AC_AP / #AC_MaxAP) are the source of
-//=   truth; Ap/MaxAp are just a mirrored display value.
+//=   with the account pool via L_SyncApDisplay, called from every
+//=   place the balance could change or the client bar could go stale:
+//=   login, map load, autocombat start, every AP tick, and whenever
+//=   autocombat ends for any reason (manual stop, death, fly wing,
+//=   duration expiry). The account variables (#AC_AP / #AC_MaxAP)
+//=   are the source of truth; Ap/MaxAp are just a mirrored display
+//=   value and are never read from for gating logic.
+//= - Daily reset (L_CheckApReset) compares today's date against
+//=   #AC_LastReset$. It is checked on login, on map load, and on
+//=   autocombat start — so even if a player never logs out, the
+//=   moment the date rolls over and any of those events fires, AP
+//=   is topped back up to .ap_daily (120) automatically. This is a
+//=   calendar-day reset (resets at server midnight), not a rolling
+//=   24h-since-last-play timer.
 //= - If you ever run multiple server groups sharing one login server
 //=   and want the pool to be global across all of them (not just this
 //=   server group), switch '#' to '##' throughout (permanent GLOBAL
@@ -65,6 +78,20 @@
 //=   tell them to restart Auto Combat with @acstart. Their AP total
 //=   is unaffected either way — it only reflects minutes actually
 //=   ticked while combat was really running.
+//=
+//= AP DISPLAY RESYNC NOTES (why each hook exists):
+//= - OnPCLoginEvent: covers normal login.
+//= - OnPCLoadMapEvent: covers any map transition — fly wing, warp,
+//=   GM teleport, portal, reconnect — so the bar never lags behind
+//=   the real #AC_AP balance for more than one map change.
+//= - OnAutoCombatEnd: fires whenever SC_AUTOCOMBAT ends for ANY
+//=   reason (manual stop, death, fly wing cancelling the status,
+//=   duration running out). This is the most reliable hook since
+//=   it's tied directly to the status ending rather than a side
+//=   effect like a map load. Only resyncs the display — does NOT
+//=   run the daily reset check, since this event can fire many
+//=   times per session and shouldn't re-evaluate "is it a new day"
+//=   on every stop, only display the current true balance.
 //============================================================
 -	script	AutoCombat	FAKE_NPC,{
 function skill_menu;
@@ -100,6 +127,24 @@ OnPCLoginEvent:
 	}
 	end;
 
+OnPCLoadMapEvent:
+	// Fires on every map transition (fly wing, warp, portal, GM teleport,
+	// reconnect). Keeps the AP display correct even between explicit
+	// login/menu events, and doubles as a daily-reset check so AP tops
+	// back up the moment the date rolls over, without needing a relog.
+	callsub L_CheckApReset;
+	end;
+
+OnPCDieEvent:
+	// Fires on every player death, guaranteed, regardless of how the
+	// core clears statuses internally on death (mass status-clear on
+	// death does not always trigger the same per-status "OnEnd" hook
+	// that a manual sc_end() or natural expiry does, which is why
+	// OnAutoCombatEnd alone wasn't reliably catching the death case).
+	// This is the direct fix for the "AP shows 0/120 after dying" bug.
+	callsub L_SyncApDisplay;
+	end;
+
 L_CheckApReset:
 	.@today$ = gettimestr("%Y%m%d", 20);
 	if (#AC_LastReset$ != .@today$) {
@@ -109,7 +154,14 @@ L_CheckApReset:
 	#AC_MaxAP = .ap_daily;
 	if (#AC_AP > .ap_ceiling)
 		#AC_AP = .ap_ceiling;
-	// sync account-wide pool into this character's native AP stat/bar
+	callsub L_SyncApDisplay;
+	return;
+
+L_SyncApDisplay:
+	// Pure display sync — mirrors the account-wide AP pool onto this
+	// character's native Ap/MaxAp stat/bar. Does NOT touch #AC_AP or
+	// run the daily reset check, so it's safe to call as often as needed
+	// (e.g. every time autocombat ends) without side effects.
 	MaxAp = #AC_MaxAP;
 	Ap = #AC_AP;
 	return;
@@ -118,6 +170,7 @@ OnAutoCombatEnd:
 	sc_end(SC_AUTOCOMBAT);
 	#AC_SessionActive = 0;
 	deltimer strnpcinfo(3)+"::OnApTick";
+	callsub L_SyncApDisplay;
 	end;
 
 OnApTick:
