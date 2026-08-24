@@ -1,5 +1,5 @@
 maintown,173,182,4	script	Quest Shop#001	115,{
-    callfunc "questshop001",1,2,3,4,5;
+    callfunc "questshop001",1,2;
     end;
 
 OnInit:
@@ -34,9 +34,6 @@ OnInit:
 // -----------------------------------------------------------
 
 	setarray .Shops$[1],
-		"Upper Headgear",						// Shop 1 (100% success rate)
-		"Middle Headgear",						// Shop 2 (40% success rate)
-		"Lower Headgear",						// Shop 2 (40% success rate)
 		"Headgear Quest - ^FF0000(40% Chance)^000000",
 		"Middle Headgear - ^FF0000(30% Chance)^000000";
 // -----------------------------------------------------------
@@ -291,6 +288,3 @@ function	script	questshop001	{
 //============================================================
 -	shop	questshop0010001	-1,909:-1
 -	shop	questshop0010002	-1,909:-1
--	shop	questshop0010003	-1,909:-1
--	shop	questshop0010004	-1,909:-1
--	shop	questshop0010005	-1,909:-1

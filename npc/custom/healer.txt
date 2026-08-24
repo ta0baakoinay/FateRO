@@ -171,7 +171,7 @@ moscovia,220,191,6	duplicate(Healer)	Healer#mos	3527
 niflheim,212,182,5	duplicate(Healer)	Healer#nif	3527
 payon,175,231,6	duplicate(Healer)	Healer#pay	3527
 prontera,150,183,6	duplicate(Healer)	Healer#prt	3527
-maintown,137,116,6	duplicate(Healer)	Healer#roprt	3527
+maintown,144,113,6	duplicate(Healer)	Healer#roprt	3527
 rachel,125,116,6	duplicate(Healer)	Healer#rac	3527
 splendide,201,153,6	duplicate(Healer)	Healer#spl	3527
 thor_camp,249,74,6	duplicate(Healer)	Healer#thor	3527

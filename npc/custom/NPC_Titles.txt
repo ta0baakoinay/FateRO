@@ -9,6 +9,7 @@ prontera,155,181,4	script	ItemShopBubble#helper	-1,{
 
 OnInit:
 	setarray .@npc_name$[0],
+		"Donation Shop#All",
 		"Donation Shop#custom",
 		"Valkyrie",
 		"PvP-StatsViewer",
@@ -18,6 +19,9 @@ OnInit:
 		"Gold Room",
 		"Event Circuit",
 		"Monster Arena",
+		"Universal Rental NPC",
+		"Stylist#custom_stylist",
+		"Reset Girl",
 		"Healer#alb",
 		"Healer#alde",
 		"Healer#ama",
@@ -57,6 +61,7 @@ OnInit:
 
 	setarray .@bubble_text$[0],
 		"Donation Shop",
+		"Donation Shop",
 		"Break The Seal Quest",
 		"PVP Rankings",
 		"Quest Shop",
@@ -65,6 +70,9 @@ OnInit:
 		"Gold Room Arena",
 		"Event Manager",
 		"Monster Arena",
+		"Universal Rental NPC",
+		"Stylist",
+		"Reset Girl",
 		"Healer",
 		"Healer",
 		"Healer",

@@ -46,103 +46,183 @@ Header:
   Type: BARTER_DB
   Version: 2
 
-#Body:
-#  - Name: Donation Shop#custom
-#    Map: maintown
-#    X: 167
-#    Y: 182
-#    Direction: South
-#    Sprite: 4_F_KAFRA4
-#    Confirm: "Are you sure you want to purchase this item?"
-#    ConfirmMenu: "Purchase:Cancel"
-#    Items:
-#      - Index: 0
-#        Item: "Valkyrie Helm"
-#        RequiredItems:
-#          - Index: 0
-#            Item: Donation_Card
-#            Amount: 20
-#      - Index: 1
-#        Item: "Black Valkyrie Helm"
-#        RequiredItems:
-#          - Index: 0
-#            Item: Donation_Card
-#            Amount: 20
-#      - Index: 2
-#        Item: "Cyan Valkyrie Helm"
-#        RequiredItems:
-#          - Index: 0
-#            Item: Donation_Card
-#            Amount: 20
-#      - Index: 3
-#        Item: "Gold Valkyrie Helm"
-#        RequiredItems:
-#          - Index: 0
-#            Item: Donation_Card
-#            Amount: 20
-#      - Index: 4
-#        Item: "Green Valkyrie Helm"
-#        RequiredItems:
-#          - Index: 0
-#            Item: Donation_Card
-#            Amount: 20
+Body:
+  - Name: Donation Shop#Upper
+    Map: sec_in01
+    X: 164
+    Y: 181
+    Direction: South
+    Sprite: 4_F_KAFRA4
+    Confirm: "Are you sure you want to purchase this item?"
+    ConfirmMenu: "Purchase:Cancel"
+    Items:
+      - Index: 0
+        Item: "Eyes_Of_Darkness"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+      - Index: 1
+        Item: "Helm_Of_Dragoon"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+      - Index: 2
+        Item: "Parade_Cap"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+      - Index: 3
+        Item: "Fox_Ears_Bell_Ribbon"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+      - Index: 4
+        Item: "F_Pecopeco_Hairband"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+
+  - Name: Donation Shop#Mid
+    Map: sec_in01
+    X: 164
+    Y: 181
+    Direction: South
+    Sprite: 4_F_KAFRA4
+    Confirm: "Are you sure you want to purchase this item?"
+    ConfirmMenu: "Purchase:Cancel"
+    Items:
+      - Index: 0
+        Item: "Hairband_Of_Reginleif"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+      - Index: 1
+        Item: "24_Bolt"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+      - Index: 2
+        Item: "Ice_Wing_Ear"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+      - Index: 3
+        Item: "Angel_Spirit"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20 
+
+  - Name: Donation Shop#Low
+    Map: sec_in01
+    X: 164
+    Y: 181
+    Direction: South
+    Sprite: 4_F_KAFRA4
+    Confirm: "Are you sure you want to purchase this item?"
+    ConfirmMenu: "Purchase:Cancel"
+    Items:
+      - Index: 0
+        Item: "Toy_Syringe"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+      - Index: 1
+        Item: "Fafnir_Mask"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+      - Index: 2
+        Item: "Rockhand_Model"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+      - Index: 3
+        Item: "Scissorhand_Model"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+      - Index: 4
+        Item: "Pirate_Dagger"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
+      - Index: 5
+        Item: "Antique_Pipe"
+        RequiredItems:
+          - Index: 0
+            Item: Server Coin
+            Amount: 20
 #      - Index: 5
 #        Item: "Red Valkyrie Helm"
 #        RequiredItems:
 #          - Index: 0
-#            Item: Donation_Card
+#            Item: Server Coin
 #            Amount: 20
 #      - Index: 6
 #        Item: "Cyclops_Visor"
 #        RequiredItems:
 #          - Index: 0
-#            Item: Donation_Card
+#            Item: Server Coin
 #            Amount: 15
 #      - Index: 7
 #        Item: Black Dragon Wing
 #        RequiredItems:
 #          - Index: 0
-#            Item: Donation_Card
+#            Item: Server Coin
 #            Amount: 30
 #      - Index: 8
 #        Item: Dragon Wings
 #        RequiredItems:
 #          - Index: 0
-#            Item: Donation_Card
+#            Item: Server Coin
 #            Amount: 30
 #      - Index: 9
 #        Item: Cyan Dragon Wings
 #        RequiredItems:
 #          - Index: 0
-#            Item: Donation_Card
+#            Item: Server Coin
 #            Amount: 30
 #      - Index: 10
 #        Item: Gold Dragon Wings
 #        RequiredItems:
 #          - Index: 0
-#            Item: Donation_Card
+#            Item: Server Coin
 #            Amount: 30
 #      - Index: 11
 #        Item: Green Dragon Wings
 #        RequiredItems:
 #          - Index: 0
-#            Item: Donation_Card
+#            Item: Server Coin
 #            Amount: 30
 #      - Index: 12
 #        Item: Red Dragon Wings
 #        RequiredItems:
 #          - Index: 0
-#            Item: Donation_Card
+#            Item: Server Coin
 #            Amount: 30
 #
-#  - Name: Barter Qshop#0001
+#  - Name: Donation Shop#Mid
 #    Map: sec_in01
 #    X: 164
 #    Y: 181
 #    Direction: South
 #    Sprite: 4_F_KAFRA4        # replace with your NPC sprite/view id
-#    Confirm: "Are you sure you want to craft this item?"
-#    ConfirmMenu: "Craft it:Cancel"    
+#    Confirm: "Are you sure you want to purchase this item?"
+#    ConfirmMenu: "Purchase:Cancel"
 #    Items:
 #      - Index: 0
 #        Item: Angeling_Wings

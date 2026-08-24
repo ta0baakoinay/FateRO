@@ -14,6 +14,7 @@
 //= 1.4b Added Wolfchev's Laboratory warp.
 //= 1.5 Added Lasagna ,Para Market ,WOE TE ,Instances and settings [sader1992].
 //= 1.5a Fix Bifrost Tower
+//= 1.6b Modified to suit Pre-RE Trans 255/120 [The Legendary Betlog]
 //============================================================
 
 -	script	Warper	-1,{
@@ -21,22 +22,31 @@ function Go; function Disp; function Pick; function Restrict;
 
 // --------------------------------------------------
 //	Main Menu:
-// --------------------------------------------------
-
-menu	"Last Warp ^777777["+lastwarp$+"]^000000",-,
-    	" ~ Towns",Towns,
-    	" ~ Fields",Fields,
-    	" ~ Dungeons",Dungeons,
-    	" ~ Guild Castles",Castles,
-    	" ~ Guild Dungeons",Guild_Dungeons,
-    	" ~ Instances",Instances,
-    	" ~ Special Areas",Special;
-
+if (getgroupid() == 0) {
+	menu	"Last Warp ^777777["+lastwarp$+"]^000000",-,
+		" ~ First City - Main Town",MainTown,
+		" ~ Towns",Towns,
+		" ~ ^FF0000Fields [For VIP only]^000000",NoAccess,
+		" ~ ^FF0000Dungeons [For VIP only]^000000",NoAccess,
+		" ~ Guild Castles",Castles;
+} else {
+	menu	"Last Warp ^777777["+lastwarp$+"]^000000",-,
+		" ~ First City - Main Town",MainTown,
+		" ~ Towns",Towns,
+		" ~ Fields",Fields,
+		" ~ Dungeons",Dungeons,
+		" ~ Guild Castles",Castles;
+}
 	if (lastwarp$ == "")
 		message strcharinfo(0),"You haven't warped anywhere yet.";
 	else
 		warp lastwarp$,lastwarpx,lastwarpy;
 	end;
+
+// --------------------------------------------------
+	MainTown:
+// --------------------------------------------------
+	Go("maintown",151,103);
 
 // ------------------- Functions -------------------
 // * Go("<map>",<x>,<y>);
@@ -110,18 +120,7 @@ function Pick {
 	Go(.@map$,.@x,.@y);
 }
 function Restrict {
-	.@type$ = getarg(0);
-	
-	if (.@type$ == "Brasilis") {
-		// If the official warper to Brasilis is enabled, meaning is either
-		// Renewal mode or Pre-renewal Brasilis is enabled, we lift the restriction
-		if (getnpcid(0, "Crewman_bra2"))
-			return;
-		// Otherwise we apply the renewal restriction
-		.@type$ = "RE";
-	}
-
-	if ((.@type$ == "RE" && !checkre(0)) || (.@type$ == "Pre-RE" && checkre(0))) {
+	if ((getarg(0) == "RE" && !checkre(0)) || (getarg(0) == "Pre-RE" && checkre(0))) {
 		if (getarg(1,0)) {
 			set @warp_block,0;
 			for (set .@i,1; .@i<getargcount(); set .@i,.@i+1)
@@ -137,22 +136,22 @@ function Restrict {
 // --------------------------------------------------
 	Towns:
 // --------------------------------------------------
-menu	"Prontera",T1, "Alberta",T2, "Aldebaran",T3, "Amatsu",T4, "Ayothaya",T5,
+menu	"First City",T0, "Prontera",T1, "Alberta",T2, "Aldebaran",T3, "Amatsu",T4, "Ayothaya",T5,
     	"Brasilis",T6, "Comodo",T7, "Dewata",T8, "Eclage",T9, "Einbech",T10,
-		"Einbroch",T11, "El Dicastes",T12, "Geffen",T13, "Hugel",T14, "Ice Castle",T15,
+		"Einbroch",T11, "Geffen",T13, "Hugel",T14, "Ice Castle",T15,
 		"Izlude",T16, "Jawaii",T17, "Juno",T18, "Kunlun",T19, "Lasagna",T20,
-		"Lighthalzen",T21, "Luoyang",T22, "Lutie",T23, "Malangdo",T24, "Malaya",T25,
-		"Manuk",T26, "Midgarts Expedition Camp",T27, "Mora",T28, "Morocc",T29, "Moscovia",T30,
+		"Lighthalzen",T21, "Luoyang",T22, "Lutie",T23,
+		"Manuk",T26, "Midgarts Expedition Camp",T27, "Morocc",T29, "Moscovia",T30,
 		"Nameless Island (Day)",T31, "Nameless Island (Night)",T32, "Niflheim",T33, "Payon",T34, "Rachel",T35,
-		"Rockridge",T36, "Special Security Area, Cor",T37, "Splendide",T38, "Thor Camp",T39, "Umbala",T40,
-		"Varmundt's Mansion",T41, "Veins",T42, "Verus Findspot",T43, "Wolf Village",T44;
+		"Splendide",T38, "Thor Camp",T39, "Veins",T42,  "Umbala",T40;
 
-T1: Go("prontera",155,183);
+T0: Go("maintown",151,103);
+T1: Go("prontera",156,191);
 T2: Go("alberta",28,234);
 T3: Go("aldebaran",140,131);
 T4: Go("amatsu",198,84);
 T5: Go("ayothaya",208,166);
-T6: Restrict("Brasilis");
+T6: Restrict("RE");
 	Go("brasilis",196,217);
 T7: Go("comodo",209,143);
 T8: Restrict("RE");
@@ -161,8 +160,6 @@ T9: Restrict("RE");
 	Go("ecl_in01",48,53);
 T10: Go("einbech",63,35);
 T11: Go("einbroch",64,200);
-T12: Restrict("RE");
-	 Go("dicastes01",198,187);
 T13: Go("geffen",119,59);
 T14: Go("hugel",96,145);
 T15: Restrict("RE");
@@ -176,14 +173,8 @@ T20: Restrict("RE");
 T21: Go("lighthalzen",158,92);
 T22: Go("louyang",217,100);
 T23: Go("xmas",147,134);
-T24: Restrict("RE");
-	 Go("malangdo",140,114);
-T25: Restrict("RE");
-	 Go("malaya",231,200);
 T26: Go("manuk",282,138);
 T27: Go("mid_camp",210,288);
-T28: Restrict("RE");
-	 Go("mora",55,146);
 T29: Go("morocc",156,93);
 T30: Go("moscovia",223,184);
 T31: Go("nameless_i",256,215);
@@ -191,23 +182,13 @@ T32: Go("nameless_n",256,215);
 T33: Go("niflheim",202,174);
 T34: Go("payon",179,100);
 T35: Go("rachel",130,110);
-T36: Restrict("RE");
-	 Go("harboro1",298,206);
-T37: Restrict("RE");
-	 Go("sp_cor",160,166);
 T38: Go("splendide",201,147);
 T39: Go("thor_camp",246,68);
 T40: Go("umbala",97,153);
-T41: Restrict("RE");
-	Go("ba_maison",72,146);
 T42: Go("veins",216,123);
-T43: Restrict("RE");
-	 Go("verus04",123,250);
-T44: Restrict("RE");
-	 Go("wolfvill",144,144);
-
 // --------------------------------------------------
 	Fields:
+	if (getgroupid() == 0) goto NoAccess;
 // --------------------------------------------------
 @f = true;
 menu	"Amatsu Fields",F1, "Ayothaya Fields",F2, "Bifrost Fields", F3,
@@ -229,7 +210,7 @@ F2: setarray @c[2],173,134,212,150;
 F3: Restrict("RE");
 	setarray @c[2],193,220,220,187;
 	Disp("Bifrost Field",1,2); Pick("bif_fild");
-F4: Restrict("Brasilis");
+F4: Restrict("RE");
 	setarray @c[2],74,32;
 	Disp("Brasilis Field",1,1); Pick("bra_fild");
 F5: Restrict("Pre-RE",5);
@@ -313,26 +294,27 @@ F32: Restrict("Pre-RE",5);
 
 // --------------------------------------------------
 	Dungeons:
+	if (getgroupid() == 0) goto NoAccess;
 // --------------------------------------------------
 @d = true;
-menu	"Abandoned Lab Amicitia",D1, "Abyss Lakes",D2, "Amatsu Dungeon",D3,
+menu	"Abyss Lakes",D2, "Amatsu Dungeon",D3,
 		"Anthell",D4, "Ayothaya Dungeon",D5, "Beach Dungeon",D6,
-		"Bifrost Tower",D7, "Bio Labs",D8, "Brasilis Dungeon",D9,
+		"Bifrost Tower",D7, "Brasilis Dungeon",D9,
 		"Byalan Dungeon",D10, "Clock Tower",D11, "Coal Mines",D12,
-		"Culvert",D13, "Cursed Abbey",D14, "Dewata Dungeon",D15,
-		"Einbroch Dungeon",D16, "Flame Basin",D17, "Gefenia",D18,
+		"Culvert",D13, "Cursed Abbey",D14,
+		"Einbroch Dungeon",D16, "Gefenia",D18,
 		"Geffen Dungeon",D19, "Glast Heim",D20, "Hidden Dungeon",D21,
-		"Ice Dungeon",D22, "Illusion Dungeon",D23, "Issgard Dungeon",D24,
+		"Ice Dungeon",D22,
 		"Juperos",D25, "Kiel Dungeon",D26, "Kunlun Dungeon",D27,
-		"Lasagna Dungeon",D28, "Luoyang Dungeon",D29, "Magma Dungeon",D30,
-		"Malangdo Dungeon",D31, "Moscovia Dungeon",D32, "Nidhogg's Dungeon",D33,
+		"Luoyang Dungeon",D29, "Magma Dungeon",D30,
+		"Moscovia Dungeon",D32, "Nidhogg's Dungeon",D33,
 		"Niflheim Dungeon",D34, "Odin Temple",D35, "Orc Dungeon",D36,
-		"Oz Labyrinth Dungeon",D37, "Payon Dungeon",D38, "Prontera Underground",D39,
-		"Pyramids",D40, "Rachel Sanctuary",D41, "Rock Ridge Dungeon",D42,
-		"Rudus Dungeon",D43, "Scaraba Hole",D44, "Sphinx",D45,
-		"Sunken Ship",D46, "Thanatos Tower",D47, "Thor Volcano",D48,
-		"Toy Factory",D49, "Turtle Dungeon",D50, "Umbala Dungeon",D51,
-		"Varmundt's Dungeon",D52, "Verus Area",D53;
+		"Payon Dungeon",D38, "Prontera Underground",D39,
+		"Pyramids",D40, "Rachel Sanctuary",D41,
+		"Sphinx",D45,
+		"Sunken Ship",D46, "Thor Volcano",D48,
+		"Toy Factory",D49, "Turtle Dungeon",D50, "Umbala Dungeon",D51;
+		
 
 D1: Restrict("RE");
 	setarray @c[2],253,244,145,278;
@@ -351,10 +333,7 @@ D6: setarray @c[2],266,67,255,244,23,260;
 D7: Restrict("RE");
 	setarray @c[2],57,13,64,88,45,14,26,23;
 	Disp("Bifrost Tower",1,4); Pick("ecl_tdun");
-D8: Restrict("RE",4,5);
-	setarray @c[2],150,288,150,18,140,134,244,52,100,202;
-	Disp("Bio Lab 1:Bio Lab 2:Bio Lab 3:Bio Lab 4:Tomb of the Fallen"); Pick("","lhz_dun01","lhz_dun02","lhz_dun03","lhz_dun04","lhz_dun_n");
-D9: Restrict("Brasilis");
+D9: Restrict("RE");
 	setarray @c[2],87,47,262,262;
 	Disp("Brasilis Dungeon",1,2); Pick("bra_dun");
 D10: Restrict("RE",6);
@@ -370,14 +349,9 @@ D13: setarray @c[2],131,247,19,19,180,169,100,92;
 	 Disp("Culvert",1,4); Pick("","prt_sewb1","prt_sewb2","prt_sewb3","prt_sewb4");
 D14: setarray @c[2],51,14,150,11,120,10;
 	 Disp("Cursed Abbey",1,3); Pick("abbey");
-D15: Restrict("RE");
-	 setarray @c[2],285,160,299,29;
-	 Disp("Dewata Dungeon",1,2); Pick("dew_dun");
 D16: Restrict("RE",3);
 	 setarray @c[2],22,14,292,290,269,279;
 	 Disp("Einbroch Dungeon",1,3); Pick("ein_dun");
-D17: Restrict("RE");
-	 Go("moro_vol",97,107);
 D18: setarray @c[2],40,103,203,34,266,168,130,272;
 	 Disp("Gefenia",1,4); Pick("gefenia",0);
 D19: setarray @c[0],104,99,115,236,106,132,203,200;
@@ -390,9 +364,6 @@ D21: setarray @c[2],99,31,93,20,182,88;
 	 Disp("Hidden Dungeon",1,3); Pick("prt_maze");
 D22: setarray @c[2],157,14,151,155,149,22,33,158;
 	 Disp("Ice Dungeon",1,4); Pick("ice_dun");
-D23: menu	"Illusion of Abyss",SubD1, "Illusion of Frozen",SubD2, "Illusion of Labyrinth",SubD3,
-			"Illusion of Luanda",SubD4, "Illusion of Moonlight",SubD5, "Illusion of Teddy Bear",SubD6,
-			"Illusion of Twins",SubD7, "Illusion of Underwater",SubD8, "Illusion of Vampire",SubD9;
 	SubD1: Restrict("RE");
 		   setarray @c[2],132,189,99,186;
 		   Disp("Desolate Village:Bleak Turtle Palace"); Pick("","tur_d03_i","tur_d04_i");
@@ -413,9 +384,6 @@ D23: menu	"Illusion of Abyss",SubD1, "Illusion of Frozen",SubD2, "Illusion of La
 		   Disp("Deep Sea Cave",1,2); Pick("","iz_d04_i","iz_d05_i");
 	SubD9: Restrict("RE");
 		   Go("gef_d01_i",114,216);
-D24: Restrict("RE");
-	 setarray @c[2],112,15,280,87,112,12,274,85;
-	 Disp("Abandoned Pit Floor 1:Abandoned Pit Floor 2:Snake God's Warmth 1st Floor:Snake God's Warmth 2nd Floor"); Pick("","jor_ab01","jor_ab02","jor_dun01","jor_dun02");
 D25: Restrict("RE",5);
 	 setarray @c[2],140,51,53,247,37,63,150,285,146,215;
 	 Disp("Entrance:Juperos 1:Juperos 2:Core:Eastern Ruins of Juperos");
@@ -424,17 +392,11 @@ D26: setarray @c[2],28,226,41,198;
 	 Disp("Kiel Dungeon",1,2); Pick("kh_dun");
 D27: setarray @c[2],153,53,28,113,68,16;
 	 Disp("Kunlun Dungeon",1,3); Pick("gon_dun");
-D28: Restrict("RE");
-	 setarray @c[2],24,143,22,171,190,18;
-	 Disp("Lasagna Dungeon",1,3); Pick("lasa_dun");
 D29: setarray @c[2],218,196,282,20,165,38;
 	 Disp("The Royal Tomb:Inside the Royal Tomb:Suei Long Gon"); Pick("lou_dun");
 D30: Restrict("RE",3);
 	 setarray @c[2],126,68,47,30,118,113;
 	 Disp("Magma Dungeon",1,3); Pick("mag_dun");
-D31: Restrict("RE");
-	 setarray @c[2],33,230;
-	 Disp("Malangdo Dungeon",1,1); Pick("mal_dun");
 D32: setarray @c[2],189,48,165,30,32,135;
 	 Disp("Moscovia Dungeon",1,3); Pick("mosk_dun");
 D33: setarray @c[2],61,239,60,271;
@@ -447,9 +409,6 @@ D35: Restrict("RE",4);
 	 Disp("Odin Temple 1:Odin Temple 2:Odin Temple 3:Odin Past"); Pick("","odin_tem01","odin_tem02","odin_tem03","odin_past");
 D36: setarray @c[2],32,170,21,185;
 	 Disp("Orc Dungeon",1,2); Pick("orcsdun");
-D37: Restrict("RE");
-	 setarray @c[2],21,191,141,277;
-	 Disp("Oz Labyrinth Floor 1:Oz Labyrinth Floor 2"); Pick("oz_dun");
 D38: setarray @c[0],21,183,19,33,19,63,155,159,201,204;
 	 Disp("Payon Dungeon",1,5); Pick("pay_dun",1);
 D39: Restrict("RE");
@@ -461,21 +420,10 @@ D40: Restrict("RE",7,8);
 	 Pick("","moc_pryd01","moc_pryd02","moc_pryd03","moc_pryd04","moc_pryd05","moc_pryd06","moc_prydn1","moc_prydn2");
 D41: setarray @c[2],140,11,32,21,8,149,204,218,150,9;
 	 Disp("Rachel Sanctuary",1,5); Pick("ra_san");
-D42: Restrict("RE");
-	 setarray @c[2],247,19,281,104;
-	 Disp("Rock Ridge Mine:Underground Waterway Culvert"); Pick("","rockmi1","harboro2");
-D43: Restrict("RE");
-	 setarray @c[2],200,377,185,258,366,207,378,178;
-	 Disp("Rudus Dungeon",1,4); Pick("","sp_rudus","sp_rudus2","sp_rudus3","sp_rudus4");
-D44: Restrict("RE");
-	 setarray @c[2],364,44,101,141,101,141;
-	 Disp("Scaraba Hole",1,3); Pick("dic_dun");
 D45: setarray @c[2],288,9,149,81,210,54,10,222,100,99;
 	 Disp("Sphinx",1,5); Pick("","in_sphinx1","in_sphinx2","in_sphinx3","in_sphinx4","in_sphinx5");
 D46: setarray @c[2],69,24,102,27;
 	 Disp("Sunken Ship",1,2); Pick("treasure");
-D47: setarray @c[2],150,39,150,136,220,158,59,143,62,11,89,221,35,166,93,148,29,107,159,138,19,20,130,52;
-	 Disp("Thanatos Tower",1,12); Pick("tha_t");
 D48: setarray @c[2],21,228,75,205,34,272;
 	 Disp("Thor Volcano",1,3); Pick("thor_v");
 D49: setarray @c[2],205,15,129,133;
@@ -486,12 +434,6 @@ D51: Restrict("Pre-RE",1,2);
 	 setarray @c[2],42,31,48,30,204,78;
 	 Disp("Carpenter's Shop in the Tree:Passage to a Foreign World:Hvergermil's Fountain");
 	 Pick("","um_dun01","um_dun02","yggdrasil01");
-D52: Restrict("RE");
-	 setarray @c[2],275,21,15,115,15,115,159,27,162,36,159,11,156,33,337,333,314,64,163,18,156,20,39,81;
-	 Disp("Sewage Treatment Plant:1st Power Plant:2nd Power Plant:Large Bath Meditathio:Lost Farm Valley:Library Memory Corridor:Upper Floor of Tartaros Storage:Lower Floor of Tartaros Storage:Death Rune:Fire Rune:Grass Rune:Ice Rune"); Pick("","ba_pw02","ba_pw01","ba_pw03","ba_bath","ba_lost","ba_lib","ba_2whs01","ba_2whs02","bl_death","bl_lava","bl_grass","bl_ice");
-D53: Restrict("RE");
-	 setarray @c[2],244,61,72,20,122,22;
-	 Disp("Lab-OPTATIO:R&D-WISH:Verus Center Square"); Pick("verus");
 
 // --------------------------------------------------
 	Castles:
@@ -526,105 +468,10 @@ C8: Restrict("RE");
 	setarray @c[2],134,65,240,128,153,137,111,240,208,240;
 	Disp("Gloria 1:Gloria 2:Gloria 3:Gloria 4:Gloria 5");
 	Pick("","te_prt_gld","te_prt_gld","te_prt_gld","te_prt_gld","te_prt_gld");
-	
-// --------------------------------------------------
-	Guild_Dungeons:
-// --------------------------------------------------
-menu	"Baldur",G1, "Luina",G2, "Valkyrie",G3, "Britoniah",G4,
-    	"Arunafeltz",G5, "Schwarzwald",G6, "Kafragarten",G7,
-		"Gloria",G8;
-
-G1: Restrict("RE",2,3);
-	setarray @c[2],119,93,119,93,120,130;
-	Disp("Baldur F1:Baldur F2:Hall of Abyss");
-	Pick("","gld_dun01","gld_dun01_2","gld2_pay");
-G2: Restrict("RE",2,3);
-	setarray @c[2],39,161,39,161,147,155;
-	Disp("Luina F1:Luina F2:Hall of Abyss");
-	Pick("","gld_dun02","gld_dun02_2","gld2_ald");
-G3: Restrict("RE",2,3);
-	setarray @c[2],50,44,50,44,140,132;
-	Disp("Valkyrie F1:Valkyrie F2:Hall of Abyss");
-	Pick("","gld_dun03","gld_dun03_2","gld2_prt");
-G4: Restrict("RE",2,3);
-	setarray @c[2],116,45,116,45,152,118;
-	Disp("Britoniah F1:Britoniah F2:Hall of Abyss");
-	Pick("","gld_dun04","gld_dun04_2","gld2_gef");
-G5: Go("arug_dun01",199,195);
-G6: Go("schg_dun01",200,124);
-G7: Restrict("RE");
-	Go("teg_dun01",42,36);
-G8: Restrict("RE");
-	Go("teg_dun02",26,160);
 
 // --------------------------------------------------
-	Instances:
-// --------------------------------------------------
-menu	"Bakonawa Lake",I1, "Bangungot Hospital 2F",I2, "Buwaya Cave",I3,
-		"Devil Tower",I4, "Eclage Interior",I5, "Endless Tower",I6,
-		"Faceworms Nest",I7, "Geffen Magic Tournament",I8, "Ghost Palace",I9,
-		"Hazy Forest",I10, "Horror Toy Factory",I11, "Malangdo Culvert",I12,
-		"Nidhoggur's Nest",I13, "Octopus Cave",I14, "Old Glast Heim",I15,
-		"Orc's Memory",I16, "Sarah and Fenrir",I17, "Sara Memory",I18,
-		"Sealed Shrine",I19, "Wolfchev's Laboratory",I20;
-
-I1: Restrict("RE");
-	Go("ma_scene01",172,175);
-I2: Restrict("RE");
-	Go("ma_dun01",151,8);
-I3: Restrict("RE");
-	Go("ma_fild02",316,317);
-I4: Restrict("RE");
-	Go("dali02",137,115);
-I5: Restrict("RE");
-	Go("ecl_hub01",129,12);
-I6: Go("e_tower",72,112);
-I7: Restrict("RE");
-	Go("dali",85,64);
-I8: Restrict("RE");
-	Go("dali",94,141);
-I9: Restrict("RE");
-	Go("dali02",46,128);
-I10: Restrict("RE");
-	Go("bif_fild01",161,334);
-I11: Restrict("RE");
-	Go("xmas",234,298);
-I12: Restrict("RE");
-	Go("mal_in01",164,21);
-I13: Go("nyd_dun02",95,193);
-I14: Restrict("RE");
-	Go("mal_dun01",152,230);
-I15: Restrict("RE");
-	Go("glast_01",204,268);
-I16: Go("gef_fild10",240,198);
-I17: Restrict("RE");
-	Go("dali02",92,141);
-I18: Restrict("RE");
-	Go("dali",133,108);
-I19: Go("monk_test",306,143);
-I20: Restrict("RE");
-	Go("lhz_dun04",148,269);
 
 // --------------------------------------------------
-	Special:
-// --------------------------------------------------
-menu	"Auction Hall",S1, "Battlegrounds",S2, "Casino",S3, "Dimensional Rift",S4,
-		"Eden Group Headquarters",S5, "Kunlun Arena",S6, "Izlude Arena",S7, 
-		"Monster Race Arena",S8, "Para Market",S9, "Turbo Track",S10;
-
-S1: Go("auction_01",22,68);
-S2: Go("bat_room",154,150);
-S3: Go("cmd_in02",179,129);
-S4: Restrict("RE");
-	Go("dali",113,82);	
-S5: Restrict("RE");
-	Go("moc_para01",31,14);
-S6: Go("gon_test",48,10);
-S7: Go("arena_room",100,88);
-S8: Go("p_track01",62,41);
-S9: Restrict("RE");
-	Go("paramk",97,17);
-S10: Go("turbo_room",99,114);
 
 OnNaviGenerate:
 
@@ -1267,121 +1114,79 @@ OnNaviGenerate:
 		naviregisterwarp("Warper > Gloria 5", "te_prt_gld", 208, 240);
 	}
 
-	// guild dungeons
-	naviregisterwarp("Warper > Baldur F1", "gld_dun01", 119, 93);
-	naviregisterwarp("Warper > Luina F1", "gld_dun02", 39, 161);
-	naviregisterwarp("Warper > Valkyrie F1", "gld_dun03", 50, 44);
-	naviregisterwarp("Warper > Britoniah F1", "gld_dun04", 116, 45);
-	naviregisterwarp("Warper > Arunafeltz", "arug_dun01", 199, 195);
-	naviregisterwarp("Warper > Schwarzwald", "schg_dun01", 200,124);
-	if (checkre(0)) {
-		naviregisterwarp("Warper > Baldur F2", "gld_dun01_2", 119, 93);
-		naviregisterwarp("Warper > Hall of Abyss", "gld2_pay", 120, 130);
-		naviregisterwarp("Warper > Luina F2", "gld_dun02_2", 39, 161);
-		naviregisterwarp("Warper > Hall of Abyss", "gld2_ald", 147, 155);
-		naviregisterwarp("Warper > Valkyrie F2", "gld_dun03_2", 50, 44);
-		naviregisterwarp("Warper > Hall of Abyss", "gld2_prt", 140, 132);
-		naviregisterwarp("Warper > Britoniah F2", "gld_dun04_2", 116, 45);
-		naviregisterwarp("Warper > Hall of Abyss", "gld2_gef", 152, 118);
-		naviregisterwarp("Warper > Kafragarten", "teg_dun01", 42, 36);
-		naviregisterwarp("Warper > Gloria", "teg_dun02", 26, 160);
-	}
-	end;
 
-	// instances
-	naviregisterwarp("Warper > Endless Tower", "e_tower", 72, 112);
-	naviregisterwarp("Warper > Nidhoggur's Nest", "nyd_dun02", 95, 193);
-	naviregisterwarp("Warper > Orc's Memory", "gef_fild10", 240, 198);
-	naviregisterwarp("Warper > Sealed Shrine", "monk_test", 306, 143);
-	if (checkre(0)) {
-		naviregisterwarp("Warper > Bakonawa Lake", "ma_scene01", 172, 175);
-		naviregisterwarp("Warper > Bangungot Hospital 2F", "ma_dun01", 151, 8);
-		naviregisterwarp("Warper > Buwaya Cave", "ma_fild02", 316, 317);
-		naviregisterwarp("Warper > Devil Tower", "dali02", 137, 115);
-		naviregisterwarp("Warper > Eclage Interior", "ecl_hub01", 129, 12);
-		naviregisterwarp("Warper > Faceworms Nest", "dali", 85, 64);
-		naviregisterwarp("Warper > Geffen Magic Tournament", "dali", 94, 141);
-		naviregisterwarp("Warper > Ghost Palace", "dali02", 46, 128);
-		naviregisterwarp("Warper > Hazy Forest", "bif_fild01", 161, 334);
-		naviregisterwarp("Warper > Horror Toy Factory", "xmas", 234, 298);
-		naviregisterwarp("Warper > Malangdo Culvert", "mal_in01", 164, 21);
-		naviregisterwarp("Warper > Octopus Cave", "mal_dun01", 152, 230);
-		naviregisterwarp("Warper > Old Glast Heim", "glast_01", 204, 268);
-		naviregisterwarp("Warper > Sarah and Fenrir", "dali02", 92, 141);
-		naviregisterwarp("Warper > Sara Memory", "dali", 133, 108);
-		naviregisterwarp("Warper > Wolfchev's Laboratory", "lhz_dun04", 148, 269);
-	}
-
-
-	// special
-	naviregisterwarp("Warper > Auction Hall", "auction_01", 22, 68);
-	naviregisterwarp("Warper > Battlegrounds", "bat_room", 154, 150);
-	naviregisterwarp("Warper > Casino", "cmd_in02", 179, 129);
-	naviregisterwarp("Warper > Kunlun Arena", "gon_test", 48, 10);
-	naviregisterwarp("Warper > Izlude Arena", "arena_room", 100, 88);
-	naviregisterwarp("Warper > Monster Race Arena", "p_track01", 62, 41);
-	naviregisterwarp("Warper > Turbo Track", "turbo_room", 99, 114);
-	if (checkre(0)) {
-		naviregisterwarp("Warper > Dimensional Rift", "dali", 113, 82);
-		naviregisterwarp("Warper > Eden Group Headquarters", "moc_para01", 31, 14);
-		naviregisterwarp("Warper > Para Market", "paramk", 97, 17);
-	}
 
 OnInit:
 	.Satan_Morocc = true;	//	false will enable moc_fild 4,5,6,8,9,10,14,15 while disable moc_fild 20,21,22 Default is true.
 	.OnlyFirstFld = false;	//	true will teleport to the first level of the Fields  Default is false.
 	.OnlyFirstDun = false;	//	true will teleport to the first level of the Dungeons  Default is false.
+
+	// Start the visual effect loop
+	initnpctimer;
+	end;
+
+OnTimer500:
+	specialeffect EF_LJOSALFAR;
+	showscript "Warper";
+	initnpctimer;
+	end;
+
+NoAccess:
+	if (!playerattached()) end;
+	mes "[Warper]";
+	mes "^FF0000This option is available for VIP users only.^000000";
+	close;
 }
 
 // --------------------------------------------------
 //	Duplicates:
 // --------------------------------------------------
-alb2trea,57,70,6	duplicate(Warper)	Warper#tre	811
-alberta,28,240,4	duplicate(Warper)	Warper#alb	811
-aldebaran,145,118,4	duplicate(Warper)	Warper#alde	811
-amatsu,203,87,4	duplicate(Warper)	Warper#ama	811
-ayothaya,209,169,6	duplicate(Warper)	Warper#ayo	811
-comodo,194,158,4	duplicate(Warper)	Warper#com	811
-einbech,59,38,6	duplicate(Warper)	Warper#einbe	811
-einbroch,69,202,4	duplicate(Warper)	Warper#einbr	811
-gef_fild10,71,339,4	duplicate(Warper)	Warper#orc	811
-geffen,124,72,4	duplicate(Warper)	Warper#gef	811
-glast_01,372,308,4	duplicate(Warper)	Warper#glh	811
-gonryun,162,122,4	duplicate(Warper)	Warper#gon	811
-hugel,101,151,4	duplicate(Warper)	Warper#hug	811
-izlu2dun,110,92,4	duplicate(Warper)	Warper#izd	811
-izlude,134,150,4	duplicate(Warper)	Warper#izl	811	//Pre-RE: (132,120)
-jawaii,253,138,4	duplicate(Warper)	Warper#jaw	811
-lighthalzen,162,102,4	duplicate(Warper)	Warper#lhz	811
-louyang,208,103,6	duplicate(Warper)	Warper#lou	811
-manuk,274,146,6	duplicate(Warper)	Warper#man	811
-mid_camp,216,288,4	duplicate(Warper)	Warper#mid	811
-mjolnir_02,85,364,4	duplicate(Warper)	Warper#mjo	811
-moc_ruins,64,164,4	duplicate(Warper)	Warper#moc	811
-morocc,159,97,4	duplicate(Warper)	Warper#mor	811
-moscovia,229,191,4	duplicate(Warper)	Warper#mos	811
-nameless_n,259,213,4	duplicate(Warper)	Warper#nam	811
-niflheim,205,179,4	duplicate(Warper)	Warper#nif	811
-pay_arche,42,134,4	duplicate(Warper)	Warper#arc	811
-payon,182,108,4	duplicate(Warper)	Warper#pay	811
-prontera,159,192,4	duplicate(Warper)	Warper#prt	811
-prt_fild05,279,223,6	duplicate(Warper)	Warper#cul	811
-rachel,135,116,4	duplicate(Warper)	Warper#rac	811
-splendide,205,153,4	duplicate(Warper)	Warper#spl	811
-thor_camp,249,76,4	duplicate(Warper)	Warper#thor	811
-umbala,106,150,3	duplicate(Warper)	Warper#umb	811
-veins,214,123,4	duplicate(Warper)	Warper#ve	811
-xmas,150,136,6	duplicate(Warper)	Warper#xmas	811
-yuno,162,47,4	duplicate(Warper)	Warper#yuno	811
 
+alb2trea,57,70,6	duplicate(Warper)	Warper#tre	650
+alberta,28,240,4	duplicate(Warper)	Warper#alb	650
+aldebaran,145,118,4	duplicate(Warper)	Warper#alde	650
+amatsu,203,87,4	duplicate(Warper)	Warper#ama	650
+ayothaya,209,169,6	duplicate(Warper)	Warper#ayo	650
+comodo,194,158,4	duplicate(Warper)	Warper#com	650
+einbech,59,38,6	duplicate(Warper)	Warper#einbe	650
+einbroch,69,202,4	duplicate(Warper)	Warper#einbr	650
+gef_fild10,71,339,4	duplicate(Warper)	Warper#orc	650
+geffen,124,72,4	duplicate(Warper)	Warper#gef	650
+glast_01,372,308,4	duplicate(Warper)	Warper#glh	650
+gonryun,162,122,4	duplicate(Warper)	Warper#gon	650
+hugel,101,151,4	duplicate(Warper)	Warper#hug	650
+izlu2dun,110,92,4	duplicate(Warper)	Warper#izd	650
+izlude,121,93,4	duplicate(Warper)	Warper#izl	650	//Pre-RE: (132,120)
+jawaii,253,138,4	duplicate(Warper)	Warper#jaw	650
+lighthalzen,162,102,4	duplicate(Warper)	Warper#lhz	650
+louyang,208,103,6	duplicate(Warper)	Warper#lou	650
+manuk,274,146,6	duplicate(Warper)	Warper#man	650
+mid_camp,216,288,4	duplicate(Warper)	Warper#mid	650
+mjolnir_02,85,364,4	duplicate(Warper)	Warper#mjo	650
+moc_ruins,64,164,4	duplicate(Warper)	Warper#moc	650
+morocc,159,97,4	duplicate(Warper)	Warper#mor	650
+moscovia,229,191,4	duplicate(Warper)	Warper#mos	650
+nameless_n,259,213,4	duplicate(Warper)	Warper#nam	650
+niflheim,205,179,4	duplicate(Warper)	Warper#nif	650
+pay_arche,42,134,4	duplicate(Warper)	Warper#arc	650
+payon,182,108,4	duplicate(Warper)	Warper#pay	650
+prt_fild05,279,223,6	duplicate(Warper)	Warper#cul	650
+rachel,135,116,4	duplicate(Warper)	Warper#rac	650
+splendide,205,153,4	duplicate(Warper)	Warper#spl	650
+thor_camp,249,76,4	duplicate(Warper)	Warper#thor	650
+umbala,106,150,3	duplicate(Warper)	Warper#umb	650
+veins,214,123,4	duplicate(Warper)	Warper#ve	650
+xmas,150,136,6	duplicate(Warper)	Warper#xmas	650
+yuno,162,47,4	duplicate(Warper)	Warper#yuno	650
+maintown,140,113,6	duplicate(Warper)	Warper#maintown	650
 // --------------------------------------------------
 //	Duplicates (Renewal):
 // --------------------------------------------------
-brasilis,201,222,4	duplicate(Warper)	Warper#bra	811
-dewata,204,186,6	duplicate(Warper)	Warper#dew	811
-dicastes01,194,194,6	duplicate(Warper)	Warper#dic	811
-ecl_in01,51,60,4	duplicate(Warper)	Warper#ecl	811
-lasagna,196,187,4	duplicate(Warper)	Warper#las	811
-malangdo,134,117,6	duplicate(Warper)	Warper#mal	811
-malaya,231,204,4	duplicate(Warper)	Warper#ma	811
-mora,57,152,4	duplicate(Warper)	Warper#mora	811
+brasilis,201,222,4	duplicate(Warper)	Warper#bra	650
+dewata,204,186,6	duplicate(Warper)	Warper#dew	650
+dicastes01,194,194,6	duplicate(Warper)	Warper#dic	650
+ecl_in01,51,60,4	duplicate(Warper)	Warper#ecl	650
+lasagna,196,187,4	duplicate(Warper)	Warper#las	650
+malangdo,134,117,6	duplicate(Warper)	Warper#mal	650
+malaya,231,204,4	duplicate(Warper)	Warper#ma	650
+mora,57,152,4	duplicate(Warper)	Warper#mora	650

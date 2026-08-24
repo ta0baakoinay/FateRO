@@ -105,327 +105,6 @@ Body:
       NoAuction: true
     Script: |
     callfunc "F_AutoCombatItem";
-  - Id: 30000
-    AegisName: Elite_Armor
-    Name: Elite Armor
-    Type: Armor
-    Buy: 1000
-    Weight: 300
-    Defense: 3
-    Slots: 1
-    Locations:
-      Armor: true
-    ArmorLevel: 1
-    Refineable: true
-  - Id: 30001
-    AegisName: Elite_Cloak
-    Name: Elite Cloak
-    Type: Armor
-    Buy: 5000
-    Weight: 400
-    Defense: 2
-    Slots: 1
-    Jobs:
-      All: true
-      Novice: false
-      SuperNovice: false
-    Locations:
-      Garment: true
-    ArmorLevel: 1
-    Refineable: true
-  - Id: 30002
-    AegisName: Elite_Boots
-    Name: Elite Boots
-    Type: Armor
-    Buy: 3500
-    Weight: 400
-    Defense: 2
-    Slots: 1
-    Jobs:
-      All: true
-      Novice: false
-      SuperNovice: false
-    Locations:
-      Shoes: true
-    ArmorLevel: 1
-    Refineable: true
-  - Id: 30003
-    AegisName: Elite_Shield
-    Name: Elite Shield
-    Type: Armor
-    Buy: 500
-    Weight: 300
-    Defense: 3
-    Slots: 1
-    Locations:
-      Left_Hand: true
-    ArmorLevel: 1
-    Refineable: true
-    View: 1
-  - Id: 30004
-    AegisName: Elite_Glove
-    Name: Elite Glove
-    Type: Armor
-    Buy: 30000
-    Weight: 200
-    Slots: 1
-    Jobs:
-      All: true
-      Novice: false
-      SuperNovice: false
-    Locations:
-      Both_Accessory: true
-    ArmorLevel: 1
-    EquipLevelMin: 1
-    Script: |
-      bonus bDex,0;
-  - Id: 30005
-    AegisName: Epic_Armor
-    Name: Epic Armor
-    Type: Armor
-    Buy: 1000
-    Weight: 300
-    Defense: 3
-    Slots: 1
-    Locations:
-      Armor: true
-    ArmorLevel: 1
-    Refineable: true
-  - Id: 30006
-    AegisName: Epic_Cape
-    Name: Epic Cape
-    Type: Armor
-    Buy: 5000
-    Weight: 400
-    Defense: 2
-    Slots: 1
-    Jobs:
-      All: true
-      Novice: false
-      SuperNovice: false
-    Locations:
-      Garment: true
-    ArmorLevel: 1
-    Refineable: true
-  - Id: 30007
-    AegisName: Epic_Boots
-    Name: Epic Boots
-    Type: Armor
-    Buy: 3500
-    Weight: 400
-    Defense: 2
-    Slots: 1
-    Jobs:
-      All: true
-      Novice: false
-      SuperNovice: false
-    Locations:
-      Shoes: true
-    ArmorLevel: 1
-    Refineable: true
-  - Id: 30008
-    AegisName: Epic_Shield
-    Name: Epic Shield
-    Type: Armor
-    Buy: 500
-    Weight: 300
-    Defense: 3
-    Slots: 1
-    Locations:
-      Left_Hand: true
-    ArmorLevel: 1
-    Refineable: true
-    View: 1
-  - Id: 30009
-    AegisName: Epic_Glove
-    Name: Epic Glove
-    Type: Armor
-    Buy: 30000
-    Weight: 200
-    Slots: 1
-    Jobs:
-      All: true
-      Novice: false
-      SuperNovice: false
-    Locations:
-      Both_Accessory: true
-    ArmorLevel: 1
-    EquipLevelMin: 1
-    Script: |
-      bonus bDex,0;
-  - Id: 30010
-    AegisName: New_Black_Fairy_Wings
-    Name: Black Fairy Wings
-    Type: Armor
-    Weight: 10
-    Defense: 2
-    Locations:
-      Head_Low: true
-    ArmorLevel: 1
-    View: 2710
-   
-  - Id: 30011
-    AegisName: New_Blue_Fairy_Wings
-    Name: Blue Fairy Wings
-    Type: Armor
-    Weight: 10
-    Defense: 2
-    Locations:
-      Head_Low: true
-    ArmorLevel: 1
-    View: 2711
-   
-  - Id: 30012
-    AegisName: New_Gold_Fairy_Wings
-    Name: Gold Fairy Wings
-    Type: Armor
-    Weight: 10
-    Defense: 2
-    Locations:
-      Head_Low: true
-    ArmorLevel: 1
-    View: 2712
-   
-  - Id: 30013
-    AegisName: New_Green_Fairy_Wings
-    Name: Green Fairy Wings
-    Type: Armor
-    Weight: 10
-    Defense: 2
-    Locations:
-      Head_Low: true
-    ArmorLevel: 1
-    View: 2713
-   
-  - Id: 30014
-    AegisName: New_Purple_Fairy_Wings
-    Name: Purple Fairy Wings
-    Type: Armor
-    Weight: 10
-    Defense: 2
-    Locations:
-      Head_Low: true
-    ArmorLevel: 1
-    View: 2714
-   
-  - Id: 30015
-    AegisName: New_Red_Fairy_Wings
-    Name: Red Fairy Wings
-    Type: Armor
-    Weight: 10
-    Defense: 2
-    Locations:
-      Head_Low: true
-    ArmorLevel: 1
-    View: 2715
-   
-  - Id: 30022
-    AegisName: Costume Blue Belial Wings
-    Name: Costume Blue Belial Wings
-    Type: Armor
-    Locations:
-      Costume_Head_Low: true
-    ArmorLevel: 1
-    View: 2722
-   
-  - Id: 30023
-    AegisName: Costume Green Belial Wings
-    Name: Costume Green Belial Wings
-    Type: Armor
-    Locations:
-      Costume_Head_Low: true
-    ArmorLevel: 1
-    View: 2723
-   
-  - Id: 30024
-    AegisName: Costume Yellow Belial Wings
-    Name: Costume Yellow Belial Wings
-    Type: Armor
-    Locations:
-      Costume_Head_Low: true
-    ArmorLevel: 1
-    View: 2724
-   
-  - Id: 30025
-    AegisName: Costume Pink Belial Wings
-    Name: Costume Pink Belial Wings
-    Type: Armor
-    Locations:
-      Costume_Head_Low: true
-    ArmorLevel: 1
-    View: 2725
-   
-  - Id: 30026
-    AegisName: Costume Purple Belial Wings
-    Name: Costume Purple Belial Wings
-    Type: Armor
-    Locations:
-      Costume_Head_Low: true
-    ArmorLevel: 1
-    View: 2726
-   
-  - Id: 30027
-    AegisName: Costume Red Belial Wings
-    Name: Costume Red Belial Wings
-    Type: Armor
-    Locations:
-      Costume_Head_Low: true
-    ArmorLevel: 1
-    View: 2727
-   
-  - Id: 30028
-    AegisName: Costume Black Wrath Wings
-    Name: Costume Black Wrath Wings
-    Type: Armor
-    Locations:
-      Costume_Head_Low: true
-    ArmorLevel: 1
-    View: 2728
-   
-  - Id: 30029
-    AegisName: Costume Blue Wrath Wings
-    Name: Costume Blue Wrath Wings
-    Type: Armor
-    Locations:
-      Costume_Head_Low: true
-    ArmorLevel: 1
-    View: 2729
-   
-  - Id: 30030
-    AegisName: Costume Green Wrath Wings
-    Name: Costume Green Wrath Wings
-    Type: Armor
-    Locations:
-      Costume_Head_Low: true
-    ArmorLevel: 1
-    View: 2730
-   
-  - Id: 30031
-    AegisName: Costume Purple Wrath Wings
-    Name: Costume Purple Wrath Wings
-    Type: Armor
-    Locations:
-      Costume_Head_Low: true
-    ArmorLevel: 1
-    View: 2731
-   
-  - Id: 30032
-    AegisName: Costume White Wrath Wings
-    Name: Costume White Wrath Wings
-    Type: Armor
-    Locations:
-      Costume_Head_Low: true
-    ArmorLevel: 1
-    View: 2732
-   
-  - Id: 30033
-    AegisName: Costume Yellow Wrath Wings
-    Name: Costume Yellow Wrath Wings
-    Type: Armor
-    Locations:
-      Costume_Head_Low: true
-    ArmorLevel: 1
-    View: 2733
 
   - Id: 30034
     AegisName: Bakbakan_Ticket
@@ -436,1066 +115,6 @@ Body:
     Flags:
       BuyingStore: true
 
-  - Id: 30035
-    AegisName: Etc_Credit
-    Name: Etc_Credit
-    Type: Etc
-    Buy: 6
-    Weight: 10
-    Flags:
-      BuyingStore: true
-
-
-  - Id: 304236
-    AegisName: Amon_Ra_Card2
-    Name: Corrupted Amon Ra Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bAllStats,1;
-      bonus3 bAutoSpellWhenHit,"PR_KYRIE",10,(30+70*(readparam(bInt)>=99));
-  - Id: 304425
-    AegisName: Atroce_Card2
-    Name: Corrupted Atroce Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bBaseAtk,25;
-      autobonus "{ bonus bAspdRate,100; }",5,10000,0,"{ specialeffect2 EF_POTION_BERSERK; }";
-  - Id: 304372
-    AegisName: Bacsojin_Card2
-    Name: Corrupted White Lady Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bHealPower,30;
-      bonus bUseSPrate,15;
-  - Id: 304147
-    AegisName: Baphomet_Card2
-    Name: Corrupted Baphomet Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bHit,-10;
-      bonus bSplashRange,1;
-  - Id: 304134
-    AegisName: Dracula_Card2
-    Name: Corrupted Dracula Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus2 bSPDrainRate,100,5;
-  - Id: 304123
-    AegisName: Eddga_Card2
-    Name: Corrupted Eddga Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMaxHPrate,-25;
-      bonus bNoWalkDelay;
-  - Id: 304330
-    AegisName: Dark_Snake_Lord_Card2
-    Name: Corrupted Evil Snake Lord Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bInt,3;
-      bonus2 bResEff,Eff_Blind,10000;
-      bonus2 bResEff,Eff_Curse,10000;
-  - Id: 304441
-    AegisName: Fallen_Bishop_Card2
-    Name: Corrupted Fallen Bishop Hibram Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMatkRate,10;
-      bonus bMaxSPrate,-50;
-      bonus2 bMagicAddRace,RC_Angel,50;
-      bonus2 bMagicAddRace,RC_DemiHuman,50;
-      bonus2 bMagicAddRace,RC_Player_Human,50;
-  - Id: 304324
-    AegisName: Garm_Card2
-    Name: Corrupted Hatii Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus2 bAddEffWhenHit,Eff_Freeze,5000;
-  - Id: 304408
-    AegisName: Gloom_Under_Night_Card2
-    Name: Corrupted Gloom Under Night Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus2 bAddEle,Ele_Holy,40;
-      bonus2 bAddEle,Ele_Dark,40;
-      bonus2 bAddRace,RC_Angel,40;
-      bonus2 bAddRace,RC_Demon,40;
-  - Id: 304263
-    AegisName: Incant_Samurai_Card2
-    Name: Corrupted Samurai Spector Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bIgnoreDefClass,Class_Normal;
-      bonus bHPrecovRate,-100;
-      bonus2 bHPLossRate,666,10000;
-    UnEquipScript: |
-      if (Hp <= 999 && !getmapflag(strcharinfo(3),mf_pvp) && !getmapflag(strcharinfo(3),mf_pvp_noparty) && !getmapflag(strcharinfo(3),mf_pvp_noguild)) {
-         heal (1-Hp),0;
-      }
-      else {
-         heal -999,0;
-      }
-  - Id: 304318
-    AegisName: Knight_Windstorm_Card2
-    Name: Corrupted Stormy Knight Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus3 bAutoSpell,"WZ_STORMGUST",2,20;
-      bonus2 bAddEff,Eff_Freeze,2000;
-  - Id: 304419
-    AegisName: Ktullanux_Card2
-    Name: Corrupted Ktullanux Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus2 bAddEle,Ele_Fire,50;
-      bonus5 bAutoSpellWhenHit,"WZ_FROSTNOVA",10,20,BF_WEAPON|BF_MAGIC,0;
-  - Id: 304376
-    AegisName: Lady_Tanee_Card2
-    Name: Corrupted Lady Tanee Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMaxHPrate,-40;
-      bonus bMaxSPrate,50;
-      bonus2 bAddMonsterDropItem,513,200;
-      bonus2 bAddItemHealRate,513,100;
-  - Id: 304276
-    AegisName: Lord_Of_Death_Card2
-    Name: Corrupted Lord of The Dead Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus3 bAddEff,Eff_Stun,500,ATF_SHORT;
-      bonus3 bAddEff,Eff_Curse,500,ATF_SHORT;
-      bonus3 bAddEff,Eff_Silence,500,ATF_SHORT;
-      bonus3 bAddEff,Eff_Poison,500,ATF_SHORT;
-      bonus3 bAddEff,Eff_Bleeding,500,ATF_SHORT;
-      bonus2 bComaClass,Class_Normal,1;
-  - Id: 304146
-    AegisName: Maya_Card2
-    Name: Corrupted Maya Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Left_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMagicDamageReturn,50;
-  - Id: 304131
-    AegisName: Moonlight_Flower_Card2
-    Name: Corrupted Moonlight Flower Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bSpeedRate,25;
-  - Id: 304143
-    AegisName: Orc_Hero_Card2
-    Name: Corrupted Orc Hero Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bVit,3;
-      bonus2 bResEff,Eff_Stun,10000;
-  - Id: 304135
-    AegisName: Orc_Load_Card2
-    Name: Corrupted Orc Lord Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bShortWeaponDamageReturn,30;
-  - Id: 304121
-    AegisName: Phreeoni_Card2
-    Name: Corrupted Phreeoni Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bHit,100;
-  - Id: 304342
-    AegisName: Rsx_0806_Card2
-    Name: Corrupted RSX-0806 Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bVit,3;
-      bonus bUnbreakableArmor;
-      bonus bNoKnockback;
-  - Id: 304302
-    AegisName: Tao_Gunka_Card2
-    Name: Corrupted Tao Gunka Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMaxHPrate,100;
-      bonus bDef,-50;
-      bonus bMdef,-50;
-  - Id: 304399
-    AegisName: Thanatos_Card2
-    Name: Corrupted Memory of Thanatos Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bDefRatioAtkClass,Class_All;
-      bonus bSPDrainValue,-1;
-      bonus bDef,-30;
-      bonus bFlee,-30;
-  - Id: 304145
-    AegisName: Berzebub_Card2
-    Name: Corrupted Berzebub Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Both_Accessory: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bCastrate,-30;
-  - Id: 304168
-    AegisName: Dark_Lord_Card2
-    Name: Corrupted Dark Lord Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus3 bAutoSpellWhenHit,"WZ_METEOR",5,100;
-  - Id: 304386
-    AegisName: Detale_Card2
-    Name: Corrupted Detardeurus Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMdef,-20;
-      bonus2 bResEff,Eff_Freeze,10000;
-      bonus5 bAutoSpellWhenHit,"SA_LANDPROTECTOR",1,70,BF_MAGIC,0;
-  - Id: 304142
-    AegisName: Doppelganger_Card2
-    Name: Corrupted Doppelganger Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bAspdRate,10;
-  - Id: 304137
-    AegisName: Drake_Card2
-    Name: Corrupted Drake Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bNoSizeFix;
-  - Id: 304128
-    AegisName: Golden_Bug_Card2
-    Name: Corrupted Golden Thief Bug Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Left_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bNoMagicDamage,100;
-      bonus bUseSPrate,100;
-  - Id: 304430
-    AegisName: Ifrit_Card2
-    Name: Corrupted Ifrit Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Both_Accessory: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bBaseAtk,(JobLevel/10);
-      bonus bCritical,(JobLevel/10);
-      bonus bHit,(JobLevel/10);
-      bonus3 bAutoSpellWhenHit,"NPC_EARTHQUAKE",2,10;
-  - Id: 304403
-    AegisName: Kiel_Card2
-    Name: Corrupted Kiel-D-01 Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bDelayRate,-30;
-  - Id: 304132
-    AegisName: Mistress_Card2
-    Name: Corrupted Mistress Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bNoGemStone;
-      bonus bUseSPrate,25;
-  - Id: 304144
-    AegisName: Osiris_Card2
-    Name: Corrupted Osiris Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Both_Accessory: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bRestartFullRecover;
-  - Id: 304148
-    AegisName: Pharaoh_Card2
-    Name: Corrupted Pharaoh Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bUseSPrate,-30;
-  - Id: 304407
-    AegisName: Randgris_Card2
-    Name: Corrupted Randgris Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bUnbreakableWeapon;
-      bonus2 bAddClass,Class_All,10;
-      bonus3 bAutoSpell,"SA_DISPELL",1,50;
-  - Id: 304374
-    AegisName: Apocalips_H_Card2
-    Name: Corrupted Vesper Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bDex,2;
-      bonus2 bIgnoreMdefClassRate,Class_Boss,30;
-  - Id: 304352
-    AegisName: B_Ygnizem_Card2
-    Name: Corrupted General Egnigem Cenia Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMaxHPrate,10;
-      bonus bMaxSPrate,10;
-      bonus2 bHPRegenRate,50,10000;
-      bonus2 bSPRegenRate,10,10000;
-  - Id: 404236
-    AegisName: Amon_Ra_Card3
-    Name: Awakened Amon Ra Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bAllStats,1;
-      bonus3 bAutoSpellWhenHit,"PR_KYRIE",10,(30+70*(readparam(bInt)>=99));
-  - Id: 404425
-    AegisName: Atroce_Card3
-    Name: Awakened Atroce Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bBaseAtk,25;
-      autobonus "{ bonus bAspdRate,100; }",5,10000,0,"{ specialeffect2 EF_POTION_BERSERK; }";
-  - Id: 404372
-    AegisName: Bacsojin_Card3
-    Name: Awakened White Lady Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bHealPower,30;
-      bonus bUseSPrate,15;
-  - Id: 404147
-    AegisName: Baphomet_Card3
-    Name: Awakened Baphomet Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bHit,-10;
-      bonus bSplashRange,1;
-  - Id: 404134
-    AegisName: Dracula_Card3
-    Name: Awakened Dracula Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus2 bSPDrainRate,100,5;
-  - Id: 404123
-    AegisName: Eddga_Card3
-    Name: Awakened Eddga Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMaxHPrate,-25;
-      bonus bNoWalkDelay;
-  - Id: 404330
-    AegisName: Dark_Snake_Lord_Card3
-    Name: Awakened Evil Snake Lord Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bInt,3;
-      bonus2 bResEff,Eff_Blind,10000;
-      bonus2 bResEff,Eff_Curse,10000;
-  - Id: 404441
-    AegisName: Fallen_Bishop_Card3
-    Name: Awakened Fallen Bishop Hibram Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMatkRate,10;
-      bonus bMaxSPrate,-50;
-      bonus2 bMagicAddRace,RC_Angel,50;
-      bonus2 bMagicAddRace,RC_DemiHuman,50;
-      bonus2 bMagicAddRace,RC_Player_Human,50;
-  - Id: 404324
-    AegisName: Garm_Card3
-    Name: Awakened Hatii Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus2 bAddEffWhenHit,Eff_Freeze,5000;
-  - Id: 404408
-    AegisName: Gloom_Under_Night_Card3
-    Name: Awakened Gloom Under Night Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus2 bAddEle,Ele_Holy,40;
-      bonus2 bAddEle,Ele_Dark,40;
-      bonus2 bAddRace,RC_Angel,40;
-      bonus2 bAddRace,RC_Demon,40;
-  - Id: 404263
-    AegisName: Incant_Samurai_Card3
-    Name: Awakened Samurai Spector Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bIgnoreDefClass,Class_Normal;
-      bonus bHPrecovRate,-100;
-      bonus2 bHPLossRate,666,10000;
-    UnEquipScript: |
-      if (Hp <= 999 && !getmapflag(strcharinfo(3),mf_pvp) && !getmapflag(strcharinfo(3),mf_pvp_noparty) && !getmapflag(strcharinfo(3),mf_pvp_noguild)) {
-         heal (1-Hp),0;
-      }
-      else {
-         heal -999,0;
-      }
-  - Id: 404318
-    AegisName: Knight_Windstorm_Card3
-    Name: Awakened Stormy Knight Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus3 bAutoSpell,"WZ_STORMGUST",2,20;
-      bonus2 bAddEff,Eff_Freeze,2000;
-  - Id: 404419
-    AegisName: Ktullanux_Card3
-    Name: Awakened Ktullanux Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus2 bAddEle,Ele_Fire,50;
-      bonus5 bAutoSpellWhenHit,"WZ_FROSTNOVA",10,20,BF_WEAPON|BF_MAGIC,0;
-  - Id: 404376
-    AegisName: Lady_Tanee_Card3
-    Name: Awakened Lady Tanee Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMaxHPrate,-40;
-      bonus bMaxSPrate,50;
-      bonus2 bAddMonsterDropItem,513,200;
-      bonus2 bAddItemHealRate,513,100;
-  - Id: 404276
-    AegisName: Lord_Of_Death_Card3
-    Name: Awakened Lord of The Dead Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus3 bAddEff,Eff_Stun,500,ATF_SHORT;
-      bonus3 bAddEff,Eff_Curse,500,ATF_SHORT;
-      bonus3 bAddEff,Eff_Silence,500,ATF_SHORT;
-      bonus3 bAddEff,Eff_Poison,500,ATF_SHORT;
-      bonus3 bAddEff,Eff_Bleeding,500,ATF_SHORT;
-      bonus2 bComaClass,Class_Normal,1;
-  - Id: 404146
-    AegisName: Maya_Card3
-    Name: Awakened Maya Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Left_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMagicDamageReturn,50;
-  - Id: 404131
-    AegisName: Moonlight_Flower_Card3
-    Name: Awakened Moonlight Flower Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bSpeedRate,25;
-  - Id: 404143
-    AegisName: Orc_Hero_Card3
-    Name: Awakened Orc Hero Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bVit,3;
-      bonus2 bResEff,Eff_Stun,10000;
-  - Id: 404135
-    AegisName: Orc_Load_Card3
-    Name: Awakened Orc Lord Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bShortWeaponDamageReturn,30;
-  - Id: 404121
-    AegisName: Phreeoni_Card3
-    Name: Awakened Phreeoni Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bHit,100;
-  - Id: 404342
-    AegisName: Rsx_0806_Card3
-    Name: Awakened RSX-0806 Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bVit,3;
-      bonus bUnbreakableArmor;
-      bonus bNoKnockback;
-  - Id: 404302
-    AegisName: Tao_Gunka_Card3
-    Name: Awakened Tao Gunka Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMaxHPrate,100;
-      bonus bDef,-50;
-      bonus bMdef,-50;
-  - Id: 404399
-    AegisName: Thanatos_Card3
-    Name: Awakened Memory of Thanatos Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bDefRatioAtkClass,Class_All;
-      bonus bSPDrainValue,-1;
-      bonus bDef,-30;
-      bonus bFlee,-30;
-  - Id: 404145
-    AegisName: Berzebub_Card3
-    Name: Awakened Berzebub Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Both_Accessory: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bCastrate,-30;
-  - Id: 404168
-    AegisName: Dark_Lord_Card3
-    Name: Awakened Dark Lord Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus3 bAutoSpellWhenHit,"WZ_METEOR",5,100;
-  - Id: 404386
-    AegisName: Detale_Card3
-    Name: Awakened Detardeurus Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Armor: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMdef,-20;
-      bonus2 bResEff,Eff_Freeze,10000;
-      bonus5 bAutoSpellWhenHit,"SA_LANDPROTECTOR",1,70,BF_MAGIC,0;
-  - Id: 404142
-    AegisName: Doppelganger_Card3
-    Name: Awakened Doppelganger Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bAspdRate,10;
-  - Id: 404137
-    AegisName: Drake_Card3
-    Name: Awakened Drake Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bNoSizeFix;
-  - Id: 404128
-    AegisName: Golden_Bug_Card3
-    Name: Awakened Golden Thief Bug Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Left_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bNoMagicDamage,100;
-      bonus bUseSPrate,100;
-  - Id: 404430
-    AegisName: Ifrit_Card3
-    Name: Awakened Ifrit Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Both_Accessory: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bBaseAtk,(JobLevel/10);
-      bonus bCritical,(JobLevel/10);
-      bonus bHit,(JobLevel/10);
-      bonus3 bAutoSpellWhenHit,"NPC_EARTHQUAKE",2,10;
-  - Id: 404403
-    AegisName: Kiel_Card3
-    Name: Awakened Kiel-D-01 Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bDelayRate,-30;
-  - Id: 404132
-    AegisName: Mistress_Card3
-    Name: Awakened Mistress Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bNoGemStone;
-      bonus bUseSPrate,25;
-  - Id: 404144
-    AegisName: Osiris_Card3
-    Name: Awakened Osiris Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Both_Accessory: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bRestartFullRecover;
-  - Id: 404148
-    AegisName: Pharaoh_Card3
-    Name: Awakened Pharaoh Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bUseSPrate,-30;
-  - Id: 404407
-    AegisName: Randgris_Card3
-    Name: Awakened Randgris Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bUnbreakableWeapon;
-      bonus2 bAddClass,Class_All,10;
-      bonus3 bAutoSpell,"SA_DISPELL",1,50;
-  - Id: 404374
-    AegisName: Apocalips_H_Card3
-    Name: Awakened Vesper Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Head_Low: true
-      Head_Mid: true
-      Head_Top: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bDex,2;
-      bonus2 bIgnoreMdefClassRate,Class_Boss,30;
-  - Id: 404352
-    AegisName: B_Ygnizem_Card3
-    Name: Awakened General Egnigem Cenia Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Shoes: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus bMaxHPrate,10;
-      bonus bMaxSPrate,10;
-      bonus2 bHPRegenRate,50,10000;
-      bonus2 bSPRegenRate,10,10000;
-  - Id: 304305
-    AegisName: Turtle_General_Card2
-    Name: Turtle General Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus2 bAddClass,Class_All,20;
-      bonus3 bAutoSpell,"SM_MAGNUM",10,30;
-  - Id: 404305
-    AegisName: Turtle_General_Card3
-    Name: Turtle General Card
-    Type: Card
-    Buy: 20
-    Weight: 10
-    Locations:
-      Right_Hand: true
-    Flags:
-      BuyingStore: true
-    Script: |
-      bonus2 bAddClass,Class_All,20;
-      bonus3 bAutoSpell,"SM_MAGNUM",10,30;
   - Id: 120000
     AegisName: Costume_DRAKEAXE
     Name: Costume Drake Axe
@@ -3367,8 +1986,8 @@ Body:
       setlook LOOK_BODY2, Class;
 
   - Id: 90000
-    AegisName: Stamina_Potion
-    Name: Stamina Recovery Potion
+    AegisName: AP_Potion
+    Name: AP Recovery Potion
     Type: Usable
     Buy: 5000
     Weight: 10
@@ -3384,6 +2003,549 @@ Body:
         Ap = #AC_AP;
         dispbottom "AP restored! Current AP: " + #AC_AP + " minutes.";
       }
+
+  - Id: 30000
+    AegisName: Server Coin
+    Name: Server Coin
+    Type: Etc
+    Buy: 100
+    Weight: 10
+
+  - Id: 5967
+    AegisName: FlyingGalapago
+    Name: Flying Galapago
+    Type: Armor
+    Weight: 500
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    View: 1358
+    Script: |
+      set .@bblvl,max(getskilllv("HT_BLITZBEAT"),1);
+      set .@luk,min(readparam(bLuk),120);
+      bonus bAgi,1;
+      bonus3 bAutoSpell,"HT_BLITZBEAT",.@bblvl,50 + (.@luk / 3) + (.@bblvl * 2);
+      bonus2 bSkillAtk,"HT_BLITZBEAT",getskilllv("HT_STEELCROW") * 20;
+
+  - Id: 105967
+    AegisName: Upg_FlyingGalapago
+    Name: Upgraded Flying Galapago
+    Type: Armor
+    Weight: 500
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    View: 1358
+    Script: |
+      set .@bblvl,max(getskilllv("HT_BLITZBEAT"),1);
+      set .@luk,min(readparam(bLuk),120);
+      bonus bAgi,3;
+      bonus3 bAutoSpell,"HT_BLITZBEAT",.@bblvl,50 + (.@luk / 3) + (.@bblvl * 2);
+      bonus2 bSkillAtk,"HT_BLITZBEAT",getskilllv("HT_STEELCROW") * 40;
+
+  - Id: 5628
+    AegisName: F_Pecopeco_Hairband
+    Name: F Pecopeco Hairband
+    Type: Armor
+    Buy: 20
+    Defense: 3
+    Refineable: true
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    View: 314
+    Script: |
+      bonus bSpeedRate,25;
+      bonus bAspdRate,10;
+      bonus bVariableCastrate,-25;
+
+  - Id: 18934
+    AegisName: Fox_Ears_Bell_Ribbon
+    Name: Fox Ears Bell Ribbon
+    Type: Armor
+    Weight: 400
+    Defense: 4
+    Slots: 1
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    Refineable: true
+    View: 1070
+    Script: |
+      bonus bAgi,2;
+      bonus bAspdRate,10;
+      .@r = getrefine();
+      autobonus "{ bonus bCritical,100; bonus bLongAtkRate,5+max(0,getrefine()-6); }",50+(.@r*2),5000,BF_NORMAL,"{ active_transform 1150,5000; }";
+
+  - Id: 5389
+    AegisName: Angel_Spirit
+    Name: Angel Spirit
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    EquipLevelMin: 30
+    View: 394
+    Trade:
+      NoDrop: true
+      NoSell: true
+      NoGuildStorage: true
+    Script: |
+      bonus bStr,2;
+      bonus bHit,15;
+
+  - Id: 5377
+    AegisName: Antique_Pipe
+    Name: Gentleman's Pipe
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 383
+    Trade:
+      NoDrop: true
+      NoSell: true
+      NoGuildStorage: true
+    Script: |
+      bonus2 bSubRace,RC_DemiHuman,2;
+      bonus2 bSubRace,RC_Player_Human,2;
+
+  - Id: 5305
+    AegisName: Pirate_Dagger
+    Name: Pirate Dagger
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    View: 327
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoSell: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
+    Script: |
+      bonus bBaseAtk,5;
+
+  - Id: 18642
+    AegisName: Scissorhand_Model
+    Name: Scissorhand Model
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    EquipLevelMin: 20
+    View: 795
+    Script: |
+      bonus bAgi,1;
+
+  - Id: 18643
+    AegisName: Rockhand_Model
+    Name: Rockhand Model
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    EquipLevelMin: 20
+    View: 796
+    Script: |
+      bonus bStr,1;
+
+  - Id: 18560
+    AegisName: Fafnir_Mask
+    Name: Fafnir Mask
+    Type: Armor
+    Buy: 20
+    Weight: 300
+    Defense: 0
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    View: 180
+    Script: |
+      bonus bCritical,2;
+
+  - Id: 617
+    AegisName: Old_Violet_Box
+    Name: Old Purple Box
+    Type: Usable
+    Buy: 10000
+    Weight: 200
+    Flags:
+      BuyingStore: true
+      Container: true
+    Script: |
+      getgroupitem(IG_VIOLETBOX);
+
+  - Id: 11501
+    AegisName: Light_White_Pot
+    Name: Light White Potion
+    Type: Healing
+    Buy: 1200
+    Weight: 10
+    Script: |
+      itemheal rand(325,405),0;
+
+  - Id: 5468
+    AegisName: Parade_Cap
+    Name: Parade Hat
+    Type: Armor
+    Buy: 20
+    Weight: 800
+    Defense: 3
+    Slots: 1
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    Refineable: true
+    View: 465
+    Script: |
+      bonus bDelayrate,-5;
+      bonus bMdef,2;
+      .@r = getrefine();
+      if (.@r>5)
+         bonus bVariableCastrate,-(.@r-5);
+
+  - Id: 5467
+    AegisName: Helm_Of_Dragoon
+    Name: Helm Of Dragon
+    Type: Armor
+    Buy: 20
+    Weight: 2000
+    Defense: 5
+    Slots: 1
+    Locations:
+      Head_Top: true
+    ArmorLevel: 1
+    EquipLevelMin: 1
+    Refineable: true
+    View: 464
+    Trade:
+      NoDrop: true
+    Script: |
+      bonus bStr,2;
+      bonus bInt,2;
+      bonus bDex,2;
+      .@r = getrefine();
+      if (.@r>=7)
+         bonus2 bExpAddRace,RC_Dragon,3;
+      if (.@r>=9)
+         bonus2 bExpAddRace,RC_Dragon,5;
+      bonus3 bAutoSpell,"NPC_DRAGONFEAR",1,30;
+
+  - Id: 5610
+    AegisName: Ice_Wing_Ear
+    Name: Ice Wing Ear
+    Type: Armor
+    Weight: 100
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    EquipLevelMin: 10
+    View: 584
+    Script: |
+      bonus bLuk,1;
+      bonus3 bAutoSpellWhenHit,"MG_COLDBOLT",5,5;
+
+  - Id: 18577
+    AegisName: 24_Bolt
+    Name: 24 Bolt
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    EquipLevelMin: 10
+    Refineable: true
+    View: 696
+    Script: |
+      bonus2 bMagicAddRace,RC_DemiHuman,3;
+
+  - Id: 118577
+    AegisName: 24_Bolt
+    Name: 24 Bolt
+    Type: Armor
+    Buy: 20
+    Weight: 200
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    EquipLevelMin: 10
+    Refineable: true
+    View: 696
+    Script: |
+      bonus2 bMagicAddRace,RC_DemiHuman,5;
+
+  - Id: 5471
+    AegisName: Hairband_Of_Reginleif
+    Name: Hairband Of Reginleif
+    Type: Armor
+    Buy: 20
+    Weight: 800
+    Defense: 2
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    View: 468
+    Script: |
+      bonus2 bSubEle,Ele_Water,3;
+      bonus2 bSubEle,Ele_Fire,3;
+      bonus2 bSubEle,Ele_Undead,3;
+      bonus2 bSubEle,Ele_Ghost,3;
+
+  - Id: 5470
+    AegisName: Eyes_Of_Darkness
+    Name: Eye Of Darkness
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 1
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    EquipLevelMin: 50
+    View: 467
+    Script: |
+      bonus bDex,1;
+      bonus2 bResEff,Eff_Blind,10000;
+
+  - Id: 5978
+    AegisName: Toy_Syringe
+    Name: Toy Syringe
+    Type: Armor
+    Weight: 100
+    Defense: 0
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    EquipLevelMin: 70
+    View: 842
+    Script: |
+      bonus2 bAddItemHealRate,504,50;
+      bonus2 bAddItemHealRate,11501,50;
+      bonus2 bAddItemHealRate,547,50;
+
+  - Id: 105978
+    AegisName: Upg Toy_Syringe
+    Name: Upg Toy Syringe
+    Type: Armor
+    Weight: 100
+    Defense: 0
+    Locations:
+      Head_Low: true
+    ArmorLevel: 1
+    EquipLevelMin: 70
+    View: 842
+    Script: |
+      bonus2 bAddItemHealRate,504,100;
+      bonus2 bAddItemHealRate,11501,100;
+      bonus2 bAddItemHealRate,547,100;
+
+  - Id: 15015
+    AegisName: Upg_Adv_Suit
+    Name: Upgrade Adventure Suit
+    Type: Armor
+    Buy: 20
+    Weight: 150
+    Defense: 6
+    Slots: 1
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 1
+    Refineable: true
+    Trade:
+      NoDrop: true
+    Script: |
+      bonus bMaxHPrate,3;
+      
+  - Id: 15016
+    AegisName: Upg_Coat
+    Name: Upgrade Coat
+    Type: Armor
+    Buy: 20
+    Weight: 600
+    Defense: 10
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 1
+    Refineable: true
+    Trade:
+      NoDrop: true
+    Script: |
+      bonus bMaxHPrate,3;
+
+  - Id: 15017
+    AegisName: Upg_Saint_Robe
+    Name: Upgrade Saint Robe
+    Type: Armor
+    Buy: 20
+    Weight: 300
+    Defense: 12
+    Slots: 1
+    Jobs:
+      Acolyte: true
+      Alchemist: true
+      Blacksmith: true
+      Merchant: true
+      Monk: true
+      Priest: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 1
+    Refineable: true
+    Trade:
+      NoDrop: true
+    Script: |
+      bonus bMdef,5;
+      bonus bMaxHPrate,3;
+
+  - Id: 15018
+    AegisName: Upg_Tights
+    Name: Upgrade Tights
+    Type: Armor
+    Buy: 20
+    Weight: 150
+    Defense: 12
+    Slots: 1
+    Jobs:
+      Archer: true
+      BardDancer: true
+      Hunter: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 1
+    Refineable: true
+    Trade:
+      NoDrop: true
+    Script: |
+      bonus bDex,1;
+      bonus bMaxHPrate,3;
+
+  - Id: 15019
+    AegisName: Upg_Thief_Cloth
+    Name: Upgrade Thief Cloth
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Defense: 45
+    Slots: 1
+    Jobs:
+      Assassin: true
+      KagerouOboro: true
+      Ninja: true
+      Rogue: true
+      Thief: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 1
+    Refineable: true
+    Trade:
+      NoDrop: true
+    Script: |
+      bonus bAgi,1;
+      bonus bMaxHPrate,3;
+  - Id: 15020
+    AegisName: Upg_Mail
+    Name: Upgrade Mail
+    Type: Armor
+    Buy: 20
+    Weight: 1650
+    Defense: 60
+    Slots: 1
+    Jobs:
+      Alchemist: true
+      Assassin: true
+      Blacksmith: true
+      Crusader: true
+      Knight: true
+      Merchant: true
+      Rogue: true
+      Swordman: true
+      Thief: true
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 1
+    Refineable: true
+    Trade:
+      NoDrop: true
+    Script: |
+      bonus bMaxHPrate,3;
+  - Id: 15021
+    AegisName: Upg_Formal_Dress
+    Name: Upgrade Formal Dress
+    Type: Armor
+    Buy: 20
+    Weight: 150
+    Defense: 45
+    Slots: 1
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Locations:
+      Armor: true
+    ArmorLevel: 1
+    EquipLevelMin: 1
+    Refineable: true
+    Trade:
+      NoDrop: true
+    Script: |
+      bonus bMaxHPrate,3;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Body:
 # THQ Quest Items
 #=============================================================

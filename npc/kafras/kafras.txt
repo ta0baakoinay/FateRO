@@ -697,7 +697,7 @@ brasilis,197,221,4	script	Kafra Employee::kaf_bra	4_F_KAFRA1,{
 	callfunc "F_KafEnd",0,1,"in the city of Brasilis";
 }
 
-maintown,141,116,6	script	Kafra Employee::kaf_maintown	112,{
+maintown,144,117,6	script	Kafra Employee::kaf_maintown	112,{
 	cutin "kafra_06",2;
 	callfunc "F_KafSet";
 	mes "[Kafra Employee]";

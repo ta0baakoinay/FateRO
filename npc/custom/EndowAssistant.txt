@@ -1,0 +1,84 @@
+//===== rAthena Script =======================================
+//= Endow Payment NPC
+//===== Description: =========================================
+//= Charges players for casting endow skills
+//= Regular players: 25,000 zeny
+//= VIP players: 15,000 zeny
+//= Grants 10-minute buff duration
+//============================================================
+
+maintown,136,113,6	script	Endow Master	743,{
+	
+OnTalk:
+	
+	.@cost = (vip_status(1)) ? 15000 : 25000;
+	.@duration = 600000; // 10 minutes in milliseconds
+	
+	mes "[Endow Master]";
+	mes "I can enchant your weapon with elemental power!";
+	mes "^0000FF" + (vip_status(1) ? "VIP" : "Regular") + " Price: " + .@cost + " zeny^000000";
+	mes "Duration: 10 minutes";
+	next;
+	
+	mes "[Endow Master]";
+	mes "Which element would you like?";
+	next;
+	
+	switch(select("Fire (Blaze):Water (Tsunami):Wind (Tornado):Earth (Quake):Cancel")) {
+		case 1:
+			.@skill = SA_FLAMELAUNCHER;
+			.@element$ = "Fire";
+			.@sc = SC_FIREWEAPON; // Use appropriate status for fire
+			break;
+		case 2:
+			.@skill = SA_FROSTWEAPON;
+			.@element$ = "Water";
+			.@sc = SC_WATERWEAPON;
+			break;
+		case 3:
+			.@skill = SA_LIGHTNINGLOADER;
+			.@element$ = "Wind";
+			.@sc = SC_WINDWEAPON;
+			break;
+		case 4:
+			.@skill = SA_SEISMICWEAPON;
+			.@element$ = "Earth";
+			.@sc = SC_EARTHWEAPON;
+			break;
+		case 5:
+			mes "[Endow Master]";
+			mes "Come back when you're ready.";
+			close;
+	}
+	
+	if (Zeny < .@cost) {
+		mes "[Endow Master]";
+		mes "You don't have enough zeny!";
+		mes "You need ^FF0000" + .@cost + " zeny^000000.";
+		close;
+	}
+	
+	mes "[Endow Master]";
+	mes "Enchanting your weapon with " + .@element$ + " element...";
+	
+	Zeny -= .@cost;
+	
+	// Use skill with level 5 and custom duration
+	specialeffect2 EF_ENCHANTARMS;
+	sc_start .@sc, .@duration, 5;
+	
+	next;
+	mes "[Endow Master]";
+	mes "Your weapon is now enchanted!";
+	mes "The effect will last for 10 minutes.";
+	close;
+
+OnInit:
+	while(1){
+		specialeffect EF_LJOSALFAR;
+		showscript("Endower Sage Assistant");
+		sleep(500);
+	}
+	end;
+
+}

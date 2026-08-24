@@ -8,21 +8,19 @@
 //= is the only NPC the player ever sees or clicks.
 //=============================================================
 
-maintown,173,182,4	script	QuestItems	117,{
+maintown,167,182,4	script	Donation Shop#All	117,{
 
 	// Menu labels (what the player sees)
 	setarray .@label$[0],
-		"Headgears",
-		"Wings",
-		"Headgears - (30% Success)",
-		"Headgears - (40% Success)";
+		"Upper Headgears",
+		"Middle Headgears",
+		"Lower Headgears";
 
 	// Matching barter shop NPC names (must exactly match "Name:" in barters.yml)
 	setarray .@shop$[0],
-		"questshop0010001",
-		"questshop0010002",
-		"questshop0010003",
-		"questshop0010004";
+		"Donation Shop#Upper",
+		"Donation Shop#Mid",
+		"Donation Shop#Low";
 
 	.@count = getarraysize(.@label$);
 
