@@ -26382,26 +26382,26 @@ Body:
       bonus bStr,1;
       bonus bAgi,1;
       bonus bLuk,1;
-#  - Id: 5101
-#    AegisName: Takius_Blindfold
-#    Name: Takius's Blindfold
-#    Type: Armor
-#    Buy: 20
-#    Weight: 100
-#    Locations:
-#      Head_Mid: true
-#    ArmorLevel: 1
-#    View: 184
-#  - Id: 5102
-#    AegisName: Round_Eyes
-#    Name: Blank Eyes
-#    Type: Armor
-#    Buy: 20
-#    Weight: 100
-#    Locations:
-#      Head_Mid: true
-#    ArmorLevel: 1
-#    View: 185
+  - Id: 5101
+    AegisName: Takius_Blindfold
+    Name: Takius's Blindfold
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 184
+  - Id: 5102
+    AegisName: Round_Eyes
+    Name: Blank Eyes
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 185
   - Id: 5103
     AegisName: Sunflower_Hairpin
     Name: Sunflower Hairpin
@@ -26425,23 +26425,23 @@ Body:
     Script: |
       bonus bAgi,2;
       bonus bCritical,5;
-#  - Id: 5104
-#    AegisName: Dark_Blindfold
-#    Name: Dark Blinder
-#    Type: Armor
-#    Buy: 20
-#    Weight: 100
-#    Jobs:
-#      All: true
-#      Novice: false
-#      SuperNovice: false
-#    Locations:
-#      Head_Mid: true
-#    ArmorLevel: 1
-#    View: 187
-#    Script: |
-#      bonus2 bResEff,Eff_Blind,10000;
-#      bonus2 bResEff,Eff_Stun,200;
+  - Id: 5104
+    AegisName: Dark_Blindfold
+    Name: Dark Blinder
+    Type: Armor
+    Buy: 20
+    Weight: 100
+    Jobs:
+      All: true
+      Novice: false
+      SuperNovice: false
+    Locations:
+      Head_Mid: true
+    ArmorLevel: 1
+    View: 187
+    Script: |
+      bonus2 bResEff,Eff_Blind,10000;
+      bonus2 bResEff,Eff_Stun,200;
   - Id: 5105
     AegisName: Hat_Of_Cake_
     Name: 2nd Anniversary Hat
