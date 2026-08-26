@@ -2272,8 +2272,8 @@ Body:
       bonus3 bAutoSpellWhenHit,"MG_COLDBOLT",5,5;
 
   - Id: 18577
-    AegisName: 24_Bolt
-    Name: 24 Bolt
+    AegisName: Upg_24_Bolt
+    Name: Upg 24 Bolt
     Type: Armor
     Buy: 20
     Weight: 200

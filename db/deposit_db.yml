@@ -24,13 +24,13 @@ Header:
 
 Body:
   - StorageId: 10
-#    Bound: false
-#    Withdraw: true
-#    Items:
-#    - Item: Phreeoni_Card3
-#      Description: "[Base Atk +2]"
-#      Script: |
-#        bonus bInt,0;
+    Bound: false
+    Withdraw: true
+    Items:
+    - Item: Upg_Adv_Suit
+      Description: "[HP +1%]"
+      Script: |
+        bonus bMaxHP,1;
 #    - Item: Eddga_Card3
 #      Description: "[HP +5%]"
 #      Script: |
