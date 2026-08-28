@@ -24,14 +24,14 @@ function Go; function Disp; function Pick; function Restrict;
 //	Main Menu:
 if (getgroupid() == 0) {
 	menu	"Last Warp ^777777["+lastwarp$+"]^000000",-,
-		" ~ First City - Main Town",MainTown,
+		" ~ Main Town",MainTown,
 		" ~ Towns",Towns,
 		" ~ ^FF0000Fields [For VIP only]^000000",NoAccess,
 		" ~ ^FF0000Dungeons [For VIP only]^000000",NoAccess,
 		" ~ Guild Castles",Castles;
 } else {
 	menu	"Last Warp ^777777["+lastwarp$+"]^000000",-,
-		" ~ First City - Main Town",MainTown,
+		" ~ Main Town",MainTown,
 		" ~ Towns",Towns,
 		" ~ Fields",Fields,
 		" ~ Dungeons",Dungeons,

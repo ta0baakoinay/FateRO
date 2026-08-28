@@ -1,13 +1,13 @@
-maintown,119,128,3	script	Credit Gacha Machine	562,{
+maintown,119,128,3	script	Zeny Gacha Machine	562,{
 function Get_Chance; function Add_Gacha;
 
 if(!.Initialize){
-	.name$ = "[ ^FF5500Credit Gacha Machine^000000 ]";
+	.name$ = "[ ^FF5500Zeny Gacha Machine^000000 ]";
 	.rareannounce = 25;	//0.25%
 	//NAME ,ZENY, POINTNAME ,POINTVAR, PRICE ,COSTITEMID, PRICE				{Item ID, Amount, Chance 1-10000},{Item ID, Amount, Chance 1-10000},{repeat}
 	//NOTE: chance from lowest to highest. 1= 0.01% | 10 = 0.1% | 100 = 1% etc.
-	Add_Gacha("Credit Gacha",0,"","",0,30035,5,
-	120096,1,15,120094,1,15,120093,1,15,120092,1,25,120095,1,300,120097,1,300);
+	Add_Gacha("Zeny Gacha",100000,"","",0,0,0,
+	15015,1,15,15016,1,15,15017,1,15,15018,1,15,15019,1,15,15020,1,15,15021,1,15,2561,1,15,2562,1,15,2563,1,15,2149,1,15,2150,1,15,2151,1,15);
 	.Initialize = 1;
 }
 
@@ -16,7 +16,7 @@ L_Menu:
 	mes "Good day adventurer! I have a very special item for you! Do you want to play our Gachapon ?";
 	next;
 	mes .name$;
-	mes "Welcome to the Credit Gacha Machine! If you would like to play, please select the Gacha you wish to try your luck with!";
+	mes "Welcome to the Zeny Gacha Machine! If you would like to play, please select the Gacha you wish to try your luck with!";
 	.@menu$ = "";
 	while(getd(".gacha_"+(.@n++)+"[0]"))
 		.@menu$ = .@menu$ + "[>] " + getd(".gacha_"+(.@n-1)+"_name$") + ":";
@@ -124,11 +124,31 @@ OnMultiPullGacha:
 	deletearray @multiGachaChances[0];
 	.@totalResults = 0;
 	
+	// Track starting position so we can abort the pull sequence if the player moves
+	getmapxy(.@startMap$, .@startX, .@startY, 0);
+	.@movedAway = 0;
+	
 	// Perform multiple pulls
 	for (.@spin = 0; .@spin < .@spinCount; .@spin++) {
+		// If the player moved since the last pull, stop the remaining pulls
+		getmapxy(.@curMap$, .@curX, .@curY, 0);
+		if (.@curMap$ != .@startMap$ || .@curX != .@startX || .@curY != .@startY) {
+			.@movedAway = 1;
+			message strcharinfo(0), "Pull sequence stopped - you moved! (" + .@spin + "/" + .@spinCount + " completed)";
+			break;
+		}
+		
 		message strcharinfo(0), "Pulling gacha " + (.@spin + 1) + "/" + .@spinCount + "...";
-		specialeffect2 775;
+		
 		sleep2 200; // Small delay between pulls for effect
+		
+		// Re-check position after the delay too, in case the player moved mid-sleep
+		getmapxy(.@curMap$, .@curX, .@curY, 0);
+		if (.@curMap$ != .@startMap$ || .@curX != .@startX || .@curY != .@startY) {
+			.@movedAway = 1;
+			message strcharinfo(0), "Pull sequence stopped - you moved! (" + .@spin + "/" + .@spinCount + " completed)";
+			break;
+		}
 		
 		if (callsub(OnRandomPull, .@gachaType)) {
 			@multiGachaItems[.@totalResults] = @gachaid;
@@ -149,14 +169,19 @@ OnMultiPullGacha:
 				} else {
 					.@color = 0x00FF00; // Green
 				}
-				announce "[ Credit Gacha Machine ] : "+( Sex ? "Mr. ":"Ms. ")+strcharinfo(0)+" have received "+@gachaamt+"x "+getitemname(@gachaid)+" with a chance of [ "+Get_Chance(@gachachance)+" ] when pulling!~",bc_all,.@color;
+				announce "[ Zeny Gacha Machine ] : "+( Sex ? "Mr. ":"Ms. ")+strcharinfo(0)+" have received "+@gachaamt+"x "+getitemname(@gachaid)+" with a chance of [ "+Get_Chance(@gachachance)+" ] when pulling!~",bc_all,.@color;
 			}
 		}
 	}
 	
 	// Display all results
 	mes .name$;
-	mes "^0055FFCongratulations! You pulled " + .@spinCount + " gachas!^000000";
+	if (.@movedAway) {
+		mes "^FF0000You moved and the pull sequence was interrupted!^000000";
+		mes "^0055FFYou completed " + .@totalResults + " out of " + .@spinCount + " gacha pull(s).^000000";
+	} else {
+		mes "^0055FFCongratulations! You pulled " + .@spinCount + " gachas!^000000";
+	}
 	mes "^FFFFFF_^000000";
 	mes "^00AA00Your Results:^000000";
 	
@@ -261,7 +286,7 @@ OnDeductMultiPayment:
 OnPullGacha:
 	.@n = getarg(0);
 	message strcharinfo(0),"Pulling a gacha...";
-	specialeffect2 775;
+	
 	//progressbar "00FF00",1;
 
 	//Check Payment
@@ -270,10 +295,10 @@ OnPullGacha:
 			message strcharinfo(0),"Not Enough Zeny.."; end; }
 	if( atoi(getd(".gacha_"+.@n+"_point$[2]")) > 0 )
 		if(getd(getd(".gacha_"+.@n+"_point$[1]")) < atoi(getd(".gacha_"+.@n+"_point$[2]"))){
-			message strcharinfo(0),"[ Credit Gacha Machine ] - Not Enough "+getd(".gacha_"+.@n+"_point$[0]"); end; }
+			message strcharinfo(0),"[ Zeny Gacha Machine ] - Not Enough "+getd(".gacha_"+.@n+"_point$[0]"); end; }
 	if( getd(".gacha_"+.@n+"_costid[1]") > 0)
 		if(countitem(getd(".gacha_"+.@n+"_costid[0]")) < getd(".gacha_"+.@n+"_costid[1]")){
-			message strcharinfo(0),"[ Credit Gacha Machine ] - You dont have enough Credit"; end; }
+			message strcharinfo(0),"[ Zeny Gacha Machine ] - You dont have enough Credit"; end; }
 	if(!callsub(OnRandomPull,.@n)) end;
 	if(getd(".gacha_"+.@n+"_zeny")) Zeny = Zeny - getd(".gacha_"+.@n+"_zeny");
 	if(atoi(getd(".gacha_"+.@n+"_point$[2]"))) setd getd(".gacha_"+.@n+"_point$[1]"),getd(getd(".gacha_"+.@n+"_point$[1]"))-atoi(getd(".gacha_"+.@n+"_point$[2]"));
@@ -293,7 +318,7 @@ OnPullGacha:
 		} else { // Above 40%
 			.@color = 0x00FF00; // Green
 		}
-		announce "[ Credit Gacha Machine ] : "+( Sex ? "Mr. ":"Ms. ")+strcharinfo(0)+" have received "+@gachaamt+"x "+getitemname(@gachaid)+" with a chance of [ "+Get_Chance(@gachachance)+" ] when pulling!~",bc_all,.@color;
+		announce "[ Zeny Gacha Machine ] : "+( Sex ? "Mr. ":"Ms. ")+strcharinfo(0)+" have received "+@gachaamt+"x "+getitemname(@gachaid)+" with a chance of [ "+Get_Chance(@gachachance)+" ] when pulling!~",bc_all,.@color;
 	}
 	mes "^FFFFFF_^000000";
 	specialeffect2 248;
@@ -390,7 +415,7 @@ OnInit:
 	end;
 
 OnTimer1000:
-	showscript("Credit Gacha Machine");
+	showscript("Zeny Gacha Machine");
 	setnpctimer 0;
 	end;
 }
