@@ -26549,6 +26549,8 @@ static int32 clif_parse(int32 fd)
 	return 0;
 }
 
+void clif_parse_Dummy0316(int32 fd, map_session_data *sd) { return; /* known unhandled retail packet, intentionally ignored */ }
+
 void packetdb_addpacket( uint16 cmd, uint16 length, void (*func)(int32, map_session_data *), ... ){
 	va_list argp;
 	int32 i;

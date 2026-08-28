@@ -1017,7 +1017,7 @@
 	packet(0x0313,-1);
 	packet(0x0314,-1);
 	packet(0x0315,-1);
-	packet(0x0316,-1);
+	packetdb_addpacket(0x0316,-1,clif_parse_Dummy0316,0);
 	packet(0x0317,-1);
 	packet(0x0318,-1);
 	packet(0x0319,-1);
