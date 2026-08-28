@@ -2272,8 +2272,8 @@ Body:
       bonus3 bAutoSpellWhenHit,"MG_COLDBOLT",5,5;
 
   - Id: 18577
-    AegisName: Upg_24_Bolt
-    Name: Upg 24 Bolt
+    AegisName: 24_Bolt
+    Name: 24 Bolt
     Type: Armor
     Buy: 20
     Weight: 200
@@ -2287,8 +2287,8 @@ Body:
       bonus2 bMagicAddRace,RC_DemiHuman,3;
 
   - Id: 118577
-    AegisName: 24_Bolt
-    Name: 24 Bolt
+    AegisName: Upg_24_Bolt
+    Name: Upg 24 Bolt
     Type: Armor
     Buy: 20
     Weight: 200
@@ -2461,8 +2461,8 @@ Body:
     Name: Upgrade Thief Cloth
     Type: Armor
     Buy: 20
-    Weight: 100
-    Defense: 45
+    Weight: 150
+    Defense: 12
     Slots: 1
     Jobs:
       Assassin: true
@@ -2486,7 +2486,7 @@ Body:
     Type: Armor
     Buy: 20
     Weight: 1650
-    Defense: 60
+    Defense: 16
     Slots: 1
     Jobs:
       Alchemist: true
@@ -2513,7 +2513,7 @@ Body:
     Type: Armor
     Buy: 20
     Weight: 150
-    Defense: 45
+    Defense: 10
     Slots: 1
     Jobs:
       All: true

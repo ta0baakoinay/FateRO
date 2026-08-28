@@ -23,7 +23,7 @@ Header:
   Version: 1
 
 Body:
-  - StorageId: 10
+  - StorageId: 11
     Bound: false
     Withdraw: true
     Items:
@@ -31,6 +31,30 @@ Body:
       Description: "[HP +1%]"
       Script: |
         bonus bMaxHP,1;
+    - Item: Upg_Coat
+      Description: "[HP +1%]"
+      Script: |
+        bonus bMaxHP,1;
+    - Item: Upg_Saint_Robe
+      Description: "[HP +1%]"
+      Script: |
+        bonus bMaxHP,1;
+    - Item: Upg_Tights
+      Description: "[HP +1%]"
+      Script: |
+        bonus bMaxHP,1;
+    - Item: Upg_Thief_Cloth
+      Description: "[HP +1%]"
+      Script: |
+        bonus bMaxHP,1;
+    - Item: Upg_Mail
+      Description: "[HP +1%]"
+      Script: |
+        bonus bMaxHP,1;
+    - Item: Upg_Formal_Dress
+      Description: "[HP +1%]"
+      Script: |
+        bonus bMaxHP,1;                       
 #    - Item: Eddga_Card3
 #      Description: "[HP +5%]"
 #      Script: |
