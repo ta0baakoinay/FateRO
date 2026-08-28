@@ -40,9 +40,12 @@ Body:
   - ID: 0
     Name: "Storage"
     Table: storage
-  - ID: 10
+  - ID: 11
     Name: "Card"
     Table: carddeposit
+  - ID: 12
+    Name: "Armor"
+    Table: armordeposit    
 Footer:
   Imports:
     - Path: conf/import/inter_server.yml

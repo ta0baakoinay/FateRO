@@ -23,7 +23,17 @@ Header:
   Version: 1
 
 Body:
+
   - StorageId: 11
+    Bound: false
+    Withdraw: true
+    Items:
+    - Item: Thara_Frog_Card
+      Description: "[HP +1%]"
+      Script: |
+        bonus bMaxHP,1;
+
+  - StorageId: 12
     Bound: false
     Withdraw: true
     Items:
