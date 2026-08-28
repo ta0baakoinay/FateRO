@@ -1,12 +1,12 @@
 function	script	CalcDialogHeight	{
 	.@lines = getarg(0);
-	.@DLG_BASE = 100;	// title bar + button row + padding
-	.@DLG_LINE_H = 10;	// approx px per mes line at default font
-	.@DLG_MIN = 250;	// never go smaller than this
-	.@DLG_MAX = 250;	// page size is capped at 10 owner rows, so a full
+	.@DLG_BASE = 200;	// title bar + button row + padding
+	.@DLG_LINE_H = 26;	// approx px per mes line at default font
+	.@DLG_MIN = 200;	// never go smaller than this
+	.@DLG_MAX = 600;	// page size is capped at 10 owner rows, so a full
 				// page (2+10+1=13 lines) needs 200+13*26=538 - this
 				// cap only exists as a safety net and should never
-				// actually trigger under normal use
+				// actually trigger under normal use (600 gives margin)
 
 	.@h = .@DLG_BASE + (.@lines * .@DLG_LINE_H);
 	if (.@h < .@DLG_MIN) .@h = .@DLG_MIN;
@@ -266,6 +266,10 @@ function	script	ShowItemResultSQL	{
 	if (.@owner_index > 0) {
 		callfunc("DisplayOwnersPaginated", .@owner_index, 10, .@pi);
 	} else {
+		// FIX: pad the "nobody has this" screen with an explicit note
+		// (instead of just 2-3 bare lines) so it doesn't render as a
+		// near-empty box next to the fuller paginated screens.
+		$@dop_preamble$[.@pi] = "^888888No current owners found on the server.^000000"; .@pi++;
 		setdialogalign(DIALOG_ALIGN_CENTER);
 		setdialogsize(500, callfunc("CalcDialogHeight", .@pi + 1));
 		mes $@dop_preamble$[0];
@@ -360,6 +364,8 @@ S_SearchCategory:
 	if (.@owner_index > 0) {
 		callfunc("DisplayOwnersPaginated", .@owner_index, 10, .@pi);
 	} else {
+		// FIX: same padding as ShowItemResultSQL - avoid a near-empty box.
+		$@dop_preamble$[.@pi] = "^888888No current owners found on the server.^000000"; .@pi++;
 		setdialogalign(DIALOG_ALIGN_CENTER);
 		setdialogsize(500, callfunc("CalcDialogHeight", .@pi + 1));
 		mes $@dop_preamble$[0];
@@ -471,9 +477,11 @@ S_SearchByNameOrId:
 	return;
 
 OnInit:
-	setarray .cat_name$[0], "Credit", "Proof of Donation", "Rare MVP Cards", "Gold";
-	setarray .cat_ids$[0], "30035", "7179", "4430,4408,4145", "969";
-	.cat_count = 4;
+	setarray .cat_name$[0], "Fate Coin", "Rare MVP Cards", "Gold";
+	setarray .cat_ids$[0], "30000", "4430,4408,4145", "969";
+	.cat_count = 3;	// FIX: was 4, but only 3 categories are defined above.
+			// The extra slot produced a blank, selectable menu
+			// entry between "Gold" and "Search by Item Name/ID".
 
 	.name_search_ready = false;
 	setarray .@candidates$[0], "item_db", "item_db_re", "item_db2";

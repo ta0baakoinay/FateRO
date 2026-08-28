@@ -204,7 +204,7 @@ maintown,140,132,6	script	Daily Mission Board	857,{
 	mes "I am the Mission Master!";
 	mes "Accepting and completing";
 	mes "a mission will help you";
-	mes "to start in the SphinxRO!";
+	mes "to start in Fate Ragnarok Online MMO!";
 	next;
 	switch(select((.@cnt > 0 ? "Check Mission" : ""),
 		(.@cnt < .mission_limit ? "Take Mission" : ""),

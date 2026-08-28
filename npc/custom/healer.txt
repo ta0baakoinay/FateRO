@@ -149,51 +149,51 @@ while( .@i < @inventorylist_count ){
 
 // Duplicates
 //============================================================
-alberta,25,240,6	duplicate(Healer)	Healer#alb	3527
-aldebaran,135,118,6	duplicate(Healer)	Healer#alde	3527
-amatsu,200,79,6	duplicate(Healer)	Healer#ama	3527
-ayothaya,207,169,6	duplicate(Healer)	Healer#ayo	3527
-comodo,184,158,6	duplicate(Healer)	Healer#com	3527
-einbech,57,36,6	duplicate(Healer)	Healer#einbe	3527
-einbroch,57,202,6	duplicate(Healer)	Healer#einbr	3527
-geffen,115,72,6	duplicate(Healer)	Healer#gef	3527
-gonryun,156,122,6	duplicate(Healer)	Healer#gon	3527
-hugel,89,150,6	duplicate(Healer)	Healer#hug	3527
-izlude,121,150,6	duplicate(Healer)	Healer#izl	3527	//Pre-RE: (125,118)
-jawaii,250,139,6	duplicate(Healer)	Healer#jaw	3527
-lighthalzen,152,100,6	duplicate(Healer)	Healer#lhz	3527
-louyang,226,103,6	duplicate(Healer)	Healer#lou	3527
-manuk,272,144,6	duplicate(Healer)	Healer#man	3527
-mid_camp,203,289,6	duplicate(Healer)	Healer#mid	3527
-moc_ruins,72,164,6	duplicate(Healer)	Healer#moc	3527
-morocc,153,97,6	duplicate(Healer)	Healer#mor	3527
-moscovia,220,191,6	duplicate(Healer)	Healer#mos	3527
+alberta,25,240,5	duplicate(Healer)	Healer#alb	3527
+aldebaran,135,118,5	duplicate(Healer)	Healer#alde	3527
+amatsu,200,79,5	duplicate(Healer)	Healer#ama	3527
+ayothaya,207,169,5	duplicate(Healer)	Healer#ayo	3527
+comodo,184,158,5	duplicate(Healer)	Healer#com	3527
+einbech,57,36,5	duplicate(Healer)	Healer#einbe	3527
+einbroch,57,202,5	duplicate(Healer)	Healer#einbr	3527
+geffen,115,72,5	duplicate(Healer)	Healer#gef	3527
+gonryun,156,122,5	duplicate(Healer)	Healer#gon	3527
+hugel,89,150,5	duplicate(Healer)	Healer#hug	3527
+izlude,121,150,5	duplicate(Healer)	Healer#izl	3527	//Pre-RE: (125,118)
+jawaii,250,139,5	duplicate(Healer)	Healer#jaw	3527
+lighthalzen,152,100,5	duplicate(Healer)	Healer#lhz	3527
+louyang,226,103,5	duplicate(Healer)	Healer#lou	3527
+manuk,272,144,5	duplicate(Healer)	Healer#man	3527
+mid_camp,203,289,5	duplicate(Healer)	Healer#mid	3527
+moc_ruins,72,164,5	duplicate(Healer)	Healer#moc	3527
+morocc,153,97,5	duplicate(Healer)	Healer#mor	3527
+moscovia,220,191,5	duplicate(Healer)	Healer#mos	3527
 niflheim,212,182,5	duplicate(Healer)	Healer#nif	3527
-payon,175,231,6	duplicate(Healer)	Healer#pay	3527
-prontera,150,183,6	duplicate(Healer)	Healer#prt	3527
-maintown,144,113,6	duplicate(Healer)	Healer#roprt	3527
-rachel,125,116,6	duplicate(Healer)	Healer#rac	3527
-splendide,201,153,6	duplicate(Healer)	Healer#spl	3527
-thor_camp,249,74,6	duplicate(Healer)	Healer#thor	3527
+payon,175,231,5	duplicate(Healer)	Healer#pay	3527
+prontera,150,183,5	duplicate(Healer)	Healer#prt	3527
+maintown,144,113,5	duplicate(Healer)	Healer#roprt	3527
+rachel,125,116,5	duplicate(Healer)	Healer#rac	3527
+splendide,201,153,5	duplicate(Healer)	Healer#spl	3527
+thor_camp,249,74,5	duplicate(Healer)	Healer#thor	3527
 umbala,105,148,3	duplicate(Healer)	Healer#umb	3527
-veins,217,121,6	duplicate(Healer)	Healer#ve	3527
-xmas,143,136,6	duplicate(Healer)	Healer#xmas	3527
-yuno,164,45,6	duplicate(Healer)	Healer#yuno	3527
-z_agit,27,184,6	duplicate(Healer)	Healer#187	3527
-ra_temsky,45,138,6	duplicate(Healer)	Healer#idgaf	3527
-1@lhz,145,146,6	duplicate(Healer)	Healer#menagerie	3527
-1@ge_sn,109,47,6	duplicate(Healer)	Healer#malware	3527
-ba_chess,26,35,6	duplicate(Healer)	Healer#juna	3527
-alb_ship,122,103,6	duplicate(Healer)	Healer#ftg	3527
+veins,217,121,5	duplicate(Healer)	Healer#ve	3527
+xmas,143,136,5	duplicate(Healer)	Healer#xmas	3527
+yuno,164,45,5	duplicate(Healer)	Healer#yuno	3527
+z_agit,27,184,5	duplicate(Healer)	Healer#187	3527
+ra_temsky,45,138,5	duplicate(Healer)	Healer#idgaf	3527
+1@lhz,145,146,5	duplicate(Healer)	Healer#menagerie	3527
+1@ge_sn,109,47,5	duplicate(Healer)	Healer#malware	3527
+ba_chess,26,35,5	duplicate(Healer)	Healer#juna	3527
+alb_ship,122,103,5	duplicate(Healer)	Healer#ftg	3527
 
 
 
 // Duplicates (Renewal)
 //============================================================
-brasilis,194,221,6	duplicate(Healer)	Healer#bra	909
-dewata,195,187,6	duplicate(Healer)	Healer#dew	909
-dicastes01,201,194,6	duplicate(Healer)	Healer#dic	909
-ecl_in01,45,60,6	duplicate(Healer)	Healer#ecl	909
-malangdo,132,114,6	duplicate(Healer)	Healer#mal	909
-malaya,227,204,6	duplicate(Healer)	Healer#ma	909
-mora,55,152,6	duplicate(Healer)	Healer#mora	909
+brasilis,194,221,5	duplicate(Healer)	Healer#bra	909
+dewata,195,187,5	duplicate(Healer)	Healer#dew	909
+dicastes01,201,194,5	duplicate(Healer)	Healer#dic	909
+ecl_in01,45,60,5	duplicate(Healer)	Healer#ecl	909
+malangdo,132,114,5	duplicate(Healer)	Healer#mal	909
+malaya,227,204,5	duplicate(Healer)	Healer#ma	909
+mora,55,152,5	duplicate(Healer)	Healer#mora	909
