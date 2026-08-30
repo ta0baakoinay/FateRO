@@ -1,409 +1,548 @@
 function	script	CalcDialogHeight	{
-	.@lines = getarg(0);
-	.@DLG_BASE = 200;	// title bar + button row + padding
-	.@DLG_LINE_H = 26;	// approx px per mes line at default font
-	.@DLG_MIN = 200;	// never go smaller than this
-	.@DLG_MAX = 600;	// page size is capped at 10 owner rows, so a full
-				// page (2+10+1=13 lines) needs 200+13*26=538 - this
-				// cap only exists as a safety net and should never
-				// actually trigger under normal use (600 gives margin)
+		.@lines = getarg(0);
+		.@DLG_BASE = 200;	// title bar + button row + padding
+		.@DLG_LINE_H = 26;	// approx px per mes line at default font
+		.@DLG_MIN = 200;	// never go smaller than this
+		.@DLG_MAX = 750;	// FIX: previous cap of 600 was computed WITHOUT
+					// counting the preamble (item icon/link + Server
+					// Count line) that DisplayOwnersPaginated merges
+					// onto page 1. Real worst case is
+					// preamble_count(2) + 4 + rows(10) = 16 lines
+					// => 200+16*26=616, so 600 was clamping every
+					// full-page result (e.g. Fate Coin) ~16px short.
+					// 750 covers that plus category searches with a
+					// few "item not found" warning lines added to
+					// the preamble, and is still a safety net only -
+					// normal single-item results stay well under it.
 
-	.@h = .@DLG_BASE + (.@lines * .@DLG_LINE_H);
-	if (.@h < .@DLG_MIN) .@h = .@DLG_MIN;
-	if (.@h > .@DLG_MAX) .@h = .@DLG_MAX;
-	return .@h;
-}
-
-function	script	PrintHeader	{
-	.@subtitle$ = getarg(0, "");
-	.@n = 0;
-	if (.@subtitle$ != "") {
-		mes "^0080FF" + .@subtitle$ + "^000000"; .@n++;
-	}
-	return .@n;
-}
-
-function	script	SearchItem	{
-	.@item_id = getarg(0);
-	.@count = 0;
-	.@tmp = 0;
-
-	query_sql("SELECT IFNULL(SUM(amount),0) FROM inventory WHERE nameid="+.@item_id, .@tmp); .@count += .@tmp;
-	query_sql("SELECT IFNULL(SUM(amount),0) FROM cart_inventory WHERE nameid="+.@item_id, .@tmp); .@count += .@tmp;
-	query_sql("SELECT IFNULL(SUM(amount),0) FROM storage WHERE nameid="+.@item_id, .@tmp); .@count += .@tmp;
-	query_sql("SELECT IFNULL(SUM(amount),0) FROM guild_storage WHERE nameid="+.@item_id, .@tmp); .@count += .@tmp;
-
-	// ---- RODEX/MAIL (unclaimed attachments) ----
-	query_sql("SELECT IFNULL(SUM(ma.amount),0) FROM mail_attachments ma WHERE ma.nameid="+.@item_id, .@tmp); .@count += .@tmp;
-
-	if (getiteminfo(.@item_id, ITEMINFO_TYPE) == IT_CARD) {
-		query_sql("SELECT IFNULL(SUM((card0="+.@item_id+")+(card1="+.@item_id+")+(card2="+.@item_id+")+(card3="+.@item_id+")),0) FROM inventory", .@tmp); .@count += .@tmp;
-		query_sql("SELECT IFNULL(SUM((card0="+.@item_id+")+(card1="+.@item_id+")+(card2="+.@item_id+")+(card3="+.@item_id+")),0) FROM cart_inventory", .@tmp); .@count += .@tmp;
-		query_sql("SELECT IFNULL(SUM((card0="+.@item_id+")+(card1="+.@item_id+")+(card2="+.@item_id+")+(card3="+.@item_id+")),0) FROM storage", .@tmp); .@count += .@tmp;
-		query_sql("SELECT IFNULL(SUM((card0="+.@item_id+")+(card1="+.@item_id+")+(card2="+.@item_id+")+(card3="+.@item_id+")),0) FROM guild_storage", .@tmp); .@count += .@tmp;
-		query_sql("SELECT IFNULL(SUM((ma.card0="+.@item_id+")+(ma.card1="+.@item_id+")+(ma.card2="+.@item_id+")+(ma.card3="+.@item_id+")),0) FROM mail_attachments ma", .@tmp); .@count += .@tmp;
+		.@h = .@DLG_BASE + (.@lines * .@DLG_LINE_H);
+		if (.@h < .@DLG_MIN) .@h = .@DLG_MIN;
+		if (.@h > .@DLG_MAX) .@h = .@DLG_MAX;
+		return .@h;
 	}
 
-	return .@count;
-}
-
-function	script	GetCardOwnersSQL	{
-	.@item_id = getarg(0);
-	.@index = getarg(1, 0);
-	.@item_name$ = getitemname(.@item_id);
-	.@is_card = (getiteminfo(.@item_id, ITEMINFO_TYPE) == IT_CARD);
-
-	.@size = query_sql("SELECT c.name, i.amount FROM inventory i INNER JOIN `char` c ON i.char_id = c.char_id WHERE i.nameid="+.@item_id, .@names$, .@amounts);
-	for(.@i = 0; .@i < .@size; .@i++) {
-		$@card_owners$[.@index] = .@names$[.@i];
-		$@card_amounts[.@index] = .@amounts[.@i];
-		$@card_locations$[.@index] = "Inventory";
-		$@card_itemnames$[.@index] = .@item_name$;
-		$@card_itemids[.@index] = .@item_id;
-		.@index++;
-	}
-
-	.@size = query_sql("SELECT c.name, ci.amount FROM cart_inventory ci INNER JOIN `char` c ON ci.char_id = c.char_id WHERE ci.nameid="+.@item_id, .@names$, .@amounts);
-	for(.@i = 0; .@i < .@size; .@i++) {
-		$@card_owners$[.@index] = .@names$[.@i];
-		$@card_amounts[.@index] = .@amounts[.@i];
-		$@card_locations$[.@index] = "Cart";
-		$@card_itemnames$[.@index] = .@item_name$;
-		$@card_itemids[.@index] = .@item_id;
-		.@index++;
-	}
-
-	// FIX: `storage` has exactly ONE row per ACCOUNT (it's shared across
-	// all characters on that account), not one per character. The old
-	// query joined it to every character on the account
-	// (s.account_id = c.account_id with no further restriction), so an
-	// account with N characters produced N duplicate rows, each showing
-	// the FULL storage amount under a different character's name.
-	// Fixed by joining to a single representative character per account
-	// (the account's lowest char_id, so this still works even if that
-	// account's char slot 0 was deleted).
-	.@size = query_sql("SELECT c.name, s.amount FROM storage s INNER JOIN (SELECT account_id, MIN(char_id) AS char_id FROM `char` GROUP BY account_id) mc ON s.account_id = mc.account_id INNER JOIN `char` c ON c.char_id = mc.char_id WHERE s.nameid="+.@item_id, .@names$, .@amounts);
-	for(.@i = 0; .@i < .@size; .@i++) {
-		$@card_owners$[.@index] = .@names$[.@i];
-		$@card_amounts[.@index] = .@amounts[.@i];
-		$@card_locations$[.@index] = "Storage";
-		$@card_itemnames$[.@index] = .@item_name$;
-		$@card_itemids[.@index] = .@item_id;
-		.@index++;
-	}
-
-	.@size = query_sql("SELECT g.name, gs.amount FROM guild_storage gs INNER JOIN guild g ON gs.guild_id = g.guild_id WHERE gs.nameid="+.@item_id, .@names$, .@amounts);
-	for(.@i = 0; .@i < .@size; .@i++) {
-		$@card_owners$[.@index] = .@names$[.@i];
-		$@card_amounts[.@index] = .@amounts[.@i];
-		$@card_locations$[.@index] = "Guild Storage";
-		$@card_itemnames$[.@index] = .@item_name$;
-		$@card_itemids[.@index] = .@item_id;
-		.@index++;
-	}
-
-	.@size = query_sql("SELECT m.dest_name, ma.amount FROM mail_attachments ma INNER JOIN mail m ON ma.id = m.id WHERE ma.nameid="+.@item_id, .@names$, .@amounts);
-	for(.@i = 0; .@i < .@size; .@i++) {
-		$@card_owners$[.@index] = .@names$[.@i];
-		$@card_amounts[.@index] = .@amounts[.@i];
-		$@card_locations$[.@index] = "RODEX (Unclaimed)";
-		$@card_itemnames$[.@index] = .@item_name$;
-		$@card_itemids[.@index] = .@item_id;
-		.@index++;
-	}
-
-	if (.@is_card) {
-		.@size = query_sql("SELECT c.name, (i.card0="+.@item_id+")+(i.card1="+.@item_id+")+(i.card2="+.@item_id+")+(i.card3="+.@item_id+") as total FROM inventory i INNER JOIN `char` c ON i.char_id = c.char_id WHERE i.card0="+.@item_id+" OR i.card1="+.@item_id+" OR i.card2="+.@item_id+" OR i.card3="+.@item_id, .@names$, .@amounts);
-		for(.@i = 0; .@i < .@size; .@i++) {
-			$@card_owners$[.@index] = .@names$[.@i];
-			$@card_amounts[.@index] = .@amounts[.@i];
-			$@card_locations$[.@index] = "Equipped";
-			$@card_itemnames$[.@index] = .@item_name$;
-			$@card_itemids[.@index] = .@item_id;
-			.@index++;
-		}
-
-		.@size = query_sql("SELECT c.name, (ci.card0="+.@item_id+")+(ci.card1="+.@item_id+")+(ci.card2="+.@item_id+")+(ci.card3="+.@item_id+") as total FROM cart_inventory ci INNER JOIN `char` c ON ci.char_id = c.char_id WHERE ci.card0="+.@item_id+" OR ci.card1="+.@item_id+" OR ci.card2="+.@item_id+" OR ci.card3="+.@item_id, .@names$, .@amounts);
-		for(.@i = 0; .@i < .@size; .@i++) {
-			$@card_owners$[.@index] = .@names$[.@i];
-			$@card_amounts[.@index] = .@amounts[.@i];
-			$@card_locations$[.@index] = "Cart (Equipped)";
-			$@card_itemnames$[.@index] = .@item_name$;
-			$@card_itemids[.@index] = .@item_id;
-			.@index++;
-		}
-
-		// Same account-vs-character fix as the plain storage query above.
-		.@size = query_sql("SELECT c.name, (s.card0="+.@item_id+")+(s.card1="+.@item_id+")+(s.card2="+.@item_id+")+(s.card3="+.@item_id+") as total FROM storage s INNER JOIN (SELECT account_id, MIN(char_id) AS char_id FROM `char` GROUP BY account_id) mc ON s.account_id = mc.account_id INNER JOIN `char` c ON c.char_id = mc.char_id WHERE s.card0="+.@item_id+" OR s.card1="+.@item_id+" OR s.card2="+.@item_id+" OR s.card3="+.@item_id, .@names$, .@amounts);
-		for(.@i = 0; .@i < .@size; .@i++) {
-			$@card_owners$[.@index] = .@names$[.@i];
-			$@card_amounts[.@index] = .@amounts[.@i];
-			$@card_locations$[.@index] = "Storage (Equipped)";
-			$@card_itemnames$[.@index] = .@item_name$;
-			$@card_itemids[.@index] = .@item_id;
-			.@index++;
-		}
-
-		.@size = query_sql("SELECT g.name, (gs.card0="+.@item_id+")+(gs.card1="+.@item_id+")+(gs.card2="+.@item_id+")+(gs.card3="+.@item_id+") as total FROM guild_storage gs INNER JOIN guild g ON gs.guild_id = g.guild_id WHERE gs.card0="+.@item_id+" OR gs.card1="+.@item_id+" OR gs.card2="+.@item_id+" OR gs.card3="+.@item_id, .@names$, .@amounts);
-		for(.@i = 0; .@i < .@size; .@i++) {
-			$@card_owners$[.@index] = .@names$[.@i];
-			$@card_amounts[.@index] = .@amounts[.@i];
-			$@card_locations$[.@index] = "Guild Storage (Equipped)";
-			$@card_itemnames$[.@index] = .@item_name$;
-			$@card_itemids[.@index] = .@item_id;
-			.@index++;
-		}
-
-		.@size = query_sql("SELECT m.dest_name, (ma.card0="+.@item_id+")+(ma.card1="+.@item_id+")+(ma.card2="+.@item_id+")+(ma.card3="+.@item_id+") as total FROM mail_attachments ma INNER JOIN mail m ON ma.id = m.id WHERE ma.card0="+.@item_id+" OR ma.card1="+.@item_id+" OR ma.card2="+.@item_id+" OR ma.card3="+.@item_id, .@names$, .@amounts);
-		for(.@i = 0; .@i < .@size; .@i++) {
-			$@card_owners$[.@index] = .@names$[.@i];
-			$@card_amounts[.@index] = .@amounts[.@i];
-			$@card_locations$[.@index] = "RODEX (Unclaimed, Equipped)";
-			$@card_itemnames$[.@index] = .@item_name$;
-			$@card_itemids[.@index] = .@item_id;
-			.@index++;
-		}
-	}
-
-	return .@index;
-}
-
-// Paginated owner display (10 per page by default).
-// Optional preamble (e.g. "Total Count: X") is shown ONLY on page 1,
-// merged onto the same screen as the first page of owner rows - set
-// $@dop_preamble$[] and pass the count as arg 2 before calling.
-//
-// FIX: setdialogalign/setdialogsize are now called BEFORE any mes
-// lines are written for a given screen. The client needs the box
-// dimensions declared up front - calling mes first then resizing
-// mid-buffer is what was causing the odd/undersized dialog boxes.
-function	script	DisplayOwnersPaginated	{
-	.@owner_count = getarg(0);
-	.@page_size = getarg(1, 10);
-	.@preamble_count = getarg(2, 0);
-	.@total_pages = (.@owner_count - 1) / .@page_size + 1;
-	.@page = 0;
-
-	while(1) {
-		.@start = .@page * .@page_size;
-		.@end = .@start + .@page_size;
-		if (.@end > .@owner_count)
-			.@end = .@owner_count;
-		.@rows = .@end - .@start;
-
-		// header(1) + blank(1) + owner rows + nav(1), plus preamble on page 0
-		// (+1 extra blank line on page 0 to separate the title/name line
-		// from the count line(s) that follow it - see FIX NOTE 6)
-		.@page_lines = 2 + .@rows + 1;
-		if (.@page == 0)
-			.@page_lines += .@preamble_count + 1;
-
-		setdialogalign(DIALOG_ALIGN_CENTER);
-		setdialogsize(500, callfunc("CalcDialogHeight", .@page_lines));
-
-		if (.@page == 0 && .@preamble_count > 0) {
-			mes $@dop_preamble$[0];
-			mes " ";
-			for(.@k = 1; .@k < .@preamble_count; .@k++)
-				mes $@dop_preamble$[.@k];
-			mes " ";
-			mes "^888888------------------------------^000000";
-		} else {
-			mes "^0080FFOwners^000000 ( Page " + (.@page + 1) + " / " + .@total_pages + " )";
-		}
-		mes " ";
-
-		for(.@i = .@start; .@i < .@end; .@i++) {
-			mes mesitemicon($@card_itemids[.@i]) + " [^008000" + $@card_amounts[.@i] + "^000000] " + itemlink($@card_itemids[.@i]) + " - ^0000FF" + $@card_owners$[.@i] + "^000000 ^888888(" + $@card_locations$[.@i] + ")^000000";
-		}
-
-		.@nav$ = "";
+	function	script	PrintHeader	{
+		.@subtitle$ = getarg(0, "");
 		.@n = 0;
-		.@opt_next = 0;
-		.@opt_prev = 0;
-		if (.@page < .@total_pages - 1) { .@nav$ += "Next Page:"; .@n++; .@opt_next = .@n; }
-		if (.@page > 0)                 { .@nav$ += "Previous Page:"; .@n++; .@opt_prev = .@n; }
-		.@nav$ += "Close"; .@n++; .@opt_close = .@n;
-
-		next;
-		.@choice = select(.@nav$);
-
-		if (.@choice == .@opt_next) {
-			.@page++;
+		if (.@subtitle$ != "") {
+			mes "^0080FF" + .@subtitle$ + "^000000"; .@n++;
 		}
-		else if (.@choice == .@opt_prev) {
-			.@page--;
-		}
-		else
-			break;
+		return .@n;
 	}
 
-	return;
-}
+	function	script	SearchItem	{
+		.@item_id = getarg(0);
+		.@count = 0;
+		.@tmp = 0;
 
-function	script	ShowItemResultSQL	{
-	.@item_id = getarg(0);
-	.@count = callfunc("SearchItem", .@item_id);
+		query_sql("SELECT IFNULL(SUM(amount),0) FROM inventory WHERE nameid="+.@item_id, .@tmp); .@count += .@tmp;
+		query_sql("SELECT IFNULL(SUM(amount),0) FROM cart_inventory WHERE nameid="+.@item_id, .@tmp); .@count += .@tmp;
+		query_sql("SELECT IFNULL(SUM(amount),0) FROM storage WHERE nameid="+.@item_id, .@tmp); .@count += .@tmp;
+		query_sql("SELECT IFNULL(SUM(amount),0) FROM guild_storage WHERE nameid="+.@item_id, .@tmp); .@count += .@tmp;
 
-	cleararray $@card_owners$[0], "", 1024;
-	cleararray $@card_amounts[0], 0, 1024;
-	cleararray $@card_locations$[0], "", 1024;
-	cleararray $@card_itemnames$[0], "", 1024;
-	cleararray $@card_itemids[0], 0, 1024;
+		// ---- RODEX/MAIL (unclaimed attachments) ----
+		query_sql("SELECT IFNULL(SUM(ma.amount),0) FROM mail_attachments ma WHERE ma.nameid="+.@item_id, .@tmp); .@count += .@tmp;
 
-	.@owner_index = 0;
-	if (.@count > 0)
-		.@owner_index = callfunc("GetCardOwnersSQL", .@item_id, 0);
+		if (getiteminfo(.@item_id, ITEMINFO_TYPE) == IT_CARD) {
+			query_sql("SELECT IFNULL(SUM((card0="+.@item_id+")+(card1="+.@item_id+")+(card2="+.@item_id+")+(card3="+.@item_id+")),0) FROM inventory", .@tmp); .@count += .@tmp;
+			query_sql("SELECT IFNULL(SUM((card0="+.@item_id+")+(card1="+.@item_id+")+(card2="+.@item_id+")+(card3="+.@item_id+")),0) FROM cart_inventory", .@tmp); .@count += .@tmp;
+			query_sql("SELECT IFNULL(SUM((card0="+.@item_id+")+(card1="+.@item_id+")+(card2="+.@item_id+")+(card3="+.@item_id+")),0) FROM storage", .@tmp); .@count += .@tmp;
+			query_sql("SELECT IFNULL(SUM((card0="+.@item_id+")+(card1="+.@item_id+")+(card2="+.@item_id+")+(card3="+.@item_id+")),0) FROM guild_storage", .@tmp); .@count += .@tmp;
+			query_sql("SELECT IFNULL(SUM((ma.card0="+.@item_id+")+(ma.card1="+.@item_id+")+(ma.card2="+.@item_id+")+(ma.card3="+.@item_id+")),0) FROM mail_attachments ma", .@tmp); .@count += .@tmp;
+		}
 
-	.@pi = 0;
-	$@dop_preamble$[.@pi] = mesitemicon(.@item_id) + " " + itemlink(.@item_id); .@pi++;
-	if (.@count > 0) {
-		$@dop_preamble$[.@pi] = "^008000Server Count: " + .@count + "^000000"; .@pi++;
-	} else {
-		$@dop_preamble$[.@pi] = "^FF0000Server Count: 0^000000"; .@pi++;
+		return .@count;
 	}
 
-	if (.@owner_index > 0) {
-		callfunc("DisplayOwnersPaginated", .@owner_index, 10, .@pi);
-	} else {
-		// FIX: pad the "nobody has this" screen with an explicit note
-		// (instead of just 2-3 bare lines) so it doesn't render as a
-		// near-empty box next to the fuller paginated screens.
-		$@dop_preamble$[.@pi] = "^888888No current owners found on the server.^000000"; .@pi++;
-		setdialogalign(DIALOG_ALIGN_CENTER);
-		setdialogsize(500, callfunc("CalcDialogHeight", .@pi + 1));
-		mes $@dop_preamble$[0];
-		mes " ";
-		for(.@j = 1; .@j < .@pi; .@j++)
-			mes $@dop_preamble$[.@j];
-		next;
-	}
-
-	return;
-}
-
-// ----------------- NPC -----------------
-maintown,206,139,4	script	Transparency Checker	510,{
-	while(1) {
-		.@menu$ = "";
-		for(.@i = 0; .@i < .cat_count; .@i++)
-			.@menu$ += .cat_name$[.@i] + ":";
-		.@menu$ += "Search by Item Name/ID:Exit";
-
-		.@sel = select(.@menu$);
-
-		if (.@sel <= .cat_count) {
-			callsub S_SearchCategory, .@sel - 1;
-		}
-		else if (.@sel == .cat_count + 1) {
-			callsub S_SearchByNameOrId;
-		}
-		else {
-			close;
-		}
-	}
-	end;
-
-S_SearchCategory:
-	.@cat_index = getarg(0);
-	.@cat_name$ = .cat_name$[.@cat_index];
-
-	.@raw$ = .cat_ids$[.@cat_index];
-	.@id_count = 0;
-	.@cur$ = "";
-	.@rlen = getstrlen(.@raw$);
-	for (.@p = 0; .@p < .@rlen; .@p++) {
-		.@ch$ = charat(.@raw$, .@p);
-		if (.@ch$ == ",") {
-			.@id_list$[.@id_count] = .@cur$;
-			.@id_count++;
-			.@cur$ = "";
-		} else {
-			.@cur$ += .@ch$;
-		}
-	}
-	.@id_list$[.@id_count] = .@cur$;
-	.@id_count++;
-
-	cleararray $@card_owners$[0], "", 1024;
-	cleararray $@card_amounts[0], 0, 1024;
-	cleararray $@card_locations$[0], "", 1024;
-	cleararray $@card_itemnames$[0], "", 1024;
-	cleararray $@card_itemids[0], 0, 1024;
-
-	.@total = 0;
-	.@owner_index = 0;
-	.@warn_count = 0;
-
-	for(.@j = 0; .@j < .@id_count; .@j++) {
-		.@item_id = atoi(.@id_list$[.@j]);
+	function	script	GetCardOwnersSQL	{
+		.@item_id = getarg(0);
+		.@index = getarg(1, 0);
 		.@item_name$ = getitemname(.@item_id);
+		.@is_card = (getiteminfo(.@item_id, ITEMINFO_TYPE) == IT_CARD);
 
-		if (.@item_name$ == "null" || .@item_name$ == "") {
-			.@warn_text$[.@warn_count] = "^FF0000Warning: Item ID " + .@item_id + " does not exist, skipping.^000000";
-			.@warn_count++;
-			continue;
+		.@size = query_sql("SELECT c.name, i.amount FROM inventory i INNER JOIN `char` c ON i.char_id = c.char_id WHERE i.nameid="+.@item_id, .@names$, .@amounts);
+		for(.@i = 0; .@i < .@size; .@i++) {
+			$@card_owners$[.@index] = .@names$[.@i];
+			$@card_amounts[.@index] = .@amounts[.@i];
+			$@card_locations$[.@index] = "Inventory";
+			$@card_itemnames$[.@index] = .@item_name$;
+			$@card_itemids[.@index] = .@item_id;
+			.@index++;
 		}
 
-		.@item_total = callfunc("SearchItem", .@item_id);
-		.@total += .@item_total;
+		.@size = query_sql("SELECT c.name, ci.amount FROM cart_inventory ci INNER JOIN `char` c ON ci.char_id = c.char_id WHERE ci.nameid="+.@item_id, .@names$, .@amounts);
+		for(.@i = 0; .@i < .@size; .@i++) {
+			$@card_owners$[.@index] = .@names$[.@i];
+			$@card_amounts[.@index] = .@amounts[.@i];
+			$@card_locations$[.@index] = "Cart";
+			$@card_itemnames$[.@index] = .@item_name$;
+			$@card_itemids[.@index] = .@item_id;
+			.@index++;
+		}
 
-		if (.@item_total > 0)
-			.@owner_index = callfunc("GetCardOwnersSQL", .@item_id, .@owner_index);
+		// FIX: `storage` has exactly ONE row per ACCOUNT (it's shared across
+		// all characters on that account), not one per character. The old
+		// query joined it to every character on the account
+		// (s.account_id = c.account_id with no further restriction), so an
+		// account with N characters produced N duplicate rows, each showing
+		// the FULL storage amount under a different character's name.
+		// Fixed by joining to a single representative character per account
+		// (the account's lowest char_id, so this still works even if that
+		// account's char slot 0 was deleted).
+		.@size = query_sql("SELECT c.name, s.amount FROM storage s INNER JOIN (SELECT account_id, MIN(char_id) AS char_id FROM `char` GROUP BY account_id) mc ON s.account_id = mc.account_id INNER JOIN `char` c ON c.char_id = mc.char_id WHERE s.nameid="+.@item_id, .@names$, .@amounts);
+		for(.@i = 0; .@i < .@size; .@i++) {
+			$@card_owners$[.@index] = .@names$[.@i];
+			$@card_amounts[.@index] = .@amounts[.@i];
+			$@card_locations$[.@index] = "Storage";
+			$@card_itemnames$[.@index] = .@item_name$;
+			$@card_itemids[.@index] = .@item_id;
+			.@index++;
+		}
+
+		.@size = query_sql("SELECT g.name, gs.amount FROM guild_storage gs INNER JOIN guild g ON gs.guild_id = g.guild_id WHERE gs.nameid="+.@item_id, .@names$, .@amounts);
+		for(.@i = 0; .@i < .@size; .@i++) {
+			$@card_owners$[.@index] = .@names$[.@i];
+			$@card_amounts[.@index] = .@amounts[.@i];
+			$@card_locations$[.@index] = "Guild Storage";
+			$@card_itemnames$[.@index] = .@item_name$;
+			$@card_itemids[.@index] = .@item_id;
+			.@index++;
+		}
+
+		.@size = query_sql("SELECT m.dest_name, ma.amount FROM mail_attachments ma INNER JOIN mail m ON ma.id = m.id WHERE ma.nameid="+.@item_id, .@names$, .@amounts);
+		for(.@i = 0; .@i < .@size; .@i++) {
+			$@card_owners$[.@index] = .@names$[.@i];
+			$@card_amounts[.@index] = .@amounts[.@i];
+			$@card_locations$[.@index] = "RODEX (Unclaimed)";
+			$@card_itemnames$[.@index] = .@item_name$;
+			$@card_itemids[.@index] = .@item_id;
+			.@index++;
+		}
+
+		if (.@is_card) {
+			.@size = query_sql("SELECT c.name, (i.card0="+.@item_id+")+(i.card1="+.@item_id+")+(i.card2="+.@item_id+")+(i.card3="+.@item_id+") as total FROM inventory i INNER JOIN `char` c ON i.char_id = c.char_id WHERE i.card0="+.@item_id+" OR i.card1="+.@item_id+" OR i.card2="+.@item_id+" OR i.card3="+.@item_id, .@names$, .@amounts);
+			for(.@i = 0; .@i < .@size; .@i++) {
+				$@card_owners$[.@index] = .@names$[.@i];
+				$@card_amounts[.@index] = .@amounts[.@i];
+				$@card_locations$[.@index] = "Equipped";
+				$@card_itemnames$[.@index] = .@item_name$;
+				$@card_itemids[.@index] = .@item_id;
+				.@index++;
+			}
+
+			.@size = query_sql("SELECT c.name, (ci.card0="+.@item_id+")+(ci.card1="+.@item_id+")+(ci.card2="+.@item_id+")+(ci.card3="+.@item_id+") as total FROM cart_inventory ci INNER JOIN `char` c ON ci.char_id = c.char_id WHERE ci.card0="+.@item_id+" OR ci.card1="+.@item_id+" OR ci.card2="+.@item_id+" OR ci.card3="+.@item_id, .@names$, .@amounts);
+			for(.@i = 0; .@i < .@size; .@i++) {
+				$@card_owners$[.@index] = .@names$[.@i];
+				$@card_amounts[.@index] = .@amounts[.@i];
+				$@card_locations$[.@index] = "Cart (Equipped)";
+				$@card_itemnames$[.@index] = .@item_name$;
+				$@card_itemids[.@index] = .@item_id;
+				.@index++;
+			}
+
+			// Same account-vs-character fix as the plain storage query above.
+			.@size = query_sql("SELECT c.name, (s.card0="+.@item_id+")+(s.card1="+.@item_id+")+(s.card2="+.@item_id+")+(s.card3="+.@item_id+") as total FROM storage s INNER JOIN (SELECT account_id, MIN(char_id) AS char_id FROM `char` GROUP BY account_id) mc ON s.account_id = mc.account_id INNER JOIN `char` c ON c.char_id = mc.char_id WHERE s.card0="+.@item_id+" OR s.card1="+.@item_id+" OR s.card2="+.@item_id+" OR s.card3="+.@item_id, .@names$, .@amounts);
+			for(.@i = 0; .@i < .@size; .@i++) {
+				$@card_owners$[.@index] = .@names$[.@i];
+				$@card_amounts[.@index] = .@amounts[.@i];
+				$@card_locations$[.@index] = "Storage (Equipped)";
+				$@card_itemnames$[.@index] = .@item_name$;
+				$@card_itemids[.@index] = .@item_id;
+				.@index++;
+			}
+
+			.@size = query_sql("SELECT g.name, (gs.card0="+.@item_id+")+(gs.card1="+.@item_id+")+(gs.card2="+.@item_id+")+(gs.card3="+.@item_id+") as total FROM guild_storage gs INNER JOIN guild g ON gs.guild_id = g.guild_id WHERE gs.card0="+.@item_id+" OR gs.card1="+.@item_id+" OR gs.card2="+.@item_id+" OR gs.card3="+.@item_id, .@names$, .@amounts);
+			for(.@i = 0; .@i < .@size; .@i++) {
+				$@card_owners$[.@index] = .@names$[.@i];
+				$@card_amounts[.@index] = .@amounts[.@i];
+				$@card_locations$[.@index] = "Guild Storage (Equipped)";
+				$@card_itemnames$[.@index] = .@item_name$;
+				$@card_itemids[.@index] = .@item_id;
+				.@index++;
+			}
+
+			.@size = query_sql("SELECT m.dest_name, (ma.card0="+.@item_id+")+(ma.card1="+.@item_id+")+(ma.card2="+.@item_id+")+(ma.card3="+.@item_id+") as total FROM mail_attachments ma INNER JOIN mail m ON ma.id = m.id WHERE ma.card0="+.@item_id+" OR ma.card1="+.@item_id+" OR ma.card2="+.@item_id+" OR ma.card3="+.@item_id, .@names$, .@amounts);
+			for(.@i = 0; .@i < .@size; .@i++) {
+				$@card_owners$[.@index] = .@names$[.@i];
+				$@card_amounts[.@index] = .@amounts[.@i];
+				$@card_locations$[.@index] = "RODEX (Unclaimed, Equipped)";
+				$@card_itemnames$[.@index] = .@item_name$;
+				$@card_itemids[.@index] = .@item_id;
+				.@index++;
+			}
+		}
+
+		return .@index;
 	}
 
-	// Preamble merged onto page 1 with the owner list: category name,
-	// any "item not found" warnings, then the total count.
-	.@pi = 0;
-	$@dop_preamble$[.@pi] = "^0080FF" + .@cat_name$ + "^000000"; .@pi++;
-	for(.@j = 0; .@j < .@warn_count; .@j++) {
-		$@dop_preamble$[.@pi] = .@warn_text$[.@j]; .@pi++;
-	}
-	$@dop_preamble$[.@pi] = "^008000Total Count: " + .@total + "^000000"; .@pi++;
+	// Paginated owner display (10 per page by default).
+	// Optional preamble (e.g. "Total Count: X") is shown ONLY on page 1,
+	// merged onto the same screen as the first page of owner rows - set
+	// $@dop_preamble$[] and pass the count as arg 2 before calling.
+	//
+	// setdialogalign/setdialogsize are ALWAYS called BEFORE any mes lines
+	// are written for a given screen, on every page (including page 1,
+	// where owners are actually found) - the client needs the box
+	// dimensions declared up front, so this is done first on every loop
+	// iteration below rather than only in the "no owners" fallback path.
+	function	script	DisplayOwnersPaginated	{
+		.@owner_count = getarg(0);
+		.@page_size = getarg(1, 10);
+		.@preamble_count = getarg(2, 0);
+		.@total_pages = (.@owner_count - 1) / .@page_size + 1;
+		.@page = 0;
 
-	if (.@owner_index > 0) {
-		callfunc("DisplayOwnersPaginated", .@owner_index, 10, .@pi);
-	} else {
-		// FIX: same padding as ShowItemResultSQL - avoid a near-empty box.
-		$@dop_preamble$[.@pi] = "^888888No current owners found on the server.^000000"; .@pi++;
-		setdialogalign(DIALOG_ALIGN_CENTER);
-		setdialogsize(500, callfunc("CalcDialogHeight", .@pi + 1));
-		mes $@dop_preamble$[0];
-		mes " ";
-		for(.@j = 1; .@j < .@pi; .@j++)
-			mes $@dop_preamble$[.@j];
-		next;
-	}
+		while(1) {
+			.@start = .@page * .@page_size;
+			.@end = .@start + .@page_size;
+			if (.@end > .@owner_count)
+				.@end = .@owner_count;
+			.@rows = .@end - .@start;
 
-	return;
+			// header(1) + blank(1) + owner rows + nav(1), plus preamble on page 0
+			// (+1 extra blank line on page 0 to separate the title/name line
+			// from the count line(s) that follow it - see FIX NOTE 6)
+			.@page_lines = 2 + .@rows + 1;
+			if (.@page == 0)
+				.@page_lines += .@preamble_count + 1;
 
-S_SearchByNameOrId:
-	setdialogalign(DIALOG_ALIGN_CENTER);
-	setdialogsize(500, callfunc("CalcDialogHeight", 2));
-	mes " ";
-	mes "Enter an Item ID, or part of an item name:";
-	next;
-	input .@search$;
+			// -- setdialogsize is called here, first, on EVERY page --
+			clear;
+			setdialogalign(DIALOG_ALIGN_CENTER);
+			setdialogsize(500, callfunc("CalcDialogHeight", .@page_lines));
 
-	if (.@search$ == "") {
-		close2;
+			if (.@page == 0 && .@preamble_count > 0) {
+				mes $@dop_preamble$[0];
+				mes " ";
+				for(.@k = 1; .@k < .@preamble_count; .@k++)
+					mes $@dop_preamble$[.@k];
+				mes " ";
+				mes "^888888------------------------------^000000";
+			} else {
+				mes "^0080FFOwners^000000 ( Page " + (.@page + 1) + " / " + .@total_pages + " )";
+			}
+			mes " ";
+
+			for(.@i = .@start; .@i < .@end; .@i++) {
+				mes mesitemicon($@card_itemids[.@i]) + " [^008000" + $@card_amounts[.@i] + "^000000] " + itemlink($@card_itemids[.@i]) + " - ^0000FF" + $@card_owners$[.@i] + "^000000 ^888888(" + $@card_locations$[.@i] + ")^000000";
+			}
+
+			.@nav$ = "";
+			.@n = 0;
+			.@opt_next = 0;
+			.@opt_prev = 0;
+			if (.@page < .@total_pages - 1) { .@nav$ += "Next Page:"; .@n++; .@opt_next = .@n; }
+			if (.@page > 0)                 { .@nav$ += "Previous Page:"; .@n++; .@opt_prev = .@n; }
+			.@nav$ += "Close"; .@n++; .@opt_close = .@n;
+
+			next;
+			.@choice = select(.@nav$);
+
+			if (.@choice == .@opt_next) {
+				.@page++;
+			}
+			else if (.@choice == .@opt_prev) {
+				.@page--;
+			}
+			else
+				break;
+		}
+
 		return;
 	}
 
-	.@is_id = true;
-	.@len = getstrlen(.@search$);
-	for(.@k = 0; .@k < .@len; .@k++) {
-		.@c$ = charat(.@search$, .@k);
-		if (.@c$!="0" && .@c$!="1" && .@c$!="2" && .@c$!="3" && .@c$!="4" && .@c$!="5" && .@c$!="6" && .@c$!="7" && .@c$!="8" && .@c$!="9") {
-			.@is_id = false;
-			break;
+	// Paginated Zeny ranking display (10 per page by default).
+	// $@zeny_names$[] / $@zeny_amounts[] must be populated before calling.
+	// Same rule as above: setdialogsize is called first, before any mes.
+	function	script	FormatNumber	{
+		.@num = getarg(0);
+		.@neg = false;
+		if (.@num < 0) {
+			.@neg = true;
+			.@num = .@num * -1;
 		}
+		.@str$ = .@num + "";
+		.@len = getstrlen(.@str$);
+		.@out$ = "";
+		.@cnt = 0;
+		for(.@i = .@len - 1; .@i >= 0; .@i--) {
+			.@out$ = charat(.@str$, .@i) + .@out$;
+			.@cnt++;
+			if (.@cnt % 3 == 0 && .@i > 0)
+				.@out$ = "," + .@out$;
+		}
+		if (.@neg)
+			.@out$ = "-" + .@out$;
+		return .@out$;
 	}
 
-	if (.@is_id) {
+	function	script	DisplayZenyRankingPaginated	{
+		.@total = getarg(0);
+		.@page_size = getarg(1, 10);
+		.@total_pages = (.@total - 1) / .@page_size + 1;
+		.@page = 0;
+
+		while(1) {
+			.@start = .@page * .@page_size;
+			.@end = .@start + .@page_size;
+			if (.@end > .@total)
+				.@end = .@total;
+			.@rows = .@end - .@start;
+
+			.@page_lines = 2 + .@rows + 1;
+
+			clear;
+			setdialogalign(DIALOG_ALIGN_CENTER);
+			setdialogsize(500, callfunc("CalcDialogHeight", .@page_lines));
+
+			mes "^0080FFZeny Ranking^000000 ( Page " + (.@page + 1) + " / " + .@total_pages + " )";
+			mes " ";
+
+			for(.@i = .@start; .@i < .@end; .@i++) {
+				mes "^888888#" + (.@i + 1) + "^000000 ^0000FF" + $@zeny_names$[.@i] + "^000000 - ^008000" + callfunc("FormatNumber", $@zeny_amounts[.@i]) + "z^000000";
+			}
+
+			.@nav$ = "";
+			.@n = 0;
+			.@opt_next = 0;
+			.@opt_prev = 0;
+			if (.@page < .@total_pages - 1) { .@nav$ += "Next Page:"; .@n++; .@opt_next = .@n; }
+			if (.@page > 0)                 { .@nav$ += "Previous Page:"; .@n++; .@opt_prev = .@n; }
+			.@nav$ += "Close"; .@n++; .@opt_close = .@n;
+
+			next;
+			.@choice = select(.@nav$);
+
+			if (.@choice == .@opt_next) {
+				.@page++;
+			}
+			else if (.@choice == .@opt_prev) {
+				.@page--;
+			}
+			else
+				break;
+		}
+
+		return;
+	}
+
+	function	script	ShowZenyRanking	{
+		.@limit = getarg(0, 50); // top 50 richest characters
+
+		.@size = query_sql("SELECT name, zeny FROM `char` WHERE zeny > 0 ORDER BY zeny DESC LIMIT "+.@limit, $@zeny_names$, $@zeny_amounts);
+
+		if (.@size == 0) {
+			clear;
+			setdialogalign(DIALOG_ALIGN_CENTER);
+			setdialogsize(500, callfunc("CalcDialogHeight", 2));
+			mes " ";
+			mes "^888888No zeny data found.^000000";
+			next;
+			close2;
+			return;
+		}
+
+		callfunc("DisplayZenyRankingPaginated", .@size, 10);
+		return;
+	}
+
+	function	script	ShowItemResultSQL	{
+		.@item_id = getarg(0);
+		.@count = callfunc("SearchItem", .@item_id);
+
+		cleararray $@card_owners$[0], "", 1024;
+		cleararray $@card_amounts[0], 0, 1024;
+		cleararray $@card_locations$[0], "", 1024;
+		cleararray $@card_itemnames$[0], "", 1024;
+		cleararray $@card_itemids[0], 0, 1024;
+
+		.@owner_index = 0;
+		if (.@count > 0)
+			.@owner_index = callfunc("GetCardOwnersSQL", .@item_id, 0);
+
+		.@pi = 0;
+		$@dop_preamble$[.@pi] = mesitemicon(.@item_id) + " " + itemlink(.@item_id); .@pi++;
+		if (.@count > 0) {
+			$@dop_preamble$[.@pi] = "^008000Server Count: " + .@count + "^000000"; .@pi++;
+		} else {
+			$@dop_preamble$[.@pi] = "^FF0000Server Count: 0^000000"; .@pi++;
+		}
+
+		if (.@owner_index > 0) {
+			callfunc("DisplayOwnersPaginated", .@owner_index, 10, .@pi);
+		} else {
+			// pad the "nobody has this" screen with an explicit note
+			// (instead of just 2-3 bare lines) so it doesn't render as a
+			// near-empty box next to the fuller paginated screens.
+			$@dop_preamble$[.@pi] = "^888888No current owners found on the server.^000000"; .@pi++;
+			clear;
+			setdialogalign(DIALOG_ALIGN_CENTER);
+			setdialogsize(500, callfunc("CalcDialogHeight", .@pi + 1));
+			mes $@dop_preamble$[0];
+			mes " ";
+			for(.@j = 1; .@j < .@pi; .@j++)
+				mes $@dop_preamble$[.@j];
+			next;
+		}
+
+		return;
+	}
+
+	// ----------------- NPC -----------------
+	maintown,206,139,4	script	Transparency Checker	510,{
+		// FIX (root cause): `clear` requires a mes to already be active in
+		// this session, or the server logs "buildin_clear: There is no mes
+		// active" and the call is a no-op - which is exactly why the FIRST
+		// search after opening this NPC rendered at classic/default size
+		// while every search after that (in the same session) sized fine:
+		// the top menu below used select() with no mes ever shown before
+		// it, so the first clear() inside a result screen always failed.
+		// Priming with a mes here (same pattern the working Music Box NPC
+		// uses before its own select()) means a mes is already active by
+		// the time the first search runs, so clear() succeeds every time,
+		// not just from the second search onward.
+		setdialogalign(DIALOG_ALIGN_CENTER);
+		setdialogsize(500, 300);
+		mes .npcname$;
+		mes "Select a category, or search by Item ID / view the Zeny Ranking.";
+		while(1) {
+			.@menu$ = "";
+			for(.@i = 0; .@i < .cat_count; .@i++)
+				.@menu$ += .cat_name$[.@i] + ":";
+			.@menu$ += "Search by Item ID:Zeny Ranking:Exit";
+
+			.@sel = select(.@menu$);
+
+			if (.@sel <= .cat_count) {
+				callsub S_SearchCategory, .@sel - 1;
+			}
+			else if (.@sel == .cat_count + 1) {
+				callsub S_SearchByItemID;
+			}
+			else if (.@sel == .cat_count + 2) {
+				callfunc("ShowZenyRanking");
+			}
+			else {
+				close;
+			}
+		}
+		end;
+
+	S_SearchCategory:
+		.@cat_index = getarg(0);
+		.@cat_name$ = .cat_name$[.@cat_index];
+
+		.@raw$ = .cat_ids$[.@cat_index];
+		.@id_count = 0;
+		.@cur$ = "";
+		.@rlen = getstrlen(.@raw$);
+		for (.@p = 0; .@p < .@rlen; .@p++) {
+			.@ch$ = charat(.@raw$, .@p);
+			if (.@ch$ == ",") {
+				.@id_list$[.@id_count] = .@cur$;
+				.@id_count++;
+				.@cur$ = "";
+			} else {
+				.@cur$ += .@ch$;
+			}
+		}
+		.@id_list$[.@id_count] = .@cur$;
+		.@id_count++;
+
+		cleararray $@card_owners$[0], "", 1024;
+		cleararray $@card_amounts[0], 0, 1024;
+		cleararray $@card_locations$[0], "", 1024;
+		cleararray $@card_itemnames$[0], "", 1024;
+		cleararray $@card_itemids[0], 0, 1024;
+
+		.@total = 0;
+		.@owner_index = 0;
+		.@warn_count = 0;
+
+		for(.@j = 0; .@j < .@id_count; .@j++) {
+			.@item_id = atoi(.@id_list$[.@j]);
+			.@item_name$ = getitemname(.@item_id);
+
+			if (.@item_name$ == "null" || .@item_name$ == "") {
+				.@warn_text$[.@warn_count] = "^FF0000Warning: Item ID " + .@item_id + " does not exist, skipping.^000000";
+				.@warn_count++;
+				continue;
+			}
+
+			.@item_total = callfunc("SearchItem", .@item_id);
+			.@total += .@item_total;
+
+			if (.@item_total > 0)
+				.@owner_index = callfunc("GetCardOwnersSQL", .@item_id, .@owner_index);
+		}
+
+		// Preamble merged onto page 1 with the owner list: category name,
+		// any "item not found" warnings, then the total count.
+		.@pi = 0;
+		$@dop_preamble$[.@pi] = "^0080FF" + .@cat_name$ + "^000000"; .@pi++;
+		for(.@j = 0; .@j < .@warn_count; .@j++) {
+			$@dop_preamble$[.@pi] = .@warn_text$[.@j]; .@pi++;
+		}
+		$@dop_preamble$[.@pi] = "^008000Total Count: " + .@total + "^000000"; .@pi++;
+
+		if (.@owner_index > 0) {
+			callfunc("DisplayOwnersPaginated", .@owner_index, 10, .@pi);
+		} else {
+			// same padding as ShowItemResultSQL - avoid a near-empty box.
+			$@dop_preamble$[.@pi] = "^888888No current owners found on the server.^000000"; .@pi++;
+			clear;
+			setdialogalign(DIALOG_ALIGN_CENTER);
+			setdialogsize(500, callfunc("CalcDialogHeight", .@pi + 1));
+			mes $@dop_preamble$[0];
+			mes " ";
+			for(.@j = 1; .@j < .@pi; .@j++)
+				mes $@dop_preamble$[.@j];
+			next;
+		}
+
+		return;
+
+	// Item ID only - free-text name searching has been removed. Enter a
+	// numeric Item ID and the item's owners are looked up directly.
+	S_SearchByItemID:
+		clear;
+		setdialogalign(DIALOG_ALIGN_CENTER);
+		setdialogsize(500, callfunc("CalcDialogHeight", 2));
+		mes " ";
+		mes "Enter an Item ID:";
+		next;
+		input .@search$;
+
+		if (.@search$ == "") {
+			close2;
+			return;
+		}
+
+		.@is_id = true;
+		.@len = getstrlen(.@search$);
+		for(.@k = 0; .@k < .@len; .@k++) {
+			.@c$ = charat(.@search$, .@k);
+			if (.@c$!="0" && .@c$!="1" && .@c$!="2" && .@c$!="3" && .@c$!="4" && .@c$!="5" && .@c$!="6" && .@c$!="7" && .@c$!="8" && .@c$!="9") {
+				.@is_id = false;
+				break;
+			}
+		}
+
+		if (!.@is_id) {
+			clear;
+			setdialogalign(DIALOG_ALIGN_CENTER);
+			setdialogsize(500, callfunc("CalcDialogHeight", 2));
+			mes " ";
+			mes "^FF0000Error: Please enter a numeric Item ID only.^000000";
+			next;
+			close2;
+			return;
+		}
+
 		.@item_id = atoi(.@search$);
 		.@item_name$ = getitemname(.@item_id);
 		if (.@item_name$ == "null" || .@item_name$ == "") {
+			clear;
 			setdialogalign(DIALOG_ALIGN_CENTER);
 			setdialogsize(500, callfunc("CalcDialogHeight", 2));
 			mes " ";
@@ -412,94 +551,25 @@ S_SearchByNameOrId:
 			close2;
 			return;
 		}
+
 		callfunc("ShowItemResultSQL", .@item_id);
 		return;
+
+	OnInit:
+		.npcname$ = "[^FF0000 " + strnpcinfo(1) + " ^000000]";
+
+		setarray .cat_name$[0], "Fate Coin", "Rare MVP Cards", "Gold";
+		setarray .cat_ids$[0], "30000", "4430,4408,4145", "969";
+		.cat_count = 3;	// only 3 categories are defined above - keep this in
+				// sync with the arrays or a blank, selectable menu
+				// entry appears between "Gold" and "Search by Item ID".
+
+		initnpctimer;
+		end;
+
+	OnTimer500:
+		specialeffect EF_LJOSALFAR;
+		showscript "Transparency Checker";
+		initnpctimer;
+		end;
 	}
-
-	if (!.name_search_ready) {
-		setdialogalign(DIALOG_ALIGN_CENTER);
-		setdialogsize(500, callfunc("CalcDialogHeight", 3));
-		mes " ";
-		mes "^FF0000Name search is currently unavailable on this server (no item database table found).^000000";
-		mes "Please search using the numeric Item ID instead.";
-		next;
-		close2;
-		return;
-	}
-
-	// FIX: partial-name search now behaves like @ii / @iteminfo -
-	// an exact name match (if any) is bubbled to the top, then the
-	// remaining results are sorted by closeness (shortest name
-	// first, since a shorter name containing the search text is a
-	// tighter match than a long one), capped at the 5 closest hits.
-	.@safe$ = escape_sql(.@search$);
-	.@match_count = query_sql(
-		"SELECT id, name_english FROM "+.item_table$+" "+
-		"WHERE name_english LIKE '%"+.@safe$+"%' "+
-		"ORDER BY (LOWER(name_english) = LOWER('"+.@safe$+"')) DESC, LENGTH(name_english) ASC "+
-		"LIMIT 5",
-		.@match_ids, .@match_names$
-	);
-
-	if (.@match_count == 0) {
-		setdialogalign(DIALOG_ALIGN_CENTER);
-		setdialogsize(500, callfunc("CalcDialogHeight", 2));
-		mes " ";
-		mes "^FF0000No items found matching \""+.@search$+"\".^000000";
-		next;
-		close2;
-		return;
-	}
-
-	.@lines = 1 + 1 + .@match_count + 1 + 1; // header + blank + rows + blank + note
-	setdialogalign(DIALOG_ALIGN_CENTER);
-	setdialogsize(500, callfunc("CalcDialogHeight", .@lines));
-	callfunc("PrintHeader", "Found " + .@match_count + " matching item(s):");
-	mes " ";
-	for(.@i = 0; .@i < .@match_count; .@i++) {
-		mes mesitemicon(.@match_ids[.@i]) + " " + itemlink(.@match_ids[.@i]) + " ^888888(ID: " + .@match_ids[.@i] + ")^000000";
-	}
-	mes " ";
-	mes "^888888Select the item on the next screen.^000000";
-	next;
-
-	.@menu$ = "";
-	for(.@i = 0; .@i < .@match_count; .@i++)
-		.@menu$ += .@match_names$[.@i] + " (" + .@match_ids[.@i] + "):";
-	.@menu$ += "Cancel";
-
-	.@pick = select(.@menu$);
-	if (.@pick > .@match_count) {
-		return;
-	}
-
-	callfunc("ShowItemResultSQL", .@match_ids[.@pick - 1]);
-	return;
-
-OnInit:
-	setarray .cat_name$[0], "Fate Coin", "Rare MVP Cards", "Gold";
-	setarray .cat_ids$[0], "30000", "4430,4408,4145", "969";
-	.cat_count = 3;	// FIX: was 4, but only 3 categories are defined above.
-			// The extra slot produced a blank, selectable menu
-			// entry between "Gold" and "Search by Item Name/ID".
-
-	.name_search_ready = false;
-	setarray .@candidates$[0], "item_db", "item_db_re", "item_db2";
-	for(.@i = 0; .@i < 3; .@i++) {
-		query_sql("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = '"+.@candidates$[.@i]+"'", .@exists);
-		if (.@exists > 0) {
-			.item_table$ = .@candidates$[.@i];
-			.name_search_ready = true;
-			break;
-		}
-	}
-
-	initnpctimer;
-	end;
-
-OnTimer500:
-	specialeffect EF_LJOSALFAR;
-	showscript "Transparency Checker";
-	initnpctimer;
-	end;
-}
