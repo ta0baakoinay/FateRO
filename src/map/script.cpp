@@ -13926,6 +13926,17 @@ BUILDIN_FUNC(isloggedin)
 	return SCRIPT_CMD_SUCCESS;
 }
 
+BUILDIN_FUNC(issitting)
+{
+    TBL_PC *sd;
+    if (!script_charid2sd(2, sd))
+        return SCRIPT_CMD_FAILURE;
+    if(pc_issit(sd))
+    script_pushint(st, 1);
+    else
+    script_pushint(st, 0);
+    return SCRIPT_CMD_SUCCESS;
+}
 
 /*==========================================
  *

@@ -1,0 +1,176 @@
+//===== rAthena Script =======================================
+//= Music Box (Updated to Show Available Rewards)
+//===== By: IceBear (Modified)
+//============================================================
+maintown,171,125,3	script	Music Box#music	20779,{
+
+function F_StartListen;
+function F_StartRewards;
+function F_RandomBGM;
+disable_items;
+disable_command;
+
+mes .npcname$;
+mes "Do you want to ^0000FFlisten, chill^000000 and gain some ^0000FFrewards^000000?";
+mes "You can listen : ^008000once daily^000000";
+mes "You need to listen for at least : ^A020F060 minute(s)^000000";
+
+switch(select(
+"^1755b3 ^000000 ^0000FFStart Listening^000000",
+"^1755b3 ^000000 ^0000FFInformation^000000",
+"^1755b3 ^000000 ^008000Special Rewards List^000000",
+"^1755b3 ^000000 ^FF0000Random Rewards List^000000")) {
+
+case 1:
+clear;
+if (issitting() || #mbdone == 1) {
+	mes .npcname$;
+	mes "Cannot do that! You are either sitting, listening or ^008000done^000000 for today!";
+	end;
+}
+mes .npcname$;
+mes "^A020F0Start Listening^000000 will grant you special rewards and you will also obtain random prizes by just ^008000sitting and listening^000000 to the music box.";
+close2;
+sit;
+F_StartListen();
+break;
+
+case 2:
+clear;
+mes .npcname$;
+mes "^A020F0Listening for an hour^000000 will grant you special rewards and you will also obtain random prizes during the session.";
+close3;
+break;
+
+case 3:
+clear;
+setdialogsize(400, 250);
+mes .npcname$;
+mes "^008000Special Reward for 60 Minutes^000000";
+mes " ";
+for (.@i = 0; .@i < getarraysize(.mb60r) - 2; .@i += 3) {
+	mes mesitemicon(.mb60r[.@i])+" ^0000FF"+getitemname(.mb60r[.@i])+"^000000  [ ^FF0000"+.mb60r[.@i+1]+"^000000 ~ ^FF0000"+.mb60r[.@i+2]+"^000000 ]";
+}
+close3;
+break;
+
+case 4:
+	clear;
+	setdialogsize(400, 250);
+	mes .npcname$;
+	mes "^008000Available Rewards per Interval^000000";
+	for (.@m = 5; .@m <= 55; .@m += 5) {
+		.@var$ = .@m + "";
+		mes " ";
+		mes "^0000FF--- " + .@var$ + " Minute(s) ---^000000";
+		.@size = getarraysize(getd(".mb" + .@var$ + "r"));
+		for (.@i = 0; .@i < .@size; .@i += 3) {
+			.@itemid = getd(".mb" + .@var$ + "r[" + .@i + "]");
+			.@min = getd(".mb" + .@var$ + "r[" + (.@i + 1) + "]");
+			.@max = getd(".mb" + .@var$ + "r[" + (.@i + 2) + "]");
+			mes mesitemicon(.@itemid)+" ^0000FF"+getitemname(.@itemid)+"^000000  [ ^FF0000"+.@min+"^000000 ~ ^FF0000"+.@max+"^000000 ]";
+		}
+	}
+	close3;
+break;
+}
+
+OnTouch:
+end;
+
+OnClock0000:
+query_sql("DELETE FROM `acc_reg_num` WHERE `key` = '#mbdone'");
+query_sql("DELETE FROM `acc_reg_num` WHERE `key` = '#mbseconds'");
+query_sql("DELETE FROM `acc_reg_num` WHERE `key` = '#mbminute'");
+end;
+
+function	F_StartRewards	{
+	set .@var$, getarg(0) + "";
+	for (.@i = 0; .@i < getarraysize(getd(".mb" + .@var$ + "r")) - 2; .@i += 3) {
+		getitembound getd(".mb" + .@var$ + "r[" + .@i + "]"), rand(
+			getd(".mb" + .@var$ + "r[" + (.@i + 1) + "]"),
+			getd(".mb" + .@var$ + "r[" + (.@i + 2) + "]")
+		), Bound_Account;
+	}
+	if (.@var$ == "60") {
+		playbgm "08";
+		set #mbdone, 1;
+	}
+	F_RandomBGM();
+	return;
+}
+
+function	F_RandomBGM	{
+	switch (rand(10)) {
+		case 0: playbgm "c1"; break;
+		case 1: playbgm "c2"; break;
+		case 2: playbgm "c3"; break;
+		case 3: playbgm "c4"; break;
+		case 4: playbgm "c5"; break;
+		case 5: playbgm "c6"; break;
+		case 6: playbgm "c7"; break;
+		case 7: playbgm "c8"; break;
+		case 8: playbgm "c9"; break;
+		case 9: playbgm "c10"; break;
+		default: playbgm "c11";
+	}
+}
+
+function	F_StartListen	{
+	F_RandomBGM();
+	dispbottom "[" + strnpcinfo(1) + "] : to stop/cancel the listening just type /sit to stand up...";
+	getmapxy(.@map$, .@x, .@y, BL_PC);
+	set listeningmap$, .@map$;
+	iLoop:
+	if (checkvending() >= 1) {
+		dispbottom "[" + strnpcinfo(1) + "] : Listening cancelled. You're vending.";
+		playbgm "08";
+		return 0;
+	}
+	if (!issitting()) {
+		dispbottom "[" + strnpcinfo(1) + "] : Listening cancelled. You stood up.";
+		playbgm "08";
+		return 0;
+	}
+	if (strcharinfo(3) != listeningmap$) {
+		dispbottom "[" + strnpcinfo(1) + "] : Listening cancelled. You left the area.";
+		playbgm "08";
+		return 0;
+	}
+	set #mbseconds, #mbseconds + 1;
+	emotion ET_BIGTHROB, playerattached();
+	sleep2 1000;
+	specialeffect2 858;
+	if (#mbseconds >= 60) {
+		set #mbminute, #mbminute + 1;
+		F_StartRewards(#mbminute);
+		set #mbseconds, 0;
+		dispbottom "[" + strnpcinfo(1) + "] : done listening for [ " + #mbminute + " / 60 ] minute(s)";
+	}
+	if (#mbdone == 1) {
+		dispbottom "[" + strnpcinfo(1) + "] : Thanks for listening...";
+		end;
+	}
+	goto iLoop;
+}
+
+OnInit:
+.npcname$ = "[^FF0000 " + strnpcinfo(1) + " ^000000]";
+
+//Rewards Array List
+//Item ID,Min Random Amount,Max Random Amount
+setarray .mb5r[0],501,1,20;
+setarray .mb10r[0],502,1,20;
+setarray .mb15r[0],503,1,20;
+setarray .mb20r[0],504,1,20;
+setarray .mb25r[0],505,1,20;
+setarray .mb30r[0],645,1,5;
+setarray .mb35r[0],656,1,5;
+setarray .mb40r[0],533,1,10;
+setarray .mb45r[0],12042,1,2,12052,1,2,12047,1,2,12057,1,2,12062,1,2,12067;
+setarray .mb50r[0],12042,1,2,12052,1,2,12047,1,2,12057,1,2,12062,1,2,12067;
+setarray .mb55r[0],90001,1,2;
+setarray .mb60r[0],90002,1,1;
+
+end;
+}

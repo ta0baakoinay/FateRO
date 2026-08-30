@@ -9,6 +9,7 @@
  **/
 
 //BUILDIN_DEF(example,""),
+BUILDIN_DEF(issitting,""),
 BUILDIN_DEF(getautocombatv, "i"),
 BUILDIN_DEF(getautocombat, "i?"),
 BUILDIN_DEF(setautocombat, "i?????"),
