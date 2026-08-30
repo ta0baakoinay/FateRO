@@ -2030,14 +2030,14 @@ Body:
 #    Weight: 10
 #    Script: |
 #      itemheal rand(325,405),0;
-  - Id: 11502
-    AegisName: Light_Blue_Pot
-    Name: Light Blue Potion
-    Type: Healing
-    Buy: 5000
-    Weight: 10
-    Script: |
-      itemheal 0,rand(40,60);
+#  - Id: 11502
+#    AegisName: Light_Blue_Pot
+#    Name: Light Blue Potion
+#    Type: Healing
+#    Buy: 5000
+#    Weight: 10
+#    Script: |
+#      itemheal 0,rand(40,60);
   - Id: 11503
     AegisName: Siege_White_Potion
     Name: WoE White Potion

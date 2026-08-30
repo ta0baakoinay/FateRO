@@ -2201,14 +2201,23 @@ Body:
     Script: |
       getgroupitem(IG_VIOLETBOX);
 
-  - Id: 11501
-    AegisName: Light_White_Pot
-    Name: Light White Potion
+  - Id: 101501
+    AegisName: Brewed White Potion
+    Name: Brewed White Potion
     Type: Healing
     Buy: 1200
-    Weight: 10
+    Weight: 50
     Script: |
-      itemheal rand(325,405),0;
+      itemheal rand(650,810),0;
+
+  - Id: 101502
+    AegisName: Brewed Blue Potion
+    Name: Brewed Blue Potion
+    Type: Healing
+    Buy: 5000
+    Weight: 50
+    Script: |
+      itemheal 0,rand(80,120);
 
   - Id: 5468
     AegisName: Parade_Cap
