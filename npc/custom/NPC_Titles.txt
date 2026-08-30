@@ -9,6 +9,7 @@ prontera,155,181,4	script	ItemShopBubble#helper	-1,{
 
 OnInit:
 	setarray .@npc_name$[0],
+		"Music Box#music",
 		"Donation Shop#All",
 		"Donation Shop#custom",
 		"Valkyrie",
@@ -60,6 +61,7 @@ OnInit:
 		"Healer#ftg";
 
 	setarray .@bubble_text$[0],
+		"Music Box Mimic",
 		"Donation Shop",
 		"Donation Shop",
 		"Break The Seal Quest",
