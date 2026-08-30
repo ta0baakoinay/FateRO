@@ -2004,6 +2004,50 @@ Body:
         dispbottom "AP restored! Current AP: " + #AC_AP + " minutes.";
       }
 
+  - Id: 90001
+    AegisName: AP_PotionNT
+    Name: AP Recovery Potion
+    Type: Usable
+    Trade:
+      NoDrop: true
+      NoSell: true
+      NoGuildStorage: true
+    Buy: 5000
+    Weight: 10
+    Script: |
+      .@amount = 30;
+      .@ceiling = #AC_MaxAP;
+      if (#AC_AP >= .@ceiling) {
+        dispbottom "Your AP is already at maximum.";
+      } else {
+        #AC_AP = #AC_AP + .@amount;
+        if (#AC_AP > .@ceiling) #AC_AP = .@ceiling;
+        MaxAp = #AC_MaxAP;
+        Ap = #AC_AP;
+        dispbottom "AP restored! Current AP: " + #AC_AP + " minutes.";
+      }
+
+
+  - Id: 90002
+    AegisName: Bubble_Gum_NT
+    Name: Bubble Gum NT
+    Type: Usable
+    Buy: 2
+    Weight: 10
+    Delay:
+      Duration: 60000
+      Status: Reuse_Limit_D
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoSell: true
+      NoCart: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
+    Script: |
+      sc_start SC_ITEMBOOST,1800000,100;
+
   - Id: 30000
     AegisName: Server Coin
     Name: Server Coin

@@ -499,7 +499,34 @@ Body:
     AttackDelay: 864
     AttackMotion: 864
     ClientAttackMotion: 576
-    DamageMotion: 480      
+    DamageMotion: 480
+     
+  - Id: 20779
+    AegisName: VOID_MIMIC
+    Name: Music Box Mimic
+    Level: 87
+    Hp: 37500
+    Sp: 190
+    BaseExp: 440
+    JobExp: 380
+    Attack: 1
+    Defense: 100
+    MagicDefense: 20
+    Vit: 70
+    Int: 5
+    Dex: 50
+    AttackRange: 1
+    SkillRange: 10
+    ChaseRange: 12
+    Size: Small
+    Race: Demihuman
+    Element: Holy
+    ElementLevel: 3
+    WalkSpeed: 150
+    AttackDelay: 864
+    AttackMotion: 864
+    ClientAttackMotion: 576
+    DamageMotion: 480
 #Body:
 # eAthena Dev Team
 #=============================================================
