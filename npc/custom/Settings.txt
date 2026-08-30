@@ -57,7 +57,7 @@ OnSettingsStart:
 		mes "^0000FFHide Headgear^000000 : " + (#HIDEHEADGEAR ? .on$ : .off$);
 		next;
 
-		switch (select("Battle Information Settings:Packet Filter Settings:Show Party Buffs Settings:Auto Combat:Auto Buff:Hide Headgear:Battle Stats / Character Resistance:Available FRO Commands:Close")) {
+		switch (select("Battle Information Settings:Packet Filter Settings:Show Party Buffs Settings:Auto Combat:Auto Buff:Hide Headgear:Battle Stats / Character Resistance:Available Fate Ragnarok Online Commands:Close")) {
 		case 1:
 			callsub OnBattleInfoMenu;
 			break;
