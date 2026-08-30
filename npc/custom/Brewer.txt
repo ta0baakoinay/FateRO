@@ -82,22 +82,22 @@ OnInteract:
 		mes "Success Rate  : ^008000"+.@rate+"%^000000 ^FF0000(MAX LEVEL)^000000";
 	mes "^888888------------------------------^000000";
 	mes " ";
-	mes mesitemicon(12293)+" ^0000FF"+getitemname(12293)+"^000000";
-	mes mesitemicon(120176)+" ^0000FF"+getitemname(120176)+"^000000";
+	mes mesitemicon(101501)+" ^0000FF"+getitemname(101501)+"^000000";
+	mes mesitemicon(101502)+" ^0000FF"+getitemname(101502)+"^000000";
 	next;
 
 	switch(select(
-		"Brew "+getitemname(12293),
-		"Brew "+getitemname(120176),
+		"Brew "+getitemname(101501),
+		"Brew "+getitemname(101502),
 		"View Brewer Level Table",
 		"View Top 50 Rankings",
 		"Cancel"
 	)) {
 	case 1:
-		callsub L_Brew, 12293, 100000, 970,1, 504,1, 505,1, 607,2, "Dried Yggdrasil Berry";
+		callsub L_Brew, 101501, 5000, 504, 2, "Brewed White Potion";
 		end;
 	case 2:
-		callsub L_Brew, 120176, 10000, 970,1, 504,1, 505,1, 608,2, "Dried Yggdrasil Leaf";
+		callsub L_Brew, 101502, 5000, 505, 2, "Brewed Blue Potion";
 		end;
 	case 3:
 		callsub L_ShowTable;
@@ -115,18 +115,15 @@ OnInteract:
 
 // ===========================================================
 // L_Brew - generic brewing routine, reused by every recipe
-// args: resultItemID, zenyCost,
-//       matID1,matQty1, matID2,matQty2, matID3,matQty3, matID4,matQty4,
-//       recipeName$
+// args: resultItemID, zenyCost, matID, matQty, recipeName$
+// (single material + zeny only)
 // ===========================================================
 L_Brew:
 	.@rid    = getarg(0);
 	.@cost   = getarg(1);
-	.@i1 = getarg(2);  .@c1 = getarg(3);
-	.@i2 = getarg(4);  .@c2 = getarg(5);
-	.@i3 = getarg(6);  .@c3 = getarg(7);
-	.@i4 = getarg(8);  .@c4 = getarg(9);
-	.@rname$ = getarg(10);
+	.@mat    = getarg(2);
+	.@matqty = getarg(3);
+	.@rname$ = getarg(4);
 
 	callfunc "F_DialogReset";
 	mes "^0000FF[ Brewer ]^000000";
@@ -137,19 +134,13 @@ L_Brew:
 	mes " ";
 	mes "Cost per brew:";
 	mes "- ^008000"+.@cost+"z^000000  (You have "+Zeny+"z)";
-	mes "- "+mesitemicon(.@i1)+" "+getitemname(.@i1)+" x"+.@c1+"  (You have "+countitem(.@i1)+")";
-	mes "- "+mesitemicon(.@i2)+" "+getitemname(.@i2)+" x"+.@c2+"  (You have "+countitem(.@i2)+")";
-	mes "- "+mesitemicon(.@i3)+" "+getitemname(.@i3)+" x"+.@c3+"  (You have "+countitem(.@i3)+")";
-	mes "- "+mesitemicon(.@i4)+" "+getitemname(.@i4)+" x"+.@c4+"  (You have "+countitem(.@i4)+")";
+	mes "- "+mesitemicon(.@mat)+" "+getitemname(.@mat)+" x"+.@matqty+"  (You have "+countitem(.@mat)+")";
 	mes "^888888------------------------------^000000";
 	next;
 
 	// --- figure out the maximum number of brews affordable ---
 	.@max = (.@cost > 0) ? (Zeny / .@cost) : 9999;
-	.@t = countitem(.@i1) / .@c1; if (.@t < .@max) .@max = .@t;
-	.@t = countitem(.@i2) / .@c2; if (.@t < .@max) .@max = .@t;
-	.@t = countitem(.@i3) / .@c3; if (.@t < .@max) .@max = .@t;
-	.@t = countitem(.@i4) / .@c4; if (.@t < .@max) .@max = .@t;
+	.@t = countitem(.@mat) / .@matqty; if (.@t < .@max) .@max = .@t;
 	if (.@max > 999)
 		.@max = 999; // sane cap so a single click can't loop forever
 	if (.@max < 0)
@@ -218,14 +209,11 @@ L_Brew:
 		// re-check every attempt: EXP/level can change mid-batch,
 		// and this keeps the loop safe if something else touches
 		// the player's Zeny/inventory mid-script.
-		if (Zeny < .@cost || countitem(.@i1) < .@c1 || countitem(.@i2) < .@c2 || countitem(.@i3) < .@c3 || countitem(.@i4) < .@c4)
+		if (Zeny < .@cost || countitem(.@mat) < .@matqty)
 			break;
 
 		Zeny -= .@cost;
-		delitem .@i1, .@c1;
-		delitem .@i2, .@c2;
-		delitem .@i3, .@c3;
-		delitem .@i4, .@c4;
+		delitem .@mat, .@matqty;
 
 		.@lvl = BrewerExp / 10000;
 		if (.@lvl > 9)
