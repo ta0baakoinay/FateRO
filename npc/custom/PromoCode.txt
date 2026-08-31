@@ -1,0 +1,331 @@
+//===== rAthena Script =======================================
+//= Paid Script
+//===== By: ==================================================
+//= Sader1992
+//= https://sader1992.com/
+//= https://rathena.org/board/profile/30766-sader1992/
+//= https://sader1992.com/?page=item&item=25
+//= Email sader1992@gmail.com
+//===== Compatible With: =====================================
+//= rAthena Project
+//============================================================
+//= Date: 21-12-2020
+//============================================================
+//	Promotional Code: Cost 20$
+//		Admin can create a new code and add items to it (Manual or Auto Generated)
+//		Admin can add limit number of players to redeem the code
+//		Admin can add Expire time to the code
+//		Admin can choose if the code per character , account or gepard
+//		Player can redeem the code in the same NPC
+//============================================================
+//= Note:
+//		If you got sql error , that mean your sql version is too low.
+//		Replace All
+//			`date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+//		With
+//			`date` TIMESTAMP NOT NULL DEFAULT NOW()
+//============================================================
+maintown,206,131,3	script	Code Redeemer	4_M_SALVATION,{
+	function F_Generate;
+	if(getgmlevel() >= .GMLevel)
+		.@OPT$ = "Admin Panel";
+	mes "What you want to do?";
+	switch(select(.@OPT$ + ":Submit Promo Code:Information")){
+		case 1:
+			switch(select("List of Promo Code:Create Promo Code:Clean Unusable Codes (Cannot be undone!):Cancel")){
+				clear;
+				case 1:
+					query_sql("SELECT `code`,`limit`,`expire`,`protection` FROM `promotion_codes` WHERE `protection` != '0'",.@C$,.@L,.@T,.@P);
+					if(!getarraysize(.@C$)){
+						mes "There is no Active Codes!";
+						end;
+					}
+					mes "Select A code";
+					.@s = select(implode(.@C$,":")) -1;
+					clear;
+					.@CODE$ = .@C$[.@s];
+					.@EXPIRE = .@T[.@s];
+					.@LIMIT = .@L[.@s];
+					.@PROTECTION = .@P[.@s];
+					setarray .@P$[1],"GePard","Account","Character";
+					query_sql("SELECT `player_name`,`protection_id`,`date` FROM `promotion_history` WHERE `code` = '" + .@CODE$ + "'",.@PLAYERS$,.@IDS,.@TIMES$);
+					.@CLAIMED = getarraysize(.@PLAYERS$);
+					mes "Selected Code: '" + .@CODE$ + "'";
+					mes "Protection: " + .@P$[.@PROTECTION];
+					mes "Claimed: " + .@CLAIMED + " Times" + (.@CLAIMED >= .@LIMIT?" [^FA1104Done!^000000]":"") + " [Limit (" + .@LIMIT + ")]";
+					mes "Expire: " + (gettimetick(2) < .@EXPIRE?"^120BFA":"^FA1104Expired! ") + gettimestr("%Y-%m/%d %H:%M:%S",21,.@EXPIRE) + "^000000";
+					mes "What you Want to do?";
+					switch(select("Claimer History:Delete Promo Code")){
+						clear;
+						case 1:
+							if(!getarraysize(.@PLAYERS$)){
+								mes "No one claimed this code yet!";
+								end;
+							}
+							mes "The log sent to your Chat  Box!";
+							mes "It might take some time if it's big!";
+							dispbottom "Player Name|Protection ID|Time",0xFFD64F;
+							freeloop(1);
+							for(.@i=0;.@i<getarraysize(.@PLAYERS$);.@i++){
+								dispbottom "Name: (" + .@PLAYERS$[.@i] + ") | Protection ID: (" + .@IDS[.@i] + ") Date: (" + .@TIMES$[.@i] + ")",0xFFD64F;
+								sleep2 5;
+							}
+							end;
+						case 2:
+							mes "Are you sure you want to delete this code?";
+							mes "The code wont be Deleted , it will just marked as unusable code, you can check them any time by accessing the database with protection type 0";
+							mes "Are you sure you want to mark this code unusable ?";
+							if(select("Yes:No") == 2){
+								clear;
+								mes "Ok, Think about it!";
+								end;
+							}
+							clear;
+							debugmes .@CODE$;
+							query_sql("UPDATE `promotion_codes` SET `protection` = '0' WHERE `code` = '" + .@CODE$ + "'");
+							mes "Done!";
+							mes "If you ever want to see the code again you can see it in your database!";
+							end;
+					}
+					end;
+				case 2:
+					mes "Clear";//don't remove this
+					setarray .@P$[1],"GePard","Account","Character";
+					.@LIMIT = 10000;
+					.@EXPIRE = gettimetick(2) + (8760 *60*60);
+					while(.@s != 6){
+						clear;
+						mes "Code: " + (.@CODE$ != ""?"'" + .@CODE$ + "'":"None");
+						mes "Player Limit: " + .@LIMIT + " Players";
+						mes "Expire: " + (.@EXPIRE?gettimestr("%Y-%m/%d %H:%M:%S",21,.@EXPIRE):"");
+						mes "Protection : " + .@P$[.@PROTECTION];
+						mes "Items:";
+						for(.@i=0;.@i<getarraysize(.@ITEM);.@i++){
+							mes "(" + .@AMOUNT[.@i] + ") " + getitemname(.@ITEM[.@i]);
+						}
+						switch((.@s = select("Generate Promo Code:Change Player Limit:Change Time Limit:Set Protection Type:Set Items:Done:Cancel"))){
+							clear;
+							case 1:
+								mes "How you want it?";
+								switch(select("Random:Manual")){
+									case 1:
+										.@CODE$ = F_Generate();
+										break;
+									case 2:
+										mes "Max 40 Characters!";
+										input .@C$;
+										.@CODE$ = F_Generate(escape_sql(.@C$));
+										break;
+								}
+								break;
+							case 2:
+								mes "Input how many Players!";
+								input .@LIMIT,0,10000;
+								break;
+							case 3:
+								mes "Input how many Hours (from now)";
+								mes "You can put as much as you want! from 0 to 87600(10 Years)";
+								input .@TIME,0,87600;
+								.@EXPIRE = gettimetick(2) + (.@TIME *60*60);
+								break;
+							case 4:
+								mes "Select Protection Type.";
+								.@PROTECTION = select("GePard:Account:Character");
+								break;
+							case 5:
+								while(select("Add Item:Done") == 1){
+									.@s = getarraysize(.@ITEM);
+									mes "Input Item ID";
+									input .@ID;
+									clear;
+									mes "Input Item Amount (Max 1000!)";
+									input .@AM,0,1000;
+									if(getitemname(.@ID) != "null"){
+										if(!.@AM){
+											mes "Invalid Amount";
+										}else{
+											.@ITEM[.@s] = .@ID;
+											.@AMOUNT[.@s] = .@AM;
+										}
+									}else{
+										mes "Item Not Found!";
+									}
+									next;
+								}
+								break;
+							case 6:
+								if(.@CODE$ == ""){
+									mes "A code is missing!";
+									.@s = 0;
+									break;
+								}
+								if(!getarraysize(.@ITEM) || !getarraysize(.@AMOUNT)){
+									mes "Invalid Item List!";
+									.@s = 0;
+									break;
+								}
+								if(!.@PROTECTION){
+									mes "Invalid Protection Type!";
+									.@s = 0;
+									break;
+								}
+								if(!.@EXPIRE){
+									mes "You have to set Expiration time!";
+									.@s = 0;
+									break;
+								}
+								if(!.@LIMIT){
+									mes "You have to set a Players Limit!";
+									.@s = 0;
+									break;
+								}
+								break;
+							case 7:
+								end;
+							
+						}
+					}
+					query_sql("INSERT INTO `promotion_codes` (`code`,`limit`,`expire`,`protection`) VALUES ('" + .@CODE$ + "','" + .@LIMIT + "','" + .@EXPIRE + "','" + .@PROTECTION + "')");
+					for(.@i=0;.@i<getarraysize(.@ITEM);.@i++){
+						query_sql("INSERT INTO `promotion_items` (`code`,`item_id`,`amount`) VALUES ('" + .@CODE$ + "','" + .@ITEM[.@i] + "','" + .@AMOUNT[.@i] + "')");
+					}
+					mes "Your Code Is Ready!";
+					mes "Code: " + (.@CODE$ != ""?"'" + .@CODE$ + "'":"None");
+					mes "Player Limit: " + (.@LIMIT?.@LIMIT + " Players":"Unlimited");
+					mes "Expire: " + (.@EXPIRE?gettimestr("%Y-%m/%d %H:%M:%S",21,.@EXPIRE):"Unlimited");
+					mes "Protection : " + .@P$[.@PROTECTION];
+					mes "Items:";
+					for(.@i=0;.@i<getarraysize(.@ITEM);.@i++){
+						mes "(" + .@AMOUNT[.@i] + ") " + getitemname(.@ITEM[.@i]);
+					}
+					end;
+				case 3:
+					mes "Are you sure you want to remove all the Unusable Codes!?";
+					mes "(Unusable Codes it the codes you have deleted in the first option!)";
+					mes "This include the codes/items/players log";
+					mes "This step CANNOT BE UNDONE!";
+					if(select("No:No:No:No:No:Yes:No") == 6){
+						clear;
+						mes "Wait this will take a While , Don't logout!";
+						query_sql("SELECT `code` FROM `promotion_codes` WHERE `protection` = '0'",.@CODE$);
+						freeloop(1);
+						for(.@i=0;.@i<getarraysize(.@CODE$);.@i++){
+							query_sql("DELETE FROM `promotion_codes` WHERE `code` = '" + .@CODE$[.@s]  + "'");
+							sleep2 3;
+							query_sql("DELETE FROM `promotion_items` WHERE `code` = '" + .@CODE$[.@s]  + "'");
+							sleep2 3;
+							query_sql("DELETE FROM `promotion_history` WHERE `code` = '" + .@CODE$[.@s]  + "'");
+							sleep2 3;
+						}
+						mes "Done!";
+					}else{
+						clear;
+						mes "Good!,Think about it more!";
+					}
+					end;
+				default:
+					mes "Ok, See you next time!";
+					end;
+			}
+			end;
+		case 2:
+			mes "Enter Promo Code";
+			input .@C$;
+			.@CODE$ = escape_sql(.@C$);
+			query_sql("SELECT `limit`,`expire`,`protection` FROM `promotion_codes` WHERE `protection` != '0' AND `code` = '" + .@CODE$ + "'",.@LIMIT,.@DATE,.@PROTECTION);
+			if(!.@PROTECTION){
+				clear;
+				mes "^FA2B0BInvalid Code!^000000";
+				end;
+			}
+			query_sql("SELECT `item_id`,`amount` FROM `promotion_items` WHERE `code` = '" + .@CODE$ + "'",.@ITEM,.@AMOUNT);
+			mes "- ^FA2B0B" + .@CODE$ + "^000000";
+			mes " ";
+			for(.@i=0;.@i<getarraysize(.@ITEM);.@i++){
+				mes "> " + .@AMOUNT[.@i] + "x" + getitemname(.@ITEM[.@i]);
+			}
+			if(select("Claim:Cancel") == 2)
+				end;
+			if(gettimetick(2) >= .@DATE){
+				clear;
+				mes "You are too late!";
+				mes "This code is Expired!";
+				end;
+			}
+			query_sql("SELECT `player_name`,`protection_id`,`date` FROM `promotion_history` WHERE `code` = '" + .@CODE$ + "'",.@PLAYERS$,.@IDS,.@DATE$);
+			switch(.@PROTECTION){
+				case 1: query_sql("SELECT `last_unique_id` FROM `login` WHERE `account_id` = '" + getcharid(3) + "'",.@ID); break;
+				//case 1: .@ID = get_unique_id(); break;
+				case 2: .@ID = getcharid(3); break;
+				case 3: .@ID = getcharid(0); break;
+			}
+			if((.@ndx = inarray(.@IDS,.@ID)) != -1){
+				clear;
+				mes "You have already withdrawn This Code.";
+				mes "Date: " + .@DATE$[.@ndx];
+				mes "Character Used: " + .@PLAYERS$[.@ndx];
+				end;
+			}
+			if(.@LIMIT <= getarraysize(.@PLAYERS$)){
+				clear;
+				mes "The code has reached it limit!";
+				end;
+			}
+			if(!checkweight2(.@ITEM,.@AMOUNT)){
+				clear;
+				mes "you have too much weight!";
+				end;
+			}
+			if(BaseLevel < 80){
+				clear;
+				mes "You must be at least Level 80 to claim the code.";
+				end;
+			}
+			query_sql("INSERT INTO `promotion_history` (`code`,`protection_id`,`player_name`,`char_id`) VALUES ('" + .@CODE$ + "','" + .@ID + "','" + strcharinfo(0) + "','" + getcharid(0) + "')");
+			query_logsql("INSERT INTO `promotion_log` (`code`,`protection_id`,`player_name`,`char_id`) VALUES ('" + .@CODE$ + "','" + .@ID + "','" + strcharinfo(0) + "','" + getcharid(0) + "')");
+			for(.@i=0;.@i<getarraysize(.@ITEM);.@i++){
+				getitem .@ITEM[.@i],.@AMOUNT[.@i];
+			}
+			end;
+		case 3://Information
+			mes "Information about the system , For admin to fill!";
+			end;
+	}
+end;
+
+	function	F_Generate	{
+		if(getargcount()){
+			.@s$ = getarg(0);
+			if(inarray($REFERRAL_AD_USED_CODES$,.@s$) != -1){
+				mes "The Code Already Used Before , You cannot use it!!";
+				next;
+				return "";
+			}
+		}else{
+			freeloop(true);
+			while(.@s$ == "" || inarray($REFERRAL_AD_USED_CODES$,.@s$) != -1)
+				for(.@i=0;.@i<.RandomCodeSize;.@i++)
+					.@s$ += .ALHABET$[rand(getarraysize(.ALHABET$))];
+		}
+		$REFERRAL_AD_USED_CODES$[getarraysize($REFERRAL_AD_USED_CODES$)] = .@s$;
+		return .@s$;
+	}
+
+OnInit:
+	.GMLevel = 99;//GM Level to Access the Admin Panel!
+	.RandomCodeSize = 12;//Max 40
+
+	query_sql("CREATE TABLE IF NOT EXISTS `promotion_codes` (`id` int(11) NOT NULL auto_increment,`code` VARCHAR(50) NOT NULL,`limit` INT(11) NOT NULL default '0',`expire` INT(11) NOT NULL default '0',`protection` ENUM('0','1','2','3') NOT NULL default '0',PRIMARY KEY  (`id`)) ENGINE=MyISAM;");
+	query_sql("CREATE TABLE IF NOT EXISTS `promotion_items` (`id` int(11) NOT NULL auto_increment,`code` VARCHAR(50) NOT NULL,`item_id` int(11) NOT NULL,`amount` int(11) NOT NULL,PRIMARY KEY  (`id`)) ENGINE=MyISAM;");
+	query_sql("CREATE TABLE IF NOT EXISTS `promotion_history` (`id` int(11) NOT NULL auto_increment,`code` VARCHAR(50) NOT NULL,`date` TIMESTAMP NOT NULL DEFAULT NOW(),`protection_id` INT(11) UNSIGNED NOT NULL default '0',`player_name` VARCHAR(50) NOT NULL,`char_id` int(11) NOT NULL,PRIMARY KEY  (`id`)) ENGINE=MyISAM;");
+	query_logsql("CREATE TABLE IF NOT EXISTS `promotion_log` (`id` int(11) NOT NULL auto_increment,`code` VARCHAR(50) NOT NULL,`date` TIMESTAMP NOT NULL DEFAULT NOW(),`protection_id` INT(11) UNSIGNED NOT NULL default '0',`player_name` VARCHAR(50) NOT NULL,`char_id` int(11) NOT NULL,PRIMARY KEY  (`id`)) ENGINE=MyISAM;");
+	.@ALHABET$ = "A B C D E F G H I J K L M N P Q S T U V W X Y Z 0 1 2 3 4 5 6 7 8 9";
+	explode(.ALHABET$,.@ALHABET$, " ");
+	
+		.@npc$ = "Code Redeemer";
+		while (1) {
+			showscript .@npc$;
+			sleep 3000;
+		}
+end;
+}
