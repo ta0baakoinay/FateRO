@@ -1,0 +1,170 @@
+//===== rAthena Script =======================================
+//= Donor Rewards Redeemer (+ Donation Rankings)
+//===== Description: =========================================
+//= Main menu:
+//=   1) Redeem unclaimed rewards - reads/updates cp_redeemlog,
+//=      populated by FluxCP's Flux_Athena::awardItem() on
+//=      donation approval.
+//=   2) View Donation Rankings - ranks accounts by total
+//=      approved Fate Coin from cp_donation_requests.
+//=
+//= NOTE: ShowDonationRankings/DisplayDonationRankingsPaginated
+//= call callfunc("CalcDialogHeight", ...) and
+//= callfunc("FormatNumber", ...) — these are assumed to already
+//= exist on this server (used by the existing Zeny Ranking /
+//= Transparency Checker NPC). If they don't, add simple versions
+//= or strip those calls.
+//=============================================================
+
+maintown,159,182,4	script	Donor Rewards Redeemer	117,{
+
+	.@redeemTable$ = "cp_redeemlog";
+	.@maxRedeem    = 20; // max unique rewards claimed in one visit
+
+	mes "[Donor Rewards Redeemer]";
+	mes "Well met! How can I help you today?";
+	next;
+
+	switch(select("Redeem my rewards:View Donation Rankings:Never mind")) {
+
+	case 1:
+		.@account_id = getcharid(3);
+		.@count = query_sql(
+			"SELECT `id`,`nameid`,`quantity` FROM `" + .@redeemTable$ + "` " +
+			"WHERE `account_id` = " + .@account_id + " AND `redeemed` = 0 " +
+			"LIMIT " + .@maxRedeem,
+			.@id, .@nameid, .@quantity
+		);
+
+		if (.@count <= 0) {
+			mes "[Donor Rewards Redeemer]";
+			mes "You have nothing waiting for you right now.";
+			close;
+		}
+
+		mes "[Donor Rewards Redeemer]";
+		mes "You have " + .@count + " reward(s) waiting! Redeeming now...";
+		next;
+
+		.@totalFateCoins = 0;
+
+		for (.@i = 0; .@i < .@count; .@i++) {
+			query_sql "UPDATE `" + .@redeemTable$ + "` SET `char_id` = " + getcharid(0) +
+				", `redeemed` = 1, `redemption_date` = NOW() WHERE `id` = " + .@id[.@i];
+
+			getitem .@nameid[.@i], .@quantity[.@i];
+
+			// Track Fate Coin (item 30000) specifically for the announcement below.
+			if (.@nameid[.@i] == 30000) {
+				.@totalFateCoins += .@quantity[.@i];
+			}
+
+			mes "[Donor Rewards Redeemer]";
+			mes "Delivered " + .@quantity[.@i] + "x " + getitemname(.@nameid[.@i]) + "!";
+			next;
+		}
+
+		mes "[Donor Rewards Redeemer]";
+		mes "Thank you for supporting the server!";
+
+		if (.@totalFateCoins > 0) {
+			announce strcharinfo(0) + " claimed a donation worth " + .@totalFateCoins + " Fate Coin(s)!", bc_all|bc_blue;
+		}
+
+		close;
+
+	case 2:
+		callfunc("ShowDonationRankings");
+		close;
+
+	case 3:
+		mes "[Donor Rewards Redeemer]";
+		mes "Come back anytime!";
+		close;
+	}
+}
+
+// =============================================================
+// Donation Rankings — ranks accounts by total approved Fate Coin
+// (cp_donation_requests.status = 'approved'), one row per
+// account via the MIN(char_id)-per-account join trick.
+// =============================================================
+
+function	script	ShowDonationRankings	{
+	.@limit = getarg(0, 50); // top 50 donors
+
+	.@size = query_sql(
+		"SELECT IFNULL(c.name, CONCAT('Account #', dr.account_id)), SUM(dr.fate_coins), SUM(dr.amount) " +
+		"FROM cp_donation_requests dr " +
+		"LEFT JOIN (SELECT account_id, MIN(char_id) AS char_id FROM `char` GROUP BY account_id) mc ON mc.account_id = dr.account_id " +
+		"LEFT JOIN `char` c ON c.char_id = mc.char_id " +
+		"WHERE dr.status = 'approved' " +
+		"GROUP BY dr.account_id " +
+		"ORDER BY SUM(dr.fate_coins) DESC " +
+		"LIMIT " + .@limit,
+		$@donor_names$, $@donor_coins, $@donor_php);
+
+	if (.@size == 0) {
+		clear;
+		setdialogalign(DIALOG_ALIGN_CENTER);
+		setdialogsize(500, callfunc("CalcDialogHeight", 2));
+		mes " ";
+		mes "^888888No approved donations found yet.^000000";
+		next;
+		close2;
+		return;
+	}
+
+	callfunc("DisplayDonationRankingsPaginated", .@size, 10);
+	return;
+}
+
+function	script	DisplayDonationRankingsPaginated	{
+	.@total = getarg(0);
+	.@page_size = getarg(1, 10);
+	.@total_pages = (.@total - 1) / .@page_size + 1;
+	.@page = 0;
+
+	while(1) {
+		.@start = .@page * .@page_size;
+		.@end = .@start + .@page_size;
+		if (.@end > .@total)
+			.@end = .@total;
+		.@rows = .@end - .@start;
+
+		.@page_lines = 2 + .@rows + 1;
+
+		clear;
+		setdialogalign(DIALOG_ALIGN_CENTER);
+		setdialogsize(500, callfunc("CalcDialogHeight", .@page_lines));
+
+		mes "^0080FFDonation Rankings^000000 ( Page " + (.@page + 1) + " / " + .@total_pages + " )";
+		mes " ";
+
+		for(.@i = .@start; .@i < .@end; .@i++) {
+			mes "^888888#" + (.@i + 1) + "^000000 ^0000FF" + $@donor_names$[.@i] + "^000000 - ^008000" + $@donor_coins[.@i] + " Fate Coin(s)^000000 ^888888(P" + callfunc("FormatNumber", $@donor_php[.@i]) + " donated)^000000";
+		}
+
+		.@nav$ = "";
+		.@n = 0;
+		.@opt_next = 0;
+		.@opt_prev = 0;
+		if (.@page < .@total_pages - 1) { .@nav$ += "Next Page:"; .@n++; .@opt_next = .@n; }
+		if (.@page > 0)                 { .@nav$ += "Previous Page:"; .@n++; .@opt_prev = .@n; }
+		.@nav$ += "Close"; .@n++; .@opt_close = .@n;
+
+		next;
+		.@choice = select(.@nav$);
+
+		if (.@choice == .@opt_next) {
+			.@page++;
+		}
+		else if (.@choice == .@opt_prev) {
+			.@page--;
+		}
+		else
+			break;
+	}
+
+	return;
+}
