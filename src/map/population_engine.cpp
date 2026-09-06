@@ -1504,6 +1504,24 @@ void population_engine_on_shell_kills_player(map_session_data *killer_sd, map_se
 }
 
 void do_init_population_engine() {
+	// Ensure the FluxCP stats table exists. This mirrors the canonical schema
+	// in sql-files/population_engine.sql, which is an OPTIONAL import and is
+	// therefore easy to miss on an existing database — when it is missing,
+	// population_engine_write_count_sql() logs an SQL error on every autosummon
+	// tick. Creating it here (same pattern as do_init_autocombat's tables)
+	// makes both fresh and existing installs self-heal. Keep this in sync with
+	// sql-files/population_engine.sql.
+	if (mmysql_handle != nullptr && SQL_ERROR == Sql_QueryStr(mmysql_handle,
+		"CREATE TABLE IF NOT EXISTS `cp_population_stats` ("
+		"`id` INT UNSIGNED NOT NULL DEFAULT 1,"
+		"`active_count` INT UNSIGNED NOT NULL DEFAULT 0,"
+		"`last_updated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+		"PRIMARY KEY (`id`)"
+		") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"))
+	{
+		Sql_ShowDebug(mmysql_handle);
+	}
+
 	// Single-threaded engine: bot pathing uses unit_walktoxy / unit_walktobl.
 	add_timer_func_list(population_engine_autosummon_timer, "population_engine_autosummon_timer");
 	add_timer_func_list(population_engine_chat_timer, "population_engine_chat_timer");

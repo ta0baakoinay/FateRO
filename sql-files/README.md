@@ -12,6 +12,8 @@ Note: The schema name is defined in `conf/inter_athena.conf::map_server_db`.
 * main.sql - Contains tables for normal server usage.
 * web.sql - Contains tables for the web service
 * roulette_default_data.sql - Contains data for the client's roulette game.
+* population_engine.sql - Population Engine FluxCP stats table (`cp_population_stats`). The map-server also creates this table automatically on start, so importing it is optional but recommended so control panels have it immediately.
+* AutoBuff.sql - AutoBuff feature tables.
 
 For a new install, the following can be imported into the main schema but is highly suggested to be imported into a separate schema for logs:
 Note: The schema name is defined in `conf/inter_athena.conf::log_db_db`.

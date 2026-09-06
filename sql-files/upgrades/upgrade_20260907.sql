@@ -26,6 +26,26 @@ ALTER TABLE `mail_attachments` ADD INDEX IF NOT EXISTS `nameid` (`nameid`);
 
 ALTER TABLE `acc_reg_num`      ADD INDEX IF NOT EXISTS `key` (`key`);
 
+-- ---------------------------------------------------------------------------
+-- Population Engine: cp_population_stats
+--
+-- Canonical schema also lives in sql-files/population_engine.sql (an optional
+-- import that is easy to miss). The map-server now also CREATEs it on start
+-- (src/map/population_engine.cpp::do_init_population_engine), so this block is
+-- only needed for a DB that hit "Table '<db>.cp_population_stats' doesn't
+-- exist" before that build was deployed. Keep in sync with
+-- sql-files/population_engine.sql.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `cp_population_stats` (
+  `id`           INT UNSIGNED NOT NULL DEFAULT 1,
+  `active_count` INT UNSIGNED NOT NULL DEFAULT 0,
+  `last_updated` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO `cp_population_stats` (`id`, `active_count`) VALUES (1, 0);
+
 -- Note: the Searcher card-slot lookups (WHERE card0=N OR card1=N OR card2=N
 -- OR card3=N) still cannot use a plain index. They are admin/rare; if they
 -- become hot, add a summary table or per-slot indexes with index_merge.
