@@ -847,28 +847,41 @@ static bool ac_check_target(map_session_data *sd, unsigned int id)
 	return false;
 }
 
+// map_foreachinrange callback: keep the CLOSEST valid monster instead of
+// letting the last-iterated block_list win. *target_id / *best_dist2 accumulate
+// across the sweep; ties keep the first seen. Distance is compared squared so
+// there is no sqrt in the hot path.
 static int ac_look_for_targets(struct block_list *bl, va_list ap)
 {
-	int *target_id = va_arg(ap, int *);
-	int src_id = va_arg(ap, int);
+	int *target_id  = va_arg(ap, int *);
+	int *best_dist2 = va_arg(ap, int *);
+	int src_id      = va_arg(ap, int);
 	struct block_list *src = map_id2bl(src_id);
-	map_session_data *sd = map_id2sd(src->id);
+	map_session_data *sd = map_id2sd(src_id);
 	struct mob_data *md = BL_CAST(BL_MOB, bl);
 
-	nullpo_retr(1, src);
-	nullpo_retr(1, bl);
+	nullpo_retr(0, src);
+	nullpo_retr(0, bl);
+	nullpo_retr(0, sd);
 
 	if (battle_config.ksprotection && mob_ksprotected(src, bl))
-		return 1;
+		return 0;
 
-	if (md != nullptr && md->db->mexp > 0 && sd != nullptr && sd->ac.teleport.tp_when_mvp)
+	if (md != nullptr && md->db->mexp > 0 && sd->ac.teleport.tp_when_mvp)
 		ac_teleport(sd, false);
 
-	if (ac_check_target(sd, bl->id) == true)
-		*target_id = bl->id;
-	else
-		*target_id = 0;
+	// Same validation as before (monster-selection filter, reachability,
+	// hide/cloak, alive, range) — untouched, just no longer clobbering.
+	if (!ac_check_target(sd, bl->id))
+		return 0;
 
+	int dx = bl->x - src->x;
+	int dy = bl->y - src->y;
+	int dist2 = dx * dx + dy * dy;
+	if (*target_id == 0 || dist2 < *best_dist2) {
+		*target_id  = bl->id;
+		*best_dist2 = dist2;
+	}
 	return 1;
 }
 
@@ -884,26 +897,24 @@ static void ac_check_target_alive(map_session_data *sd)
 	}
 
 	if (!ac_check_target(sd, sd->ac.target_id)) {
-		int target_id = 0;
 		sd->ac.target_id = 0;
 
 		// Only search for new targets every 0.3 second to reduce CPU usage
 		if (DIFF_TICK(current_tick, sd->ac.last_target_search) > 300) {
-			int target_id = 0;
-			sd->ac.target_id = 0;
+			int target_id  = 0;
+			int best_dist2 = 0;
 
-			// Use progressive range search - start small and expand
-			for (int i = 1; i <= AUTOCOMBAT_TARGETRANGE; i += 2) {
-				map_foreachinarea(ac_look_for_targets, sd->m, sd->x - i, sd->y - i, sd->x + i, sd->y + i, BL_MOB, &target_id, sd->id);
-				if (target_id) {
-					sd->ac.target_id = target_id;
-					break;
-				}
-			}
-		sd->ac.last_target_search = current_tick;
-			}
+			// One circular spatial sweep (existing rAthena spatial primitive).
+			// ac_look_for_targets returns the NEAREST valid monster within
+			// AUTOCOMBAT_TARGETRANGE — cheaper than the old expanding-square
+			// re-scan and it no longer depends on block iteration order.
+			map_foreachinrange(ac_look_for_targets, sd, AUTOCOMBAT_TARGETRANGE, BL_MOB, &target_id, &best_dist2, sd->id);
+
+			sd->ac.target_id = target_id;
+			sd->ac.last_target_search = current_tick;
 		}
 	}
+}
 
 void autocombat_pc_damage(map_session_data *sd, struct block_list *src, bool was_sitting)
 {
