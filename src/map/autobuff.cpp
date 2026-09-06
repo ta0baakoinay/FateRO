@@ -71,288 +71,153 @@ int ab_restore_state_timer(int tid, int64 tick, int id, intptr_t data) {
     return 0;
 }
 
-// Follow (movement) logic - Walk only, no teleporting
+// --- Auto-follow tuning (runtime constants, no config churn) --------------
+// Re-issue the chase path only when the target has moved more than this many
+// cells from the last point we chased toward.
+#define AB_REPATH_THRESHOLD 3
+// Consecutive follow ticks with the follower not walking before we treat it as
+// stuck and attempt a (config-gated) teleport rescue.
+#define AB_STUCK_TICKS 8
+
+// Teleport-to-target policy gate. battle_config.feature_autobuff_teleportiflost:
+//   0 = no        : never teleport to the followed player
+//   1 = samemap   : teleport only within the same map
+//   2 = anywhere  : teleport across maps too
+// This never bypasses instance ownership or map-flag teleport/warp rules.
+static bool ab_follow_teleport_ok(map_session_data* sd, map_session_data* target, bool cross_map) {
+	const int mode = battle_config.feature_autobuff_teleportiflost;
+	if (mode <= 0)
+		return false;
+	if (cross_map && mode < 2)
+		return false;
+
+	struct map_data* smap = map_getmapdata(sd->m);
+	struct map_data* tmap = map_getmapdata(target->m);
+	if (smap == nullptr || tmap == nullptr)
+		return false;
+
+	// Instance safety: only allow when the destination is a normal map, or the
+	// exact same instance the follower already belongs to. Never hop between
+	// two different instances or from a normal map into an instance.
+	if (smap->instance_id != tmap->instance_id)
+		return false;
+
+	if (smap->getMapFlag(MF_NOTELEPORT) || smap->getMapFlag(MF_NORETURN))
+		return false;
+	if (tmap->getMapFlag(MF_NOTELEPORT) || tmap->getMapFlag(MF_NOWARP)
+		|| tmap->getMapFlag(MF_NOWARPTO) || tmap->getMapFlag(MF_PVP_NOPARTY)
+		|| tmap->getMapFlag(MF_GVG) || tmap->getMapFlag(MF_GVG_CASTLE)
+		|| tmap->getMapFlag(MF_BATTLEGROUND))
+		return false;
+	return true;
+}
+
+static bool ab_follow_do_teleport(map_session_data* sd, map_session_data* target) {
+	if (pc_setpos(sd, target->mapindex, target->x, target->y, CLR_TELEPORT) != SETPOS_OK)
+		return false;
+	pc_delinvincibletimer(sd);
+	if (sd->state.autotrade)
+		clif_parse_LoadEndAck(sd->fd, sd);
+	sd->ab.follow_stuck = 0;
+	sd->ab.follow_last_x = target->x;
+	sd->ab.follow_last_y = target->y;
+	return true;
+}
+
+// Follow (movement) logic. Deliberately lightweight per tick:
+//   * no per-tick path_search()  * no per-tick unit_stop_walking()
+//   * squared-distance range test (no sqrt)  * no heap allocation
+// A chase is (re)issued only on: first acquisition, target moved > threshold,
+// follower not walking, or the walk target drifted. unit_walktobl() itself only
+// re-paths when the target actually changes cell, so the steady state is nearly
+// free even with thousands of followers.
 void processFollow(bool skip, map_session_data* sd, party_data* p) {
 	if (skip || sd->state.ab_stay || sd->state.ab_stop || pc_issit(sd) || pc_isdead(sd)
-		|| sd->ab.following_player <= 0)
+		|| sd->ab.following_player == 0)
 		return;
 
-	auto* target = map_charid2sd(sd->ab.following_player);
-	if (!target) {
-		std::string msg = "Autobuff : Player to follow is offline, I don't follow anyone !";
-		ab_partymessage(sd, "FollowPlayerOffline", msg.data(), 600);
+	map_session_data* target = map_charid2sd(sd->ab.following_player);
+	if (target == nullptr) {
+		ab_partymessage(sd, "FollowPlayerOffline",
+			(char*)"Autobuff : Player to follow is offline, I don't follow anyone !", 600);
 		sd->state.ab_stay = true;
+		sd->ab.follow_last_x = sd->ab.follow_last_y = -1;
+		sd->ab.follow_stuck = 0;
 		return;
 	}
-	bool in_party = std::any_of(std::begin(p->party.member), std::end(p->party.member),
-		[&](auto& m) { return m.char_id == target->status.char_id; });
+
+	bool in_party = false;
+	for (int i = 0; i < MAX_PARTY; ++i) {
+		if (p->party.member[i].char_id == target->status.char_id) { in_party = true; break; }
+	}
 	if (!in_party) {
-		std::string msg = "Autobuff : Player to follow is offline, I don't follow anyone !";
-		ab_partymessage(sd, "FollowPlayerOffline", msg.data(), 600);
+		ab_partymessage(sd, "FollowPlayerOffline",
+			(char*)"Autobuff : Player to follow is not in the party anymore !", 600);
 		return;
 	}
 
-	// Different map handling
+	// Different map -> config-gated, instance-safe teleport only.
 	if (target->m != sd->m) {
-		if (battle_config.feature_autobuff_teleportiflost >= 2) {
-			if (pc_setpos(sd, target->mapindex, target->x, target->y, CLR_TELEPORT) == SETPOS_OK) {
-				pc_delinvincibletimer(sd);
-				if (sd->state.autotrade)
-					clif_parse_LoadEndAck(sd->fd, sd);
-			}
-		} else {
-			std::string msg = "Autobuff : too far away from the autobuff - You're on a different map!";
-			ab_partymessage(sd, "TooFarFromFollow", msg.data(), 600);
-		}
+		if (ab_follow_teleport_ok(sd, target, true))
+			ab_follow_do_teleport(sd, target);
+		else
+			ab_partymessage(sd, "TooFarFromFollow",
+				(char*)"Autobuff : too far away - the followed player is on a different map!", 600);
 		return;
 	}
 
-	int dist = distance_bl(target, sd);
-
-	// Don't move if already close enough
-	if (dist <= sd->ab.dist_to_leader)
+	const int range = (sd->ab.dist_to_leader < 1) ? 1 : (int)sd->ab.dist_to_leader;
+	const int dx = target->x - sd->x;
+	const int dy = target->y - sd->y;
+	if (dx * dx + dy * dy <= range * range) {
+		sd->ab.follow_stuck = 0;             // in support range - nothing to do
 		return;
-
-	// Stop any current movement before starting new movement
-	if (sd->ud.walktimer != INVALID_TIMER) {
-		unit_stop_walking(sd, 1);
 	}
 
-	// Check if teleport is allowed on this map
-	auto can_teleport_on_map = [&]() -> bool {
-		struct map_data* mapdata = map_getmapdata(sd->m);
-		return !mapdata->getMapFlag(MF_NOTELEPORT) &&
-		       !mapdata->getMapFlag(MF_NOWARP) &&
-		       !mapdata->getMapFlag(MF_NOWARPTO) &&
-		       !mapdata->getMapFlag(MF_GVG) &&
-		       !mapdata->getMapFlag(MF_GVG_CASTLE);
-	};
+	const int tdx = target->x - sd->ab.follow_last_x;
+	const int tdy = target->y - sd->ab.follow_last_y;
+	const bool need_repath =
+		   sd->ab.follow_last_x < 0                                   // no cached chase
+		|| (tdx * tdx + tdy * tdy) > (AB_REPATH_THRESHOLD * AB_REPATH_THRESHOLD) // target moved
+		|| sd->ud.walktimer == INVALID_TIMER                          // not walking
+		|| sd->ud.target_to != target->id;                           // walking elsewhere
 
-	// Function to attempt teleport to get unstuck
-// Function to attempt teleport to get unstuck
-auto try_teleport_rescue = [&]() -> bool {
-	if (!can_teleport_on_map()) {
-		return false;
-	}
-
-	// Try teleport skill first (AL_TELEPORT)
-	if (pc_checkskill(sd, AL_TELEPORT) > 0 && ab_canuseskill(sd, AL_TELEPORT, 1)) {
-		if (unit_skilluse_id(sd, sd->id, AL_TELEPORT, 1)) {
-			skill_consume_requirement(sd, AL_TELEPORT, 1, 2);
-			std::string msg = "AutoBuff: Using Teleport skill to reach leader";
-			ab_partymessage(sd, "TeleportRescue", msg.data(), 100);
-			return true;
+	if (need_repath) {
+		if (unit_walktobl(sd, target, range, 0)) {
+			sd->ab.follow_last_x = target->x;
+			sd->ab.follow_last_y = target->y;
+			sd->ab.follow_repath_tick = gettick();
 		}
 	}
 
-	// Try fly wing item (601)
-	int fly_wing_idx = pc_search_inventory(sd, 601); // Fly Wing
-	if (fly_wing_idx >= 0) {
-		if (pc_useitem(sd, fly_wing_idx)) {
-			std::string msg = "AutoBuff: Using Fly Wing to reach leader";
-			ab_partymessage(sd, "FlyWingRescue", msg.data(), 100);
-			return true;
-		}
-	}
-
-	// Try alternative fly wing item (12887)
-	int alt_fly_wing_idx = pc_search_inventory(sd, 12887); // Alternative Fly Wing
-	if (alt_fly_wing_idx >= 0) {
-		if (pc_useitem(sd, alt_fly_wing_idx)) {
-			std::string msg = "AutoBuff: Using Fly Wing to reach leader";
-			ab_partymessage(sd, "FlyWingRescue", msg.data(), 100);
-			return true;
-		}
-	}
-
-	return false;
-};
-
-	// Helper function to try movement with pathfinding
-	auto try_move_with_pathfinding = [&](int dest_x, int dest_y) -> bool {
-		// First try direct movement
-		if (unit_walktoxy(sd, dest_x, dest_y, 8)) {
-			return true;
-		}
-
-		// If direct movement fails, use pathfinding
-		struct walkpath_data wpd;
-		if (path_search(&wpd, sd->m, sd->x, sd->y, dest_x, dest_y, 0, CELL_CHKNOPASS)) {
-			// Take several steps along the path for faster movement
-			int steps_to_take = min(wpd.path_len, 3); // Take up to 3 steps at once
-
-			int new_x = sd->x;
-			int new_y = sd->y;
-
-			for (int i = 0; i < steps_to_take; i++) {
-				new_x += dirx[wpd.path[i]];
-				new_y += diry[wpd.path[i]];
-			}
-
-			return unit_walktoxy(sd, new_x, new_y, 8);
-		}
-
-		return false;
-	};
-
-bool movement_success = false;
-static std::map<int, int> stuck_counter; // Track how many times player got stuck
-
-// Helper function to check if there's a clear path to destination
-auto has_clear_path = [&](int dest_x, int dest_y) -> bool {
-	struct walkpath_data wpd;
-	return path_search(&wpd, sd->m, sd->x, sd->y, dest_x, dest_y, 0, CELL_CHKNOPASS);
-};
-
-// Handle very long distances (50+ cells)
-if (dist >= 50) {
-	if (battle_config.feature_autobuff_teleportiflost >= 1 && can_teleport_on_map()) {
-		// Teleport directly to target if allowed
-		movement_success = (pc_setpos(sd, target->mapindex, target->x, target->y, CLR_TELEPORT) == SETPOS_OK);
-		if (movement_success) {
-			pc_delinvincibletimer(sd);
-			if (sd->state.autotrade)
-				clif_parse_LoadEndAck(sd->fd, sd);
-			stuck_counter[sd->id] = 0; // Reset stuck counter
-			return;
-		}
-	}
-
-	// If teleport not allowed or failed, use step-by-step approach
-	int dx = target->x - sd->x;
-	int dy = target->y - sd->y;
-
-	// Move 25% of the distance or max 15 cells, whichever is smaller
-	int move_distance = min(15, max(dist / 4, 5));
-
-	// Calculate direction ratios
-	float distance_ratio = sqrt((float)(dx*dx + dy*dy));
-	if (distance_ratio > 0) {
-		int move_x = sd->x + (int)(move_distance * dx / distance_ratio);
-		int move_y = sd->y + (int)(move_distance * dy / distance_ratio);
-
-		// Use pathfinding to get there
-		movement_success = try_move_with_pathfinding(move_x, move_y);
-
-		// If that fails, try multiple intermediate points
-		if (!movement_success) {
-			for (int attempt = 1; attempt <= 4 && !movement_success; attempt++) {
-				int try_distance = move_distance / (attempt + 1);
-				int try_x = sd->x + (int)(try_distance * dx / distance_ratio);
-				int try_y = sd->y + (int)(try_distance * dy / distance_ratio);
-
-				movement_success = try_move_with_pathfinding(try_x, try_y);
-			}
-		}
-	}
-
-	// If still stuck, increment counter and try teleport rescue
-	if (!movement_success) {
-		stuck_counter[sd->id]++;
-		if (stuck_counter[sd->id] >= 3) { // After 3 failed attempts
-			if (try_teleport_rescue()) {
-				stuck_counter[sd->id] = 0; // Reset counter after successful teleport
-				return;
-			} else {
-				std::string msg = "AutoBuff: Cannot reach leader - no teleport available";
-				ab_partymessage(sd, "CompletelyStuck", msg.data(), 1000);
-			}
-	} else {
-		stuck_counter[sd->id] = 0; // Reset counter on successful movement
-		std::string msg = "AutoBuff: Moving towards leader (dist: " + std::to_string(dist) + ")";
-		ab_partymessage(sd, "MovingToLeader", msg.data(), 500);
-	}
-}
-// Handle medium distances (15-49 cells) - CHECK PATH FIRST
-else if (dist >= 15) {
-	// Check if there's a clear path to target first
-	if (has_clear_path(target->x, target->y)) {
-		// Clear path exists - use normal walking
-		movement_success = try_move_with_pathfinding(target->x, target->y);
-		stuck_counter[sd->id] = 0; // Reset counter since path is clear
-		}
-
-		if (movement_success) {
-			std::string msg = "AutoBuff: Walking to leader (clear path, dist: " + std::to_string(dist) + ")";
-			ab_partymessage(sd, "WalkingClearPath", msg.data(), 200);
-		}
-	} else {
-		// No clear path - try intermediate points first
-		int dx = target->x - sd->x;
-		int dy = target->y - sd->y;
-
-		// Try multiple intermediate points
-		for (int divisor = 2; divisor <= 4 && !movement_success; divisor++) {
-			int move_x = sd->x + dx / divisor;
-			int move_y = sd->y + dy / divisor;
-
-			if (has_clear_path(move_x, move_y)) {
-				movement_success = try_move_with_pathfinding(move_x, move_y);
-				if (movement_success) {
-					stuck_counter[sd->id] = 0;
-					std::string msg = "AutoBuff: Walking via intermediate point (dist: " + std::to_string(dist) + ")";
-					ab_partymessage(sd, "WalkingIntermediate", msg.data(), 200);
-					break;
-				}
-			}
-		}
-
-		// If no intermediate path works, try teleport rescue
-		if (!movement_success) {
-			stuck_counter[sd->id]++;
-			if (stuck_counter[sd->id] >= 2) { // Try teleport after 2 attempts for medium distance
-				if (try_teleport_rescue()) {
-					stuck_counter[sd->id] = 0;
-					return;
+	// Stuck recovery: only when we are genuinely not moving.
+	if (sd->ud.walktimer == INVALID_TIMER) {
+		if (++sd->ab.follow_stuck >= AB_STUCK_TICKS) {
+			sd->ab.follow_stuck = 0;
+			bool rescued = false;
+			if (ab_follow_teleport_ok(sd, target, false)) {
+				if (pc_checkskill(sd, AL_TELEPORT) > 0 && ab_canuseskill(sd, AL_TELEPORT, 1)
+					&& unit_skilluse_id(sd, sd->id, AL_TELEPORT, 1)) {
+					skill_consume_requirement(sd, AL_TELEPORT, 1, 2);
+					rescued = true;
 				} else {
-					std::string msg = "AutoBuff: Path blocked and no teleport available";
-					ab_partymessage(sd, "PathBlockedNoTeleport", msg.data(), 500);
+					int fw = pc_search_inventory(sd, 601);
+					if (fw < 0)
+						fw = pc_search_inventory(sd, 12887);
+					if (fw >= 0 && pc_useitem(sd, fw))
+						rescued = true;
 				}
-			} else {
-				std::string msg = "AutoBuff: Path blocked, will try teleport next (" + std::to_string(stuck_counter[sd->id]) + "/2)";
-				ab_partymessage(sd, "PathBlocked", msg.data(), 300);
+				if (!rescued)
+					rescued = ab_follow_do_teleport(sd, target);
 			}
+			if (!rescued)
+				ab_partymessage(sd, "CompletelyStuck",
+					(char*)"AutoBuff: cannot reach the player - path blocked and teleport not allowed", 1500);
 		}
-	}
-}
-// Handle close distances with path checking
-else if (dist > sd->ab.dist_to_leader) {
-	// Calculate ideal position to maintain distance
-	int dx = target->x - sd->x;
-	int dy = target->y - sd->y;
-
-	int dest_x = target->x;
-	int dest_y = target->y;
-
-	// Try to maintain desired distance
-	if (sd->ab.dist_to_leader > 1 && dist > 0) {
-		float ratio = (float)(dist - sd->ab.dist_to_leader) / (float)dist;
-		dest_x = sd->x + (int)(dx * ratio);
-		dest_y = sd->y + (int)(dy * ratio);
-	}
-
-	// Check if there's a clear path to the desired position first
-	if (has_clear_path(dest_x, dest_y)) {
-		// Clear path to ideal position - use normal pathfinding
-		movement_success = try_move_with_pathfinding(dest_x, dest_y);
-	} else if (has_clear_path(target->x, target->y)) {
-		// Can't reach ideal position, but can reach target directly
-		movement_success = try_move_with_pathfinding(target->x, target->y);
 	} else {
-		// No clear path - try original ab_walk as last resort for short distances
-		movement_success = ab_walk(sd, dest_x, dest_y, 8);
-
-		// If ab_walk fails, try direct pathfinding anyway
-		if (!movement_success) {
-			movement_success = try_move_with_pathfinding(target->x, target->y);
-	}
-		}
-
-	if (movement_success) {
-		stuck_counter[sd->id] = 0;
+		sd->ab.follow_stuck = 0;
 	}
 }
-		}
 
 // Private message command processing
 int processPrivateCommands(map_session_data* sd, enum sc_type type,

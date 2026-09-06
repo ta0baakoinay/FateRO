@@ -18,6 +18,56 @@
 //	return 0;
 //}
 
+/**
+ * @autosupport allowteleport <no|samemap|anywhere>
+ * Server-wide runtime control of the Auto Support (AutoBuff) teleport-to-target
+ * policy. Maps onto battle_config.feature_autobuff_teleportiflost (0/1/2) and is
+ * picked up immediately by every Auto Support follower - it is NOT per-character.
+ * Standard rAthena permission system: available to any group that has this
+ * command (the admin / level-99 group already does via all_commands).
+ */
+ACMD_FUNC(autosupport)
+{
+	nullpo_retr(-1, sd);
+
+	char sub[32], mode[32];
+	sub[0] = mode[0] = '\0';
+
+	if (!message || !*message || sscanf(message, "%31s %31s", sub, mode) < 1 || strcmpi(sub, "allowteleport") != 0) {
+		clif_displaymessage(fd, "Usage: @autosupport allowteleport <no|samemap|anywhere>");
+		clif_displaymessage(fd, "  no       - Auto Support never teleports to the followed player");
+		clif_displaymessage(fd, "  samemap  - teleport only when both are on the same map");
+		clif_displaymessage(fd, "  anywhere - teleport across maps too");
+		clif_displaymessage(fd, "  (instance / NoTeleport / NoWarp / GvG / BG restrictions still apply)");
+		return -1;
+	}
+
+	if (mode[0] == '\0') {
+		const char* cur = battle_config.feature_autobuff_teleportiflost >= 2 ? "anywhere" :
+		                  battle_config.feature_autobuff_teleportiflost == 1 ? "samemap" : "no";
+		char buf[96];
+		safesnprintf(buf, sizeof(buf), "Auto Support allowteleport is currently: %s", cur);
+		clif_displaymessage(fd, buf);
+		return 0;
+	}
+
+	int32 val;
+	if (strcmpi(mode, "no") == 0 || strcmpi(mode, "off") == 0)              val = 0;
+	else if (strcmpi(mode, "samemap") == 0 || strcmpi(mode, "same_map") == 0) val = 1;
+	else if (strcmpi(mode, "anywhere") == 0 || strcmpi(mode, "any") == 0)   val = 2;
+	else {
+		clif_displaymessage(fd, "Invalid mode. Use: no | samemap | anywhere");
+		return -1;
+	}
+
+	battle_config.feature_autobuff_teleportiflost = val;
+
+	char buf[128];
+	safesnprintf(buf, sizeof(buf), "Auto Support allowteleport set to '%s' (server-wide, runtime).", mode);
+	clif_displaymessage(fd, buf);
+	return 0;
+}
+
 
 ACMD_FUNC(battleinfo)
 {

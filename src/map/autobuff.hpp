@@ -111,11 +111,24 @@ struct s_autobuff {
 		party_msg{},            // Initialise à une map vide
 		order_msg{},             // Initialise à une deque vide
 		loadtimer(0),
-		priorize_buff(0)
+		priorize_buff(0),
+		follow_last_x(-1),
+		follow_last_y(-1),
+		follow_stuck(0),
+		follow_repath_tick(0)
 	{}
 
 	uint32 following_player;
 	uint16 dist_to_leader;
+	// --- Auto-follow movement cache (runtime only, never persisted) ---------
+	// Last target cell we issued a chase toward. A new path is only requested
+	// when the target has moved far enough from this point, when we are not
+	// already walking, or when the cached data is invalid. Keeps the hot path
+	// free of per-tick path_search() calls.
+	int16 follow_last_x;
+	int16 follow_last_y;
+	uint8 follow_stuck;        // consecutive ticks with no position progress
+	t_tick follow_repath_tick; // gettick() of the last chase (re)issue
 	std::vector<s_autobuff_heal> autobuff_heal;
 	std::vector<s_autobuff_buffskills> autobuff_buffskills;
 	bool autobuff_resurection;

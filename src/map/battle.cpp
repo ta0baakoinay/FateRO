@@ -12413,6 +12413,26 @@ int32 battle_set_value(const char* w1, const char* w2)
 {
 	int32 val = config_switch(w2);
 
+	// [Auto Support] feature.autobuff_teleportiflost also accepts the words
+	// no / samemap / anywhere (in addition to 0 / 1 / 2). Invalid input is
+	// rejected safely and falls back to "no".
+	if (strcmpi(w1, "feature.autobuff_teleportiflost") == 0) {
+		if (strcmpi(w2, "no") == 0 || strcmpi(w2, "off") == 0 || strcmpi(w2, "false") == 0)
+			val = 0;
+		else if (strcmpi(w2, "samemap") == 0 || strcmpi(w2, "same_map") == 0)
+			val = 1;
+		else if (strcmpi(w2, "anywhere") == 0 || strcmpi(w2, "any") == 0)
+			val = 2;
+		else if (w2[0] >= '0' && w2[0] <= '2' && w2[1] == '\0')
+			val = w2[0] - '0';
+		else {
+			ShowWarning("Value for setting 'feature.autobuff_teleportiflost': %s is invalid (expected no/samemap/anywhere)! Defaulting to no.\n", w2);
+			val = 0;
+		}
+		battle_config.feature_autobuff_teleportiflost = val;
+		return 1;
+	}
+
 	int32 i;
 	ARR_FIND(0, ARRAYLENGTH(battle_data), i, strcmpi(w1, battle_data[i].str) == 0);
 	if (i == ARRAYLENGTH(battle_data))

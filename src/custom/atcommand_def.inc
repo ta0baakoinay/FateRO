@@ -9,6 +9,7 @@
  **/
 
 //ACMD_DEF(newcommand),
+ACMD_DEF(autosupport), // [Auto Support] @autosupport allowteleport <no|samemap|anywhere>
 ACMD_DEFR(battlestats, ATCMD_NOCONSOLE|ATCMD_NOAUTOTRADE),
 ACMD_DEF(battleinfo),ACMD_DEF(spb),
 ACMD_DEF(packetfilter),
