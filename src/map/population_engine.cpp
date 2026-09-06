@@ -693,6 +693,18 @@ void population_engine_shell_release(map_session_data* sd)
 	sd->state.warping = 0;
 	sd->state.connect_new = 0;
 
+	// Free the shell's bonus_script entries explicitly. The one this engine adds
+	// (population_engine.cpp: pc_bonus_script_add(... BSF_PERMANENT, type 0))
+	// is NOT freed by unit_free's pc_bonus_script_clear(sd, BSF_REM_ALL): that
+	// path passes flag 0, and with flag 0 the clear loop skips every entry that
+	// carries BSF_PERMANENT. Passing BSF_PERMANENT here hits the "remove all,
+	// including permanent" branch and frees the entry + its StringBuf + parsed
+	// script_code + linkdb node. Without this, every shell that has a
+	// bonus_script leaks that chain on release (shows up in the memory-manager
+	// report as pc.cpp / db.cpp linkdb_insert / script.cpp parse_script leaks,
+	// scaling with total shells cycled). No-op when the list is empty.
+	pc_bonus_script_clear(sd, BSF_PERMANENT);
+
 	// Only call map_quit if the shell is still registered.  Any external path that
 	// calls map_quit on a shell (handle_shutdown, @kickall, etc.) will have already
 	// removed it from id_db via map_deliddb; skip here to avoid double unit_free.

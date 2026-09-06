@@ -61,7 +61,7 @@ start_serv(){
 		echo "stat_serv, log is enabled"
 		echo "My logfile=${LOGFILE}"
 		if [ -z ${PSRUN} ]; then
-			if [ -e ./${FIFO} ]; then rm "$FIFO"; fi
+			if [ -e ./${FIFO} ]; then rm -f "$FIFO"; fi
 			mkfifo "$FIFO"; tee "$LOGRUN" < "$FIFO" & "./$1" > "$FIFO" 2>&1 & PID=$!
 			#"./$1" > >(tee "$LOGRUN") 2>&1 & PID=$! #bash only
 			echo "$PID" > .$1.pid
@@ -101,7 +101,7 @@ watch_serv(){
 				echo "server '$i' is down" >> ${LOGFILE}
 				echo "restarting server at time at $(date +"%m-%d-%H:%M-%S")"
 				echo "restarting server at time at $(date +"%m-%d-%H:%M-%S")" >> ${LOGFILE}
-				if [ -e $FIFO ]; then rm $FIFO; fi
+				if [ -e $FIFO ]; then rm -f "$FIFO"; fi
 				mkfifo "$FIFO"; tee "$LOGRUN" < "$FIFO" & "./$i" > "$FIFO" 2>&1 & PID=$!
 				echo "$PID" > .$i.pid
 				if [ $2 ] && [ $2 -lt $count ]; then break; fi
@@ -121,7 +121,7 @@ restart(){
 			get_status ${i}
 			if [ ${PSRUN} ]; then echo "'${i}' is still running p${PSRUN} waiting for the process to end"; sleep 2;
 			else 
-				if [ -e ./${FIFO} ]; then rm "$FIFO"; fi
+				if [ -e ./${FIFO} ]; then rm -f "$FIFO"; fi
 				break
 			fi
 		done
@@ -165,17 +165,26 @@ case $1 in
 		do
 			PIDFILE=.${i}.pid
 			if [ -e ./${PIDFILE} ]; then
-				kill $(cat ${PIDFILE})
+				_pid=$(cat ${PIDFILE} 2>/dev/null)
+				# The recorded process may already be gone (crash, prior kill).
+				# Guard so a dead pid does not spew "kill: No such process".
+				if [ -n "${_pid}" ] && kill -0 ${_pid} 2>/dev/null; then
+					kill ${_pid} 2>/dev/null
 
-				while true; do
-					get_status ${i}
-					if [ ${PSRUN} ]; then echo "'${i}' is still running p${PSRUN} waiting for the process to end"; sleep 2;
-					else
-						break
-					fi
-				done
+					while true; do
+						get_status ${i}
+						if [ ${PSRUN} ]; then echo "'${i}' is still running p${PSRUN} waiting for the process to end"; sleep 2;
+						else
+							break
+						fi
+					done
+				else
+					echo "'${i}' pid ${_pid:-?} in ${PIDFILE} is not running - clearing stale pid file"
+				fi
 
-				rm ${PIDFILE}
+				# -f: pid files can end up write-protected; plain rm then prompts
+				# interactively and hangs a non-interactive stop.
+				rm -f ${PIDFILE}
 			fi
 			# Also clear any orphan of this server started from this directory
 			# but not tracked by the pid file.
