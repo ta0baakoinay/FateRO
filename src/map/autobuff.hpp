@@ -114,7 +114,7 @@ struct s_autobuff {
 		priorize_buff(0),
 		follow_last_x(-1),
 		follow_last_y(-1),
-		follow_stuck(0),
+		follow_unreachable_since(0),
 		follow_repath_tick(0)
 	{}
 
@@ -127,8 +127,9 @@ struct s_autobuff {
 	// free of per-tick path_search() calls.
 	int16 follow_last_x;
 	int16 follow_last_y;
-	uint8 follow_stuck;        // consecutive ticks with no position progress
-	t_tick follow_repath_tick; // gettick() of the last chase (re)issue
+	t_tick follow_unreachable_since; // gettick() when the follower first stopped making
+	                                 // progress toward the target (0 = currently fine)
+	t_tick follow_repath_tick;       // gettick() of the last chase (re)attempt, success or not
 	std::vector<s_autobuff_heal> autobuff_heal;
 	std::vector<s_autobuff_buffskills> autobuff_buffskills;
 	bool autobuff_resurection;

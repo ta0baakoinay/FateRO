@@ -75,9 +75,15 @@ int ab_restore_state_timer(int tid, int64 tick, int id, intptr_t data) {
 // Re-issue the chase path only when the target has moved more than this many
 // cells from the last point we chased toward.
 #define AB_REPATH_THRESHOLD 3
-// Consecutive follow ticks with the follower not walking before we treat it as
-// stuck and attempt a (config-gated) teleport rescue.
-#define AB_STUCK_TICKS 8
+// While the follower is stationary and repathing keeps failing, don't hammer
+// path_search() every processFollow tick (which can run as often as every
+// 250ms, feature.autobuff_timer) - only retry at this cadence.
+#define AB_REPATH_RETRY_MS 1000
+// How long the follower may make zero progress toward the target (blocked
+// path, brief out-of-view, latency, ...) before the config-gated teleport
+// rescue kicks in. Deliberately well above the "1-2s hiccup" range so normal
+// pathfinding gets a real chance to catch up before we ever consider a warp.
+#define AB_UNREACHABLE_GRACE_MS 6000
 
 // Teleport-to-target policy gate. battle_config.feature_autobuff_teleportiflost:
 //   0 = no        : never teleport to the followed player
@@ -118,7 +124,7 @@ static bool ab_follow_do_teleport(map_session_data* sd, map_session_data* target
 	pc_delinvincibletimer(sd);
 	if (sd->state.autotrade)
 		clif_parse_LoadEndAck(sd->fd, sd);
-	sd->ab.follow_stuck = 0;
+	sd->ab.follow_unreachable_since = 0;
 	sd->ab.follow_last_x = target->x;
 	sd->ab.follow_last_y = target->y;
 	return true;
@@ -142,7 +148,7 @@ void processFollow(bool skip, map_session_data* sd, party_data* p) {
 			(char*)"Autobuff : Player to follow is offline, I don't follow anyone !", 600);
 		sd->state.ab_stay = true;
 		sd->ab.follow_last_x = sd->ab.follow_last_y = -1;
-		sd->ab.follow_stuck = 0;
+		sd->ab.follow_unreachable_since = 0;
 		return;
 	}
 
@@ -170,10 +176,11 @@ void processFollow(bool skip, map_session_data* sd, party_data* p) {
 	const int dx = target->x - sd->x;
 	const int dy = target->y - sd->y;
 	if (dx * dx + dy * dy <= range * range) {
-		sd->ab.follow_stuck = 0;             // in support range - nothing to do
+		sd->ab.follow_unreachable_since = 0; // in support range - nothing to do
 		return;
 	}
 
+	const t_tick now = gettick();
 	const int tdx = target->x - sd->ab.follow_last_x;
 	const int tdy = target->y - sd->ab.follow_last_y;
 	const bool need_repath =
@@ -182,18 +189,31 @@ void processFollow(bool skip, map_session_data* sd, party_data* p) {
 		|| sd->ud.walktimer == INVALID_TIMER                          // not walking
 		|| sd->ud.target_to != target->id;                           // walking elsewhere
 
-	if (need_repath) {
+	// While actively walking, re-issue as soon as the target drifts (keeps the
+	// chase responsive). While stalled, only retry at AB_REPATH_RETRY_MS - a
+	// blocked/failed path_search() is expensive and won't usually resolve
+	// itself within the same tick, so hammering it every 250-500ms just burns
+	// CPU across every following character.
+	const bool retry_due = DIFF_TICK(now, sd->ab.follow_repath_tick) >= AB_REPATH_RETRY_MS;
+	if (need_repath && (sd->ud.walktimer != INVALID_TIMER || sd->ab.follow_last_x < 0 || retry_due)) {
+		sd->ab.follow_repath_tick = now;
 		if (unit_walktobl(sd, target, range, 0)) {
 			sd->ab.follow_last_x = target->x;
 			sd->ab.follow_last_y = target->y;
-			sd->ab.follow_repath_tick = gettick();
+			sd->ab.follow_unreachable_since = 0;
 		}
 	}
 
-	// Stuck recovery: only when we are genuinely not moving.
+	// Stuck recovery: only once we've made zero progress for a real amount of
+	// time, not just for a tick or two - a brief obstacle, latency spike, or
+	// momentary loss of the target should resolve itself via the normal
+	// pathfinding above well before this fires.
 	if (sd->ud.walktimer == INVALID_TIMER) {
-		if (++sd->ab.follow_stuck >= AB_STUCK_TICKS) {
-			sd->ab.follow_stuck = 0;
+		if (sd->ab.follow_unreachable_since == 0)
+			sd->ab.follow_unreachable_since = now;
+
+		if (DIFF_TICK(now, sd->ab.follow_unreachable_since) >= AB_UNREACHABLE_GRACE_MS) {
+			sd->ab.follow_unreachable_since = now; // start a fresh grace window either way
 			bool rescued = false;
 			if (ab_follow_teleport_ok(sd, target, false)) {
 				if (pc_checkskill(sd, AL_TELEPORT) > 0 && ab_canuseskill(sd, AL_TELEPORT, 1)
@@ -215,7 +235,7 @@ void processFollow(bool skip, map_session_data* sd, party_data* p) {
 					(char*)"AutoBuff: cannot reach the player - path blocked and teleport not allowed", 1500);
 		}
 	} else {
-		sd->ab.follow_stuck = 0;
+		sd->ab.follow_unreachable_since = 0; // making progress - cancel any pending rescue
 	}
 }
 
