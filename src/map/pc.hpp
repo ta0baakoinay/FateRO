@@ -17,6 +17,7 @@
 #include "autocombat.hpp" // [jsn] Auto Combat
 #include "autobuff.hpp"
 #include "battleground.hpp"
+#include "population_engine/core/population_shell_state.hpp"
 #include "buyingstore.hpp" // struct s_buyingstore
 #include "clif.hpp" //e_wip_block
 #include "itemdb.hpp" // MAX_ITEMGROUP
@@ -417,6 +418,7 @@ struct s_emote_data {
 
 class map_session_data : public block_list {
 public:
+	~map_session_data();
 	int32 hpbar_target_gid = 0; // HP Bar: last-targeted MVP mob GID
 	struct unit_data ud;
 	struct view_data vd;
@@ -426,12 +428,14 @@ public:
 	struct regen_data_sub sregen, ssregen;
 	struct s_autobuff ab;  // Instance de la structure
 	struct s_auto_combat ac; // [jsn] Auto Combat
+	struct s_population pop;
 	//NOTE: When deciding to add a flag to state or special_state, take into consideration that state is preserved in
 	//status_calc_pc, while special_state is recalculated in each call. [Skotlex]
 	struct s_state {
 		uint32 autobuff : 1;
 		uint32 ab_stop : 1;
 		uint32 ab_stay : 1;
+		uint32 population_combat : 1;
 		uint32 active : 1; //Marks active player (not active is logging in/out, or changing map servers)
 		uint32 menu_or_input : 1;// if a script is waiting for feedback from the player
 		uint32 dead_sit : 2;
@@ -1475,6 +1479,7 @@ uint8 pc_isequip(map_session_data *sd,int32 n);
 int32 pc_equippoint(map_session_data *sd,int32 n);
 int32 pc_equippoint_sub(map_session_data *sd, struct item_data* id);
 void pc_setinventorydata( map_session_data& sd );
+void pc_calcweapontype( map_session_data* sd );
 
 int32 pc_get_skillcooldown(map_session_data *sd, uint16 skill_id, uint16 skill_lv);
 uint8 pc_checkskill(const map_session_data *sd,uint16 skill_id);

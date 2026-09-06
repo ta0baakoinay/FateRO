@@ -60,9 +60,11 @@ void vending_closevending(map_session_data* sd)
 	nullpo_retv(sd);
 
 	if( sd->state.vending ) {
-		if( Sql_Query( mmysql_handle, "DELETE FROM `%s` WHERE vending_id = %d;", vending_items_table, sd->vender_id ) != SQL_SUCCESS ||
-			Sql_Query( mmysql_handle, "DELETE FROM `%s` WHERE `id` = %d;", vendings_table, sd->vender_id ) != SQL_SUCCESS ) {
-				Sql_ShowDebug(mmysql_handle);
+		if( !IS_POPULATION_ENGINE_ACCOUNT_ID(sd->status.account_id) ) {
+			if( Sql_Query( mmysql_handle, "DELETE FROM `%s` WHERE vending_id = %d;", vending_items_table, sd->vender_id ) != SQL_SUCCESS ||
+				Sql_Query( mmysql_handle, "DELETE FROM `%s` WHERE `id` = %d;", vendings_table, sd->vender_id ) != SQL_SUCCESS ) {
+					Sql_ShowDebug(mmysql_handle);
+			}
 		}
 
 		sd->state.vending = false;
@@ -229,6 +231,7 @@ void vending_purchasereq(map_session_data* sd, int32 aid, int32 uid, const uint8
 		vsd->vending[vend_list[i]].amount -= amount;
 		z += ((double)vsd->vending[vend_list[i]].value * (double)amount);
 
+		if( !IS_POPULATION_ENGINE_ACCOUNT_ID(vsd->status.account_id) ) {
 		if( vsd->vending[vend_list[i]].amount ) {
 			if( Sql_Query( mmysql_handle, "UPDATE `%s` SET `amount` = %d WHERE `vending_id` = %d and `cartinventory_id` = %d", vending_items_table, vsd->vending[vend_list[i]].amount, vsd->vender_id, vsd->cart.u.items_cart[idx].id ) != SQL_SUCCESS ) {
 				Sql_ShowDebug( mmysql_handle );
@@ -237,6 +240,7 @@ void vending_purchasereq(map_session_data* sd, int32 aid, int32 uid, const uint8
 			if( Sql_Query( mmysql_handle, "DELETE FROM `%s` WHERE `vending_id` = %d and `cartinventory_id` = %d", vending_items_table, vsd->vender_id, vsd->cart.u.items_cart[idx].id ) != SQL_SUCCESS ) {
 				Sql_ShowDebug( mmysql_handle );
 			}
+		}
 		}
 
 		pc_cart_delitem(vsd, idx, amount, 0, LOG_TYPE_VENDING);
@@ -390,24 +394,26 @@ int8 vending_openvending( map_session_data& sd, const char* message, const uint8
 	sd.vender_id = vending_getuid();
 	sd.vend_num = i;
 	safestrncpy(sd.message, message, MESSAGE_SIZE);
-	
-	Sql_EscapeString( mmysql_handle, message_sql, sd.message );
 
-	if( Sql_Query( mmysql_handle, "INSERT INTO `%s`(`id`, `account_id`, `char_id`, `sex`, `map`, `x`, `y`, `title`, `autotrade`, `body_direction`, `head_direction`, `sit`) "
-		"VALUES( %d, %d, %d, '%c', '%s', %d, %d, '%s', %d, '%d', '%d', '%d' );",
-		vendings_table, sd.vender_id, sd.status.account_id, sd.status.char_id, sd.status.sex == SEX_FEMALE ? 'F' : 'M', map_getmapdata(sd.m)->name, sd.x, sd.y, message_sql, sd.state.autotrade, at ? at->dir : sd.ud.dir, at ? at->head_dir : sd.head_dir, at ? at->sit : pc_issit(&sd) ) != SQL_SUCCESS ) {
-		Sql_ShowDebug(mmysql_handle);
-	}
+	if( !IS_POPULATION_ENGINE_ACCOUNT_ID(sd.status.account_id) ) {
+		Sql_EscapeString( mmysql_handle, message_sql, sd.message );
 
-	StringBuf_Init(&buf);
-	StringBuf_Printf(&buf, "INSERT INTO `%s`(`vending_id`,`index`,`cartinventory_id`,`amount`,`price`) VALUES", vending_items_table);
-	for (j = 0; j < i; j++) {
-		StringBuf_Printf(&buf, "(%d,%d,%d,%d,%d)", sd.vender_id, j, sd.cart.u.items_cart[sd.vending[j].index].id, sd.vending[j].amount, sd.vending[j].value);
-		if (j < i-1)
-			StringBuf_AppendStr(&buf, ",");
+		if( Sql_Query( mmysql_handle, "INSERT INTO `%s`(`id`, `account_id`, `char_id`, `sex`, `map`, `x`, `y`, `title`, `autotrade`, `body_direction`, `head_direction`, `sit`) "
+			"VALUES( %d, %d, %d, '%c', '%s', %d, %d, '%s', %d, '%d', '%d', '%d' );",
+			vendings_table, sd.vender_id, sd.status.account_id, sd.status.char_id, sd.status.sex == SEX_FEMALE ? 'F' : 'M', map_getmapdata(sd.m)->name, sd.x, sd.y, message_sql, sd.state.autotrade, at ? at->dir : sd.ud.dir, at ? at->head_dir : sd.head_dir, at ? at->sit : pc_issit(&sd) ) != SQL_SUCCESS ) {
+			Sql_ShowDebug(mmysql_handle);
+		}
+
+		StringBuf_Init(&buf);
+		StringBuf_Printf(&buf, "INSERT INTO `%s`(`vending_id`,`index`,`cartinventory_id`,`amount`,`price`) VALUES", vending_items_table);
+		for (j = 0; j < i; j++) {
+			StringBuf_Printf(&buf, "(%d,%d,%d,%d,%d)", sd.vender_id, j, sd.cart.u.items_cart[sd.vending[j].index].id, sd.vending[j].amount, sd.vending[j].value);
+			if (j < i-1)
+				StringBuf_AppendStr(&buf, ",");
+		}
+		if (SQL_ERROR == Sql_QueryStr(mmysql_handle, StringBuf_Value(&buf)))
+			Sql_ShowDebug(mmysql_handle);
 	}
-	if (SQL_ERROR == Sql_QueryStr(mmysql_handle, StringBuf_Value(&buf)))
-		Sql_ShowDebug(mmysql_handle);
 
 	clif_openvending( sd );
 	clif_showvendingboard( sd );
@@ -737,6 +743,8 @@ static int32 vending_autotrader_free(DBKey key, DBData *data, va_list ap) {
 */
 void vending_update(map_session_data &sd)
 {
+	if (IS_POPULATION_ENGINE_ACCOUNT_ID(sd.status.account_id))
+		return;
 	if (Sql_Query(mmysql_handle, "UPDATE `%s` SET `map` = '%s', `x` = '%d', `y` = '%d', `body_direction` = '%d', `head_direction` = '%d', `sit` = '%d', `autotrade` = '%d' WHERE `id` = '%d'",
 		vendings_table, map_getmapdata(sd.m)->name, sd.x, sd.y, sd.ud.dir, sd.head_dir, pc_issit(&sd), sd.state.autotrade,
 		sd.vender_id

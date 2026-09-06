@@ -35,6 +35,7 @@
 #include "path.hpp"
 #include "pc.hpp"
 #include "pet.hpp"
+#include "population_engine.hpp"
 #include "storage.hpp"
 #include "trade.hpp"
 
@@ -2002,6 +2003,9 @@ int32 unit_set_walkdelay(block_list *bl, t_tick tick, t_tick delay, int32 type, 
 
 	if (delay <= 0 || !ud)
 		return 0;
+
+	if (bl->type == BL_PC && population_engine_is_population_pc(bl->id) && type == 1)
+		delay = 50;
 
 	if (type) {
 		//Bosses can ignore skill induced walkdelay (but not damage induced)

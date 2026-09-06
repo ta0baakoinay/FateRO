@@ -8,6 +8,7 @@
 //= Inspired by Ragnarok:EL
 //======================================================================
 #include <common/nullpo.hpp>
+#include <common/random.hpp>
 
 #include "autocombat.hpp"
 #include "battle.hpp"
@@ -16,7 +17,9 @@
 #include "party.hpp"
 #include "chat.hpp"
 #include "pc.hpp"
+#include "population_engine.hpp"
 #include "storage.hpp"
+#include "unit.hpp"
 
 #include <float.h>
 #include <math.h>
@@ -1541,6 +1544,165 @@ void autocombat_main(map_session_data *sd, int64 tick)
 	if (!skip && !pc_issit(sd) && !sd->ac.target_id && !teleported) {
 		if (ac_walk(sd, tick, teleport_tick, walk_tick) == false)
 			ac_teleport(sd, true); // whole system error - redo
+	}
+}
+
+// ===========================================================================
+// Fake-player party-leader AutoSupport
+// ===========================================================================
+// Reuses the AutoSupport CONFIG (sd->ac.healskills / sd->ac.buffskills) and the
+// existing validation / cooldown / SP core (ac_skillnotok, ac_set_cooldown,
+// skill_consume_requirement, skill_get_range2). It is a small, self-contained
+// support routine — it does NOT touch autocombat_main() and is NEVER called for
+// a real player, so normal @autocombat / @settings behaviour is unchanged.
+//
+// A fake party leader supports party MEMBERS (not just itself): heal the
+// lowest-HP% member below the configured threshold within range; then keep the
+// configured buffs up on nearby members who are missing them. Timing is paced
+// (ac.skill_cd + a ~1.2s decision interval + a random post-action lag + the 3s
+// buff re-check) so it reads like a real support player, not a per-tick bot.
+
+// Seed a freshly-assigned fake party leader's sd->ac support config from the
+// skills it actually knows (no separate config system; SQL config is untouched).
+void autocombat_seed_fake_leader(map_session_data *sd)
+{
+	if (sd == nullptr)
+		return;
+	const uint16 heal_lv = pc_checkskill(sd, AL_HEAL);
+	sd->ac.healskills[0].skill_lv  = heal_lv;           // slot 0 = AL_HEAL
+	sd->ac.healskills[0].min_hp_sp = (heal_lv > 0) ? 70 : 0; // support members below 70% HP
+	sd->ac.healskills[1].skill_lv  = 0;
+	sd->ac.healskills[2].skill_lv  = 0;
+
+	sd->ac.buffskills.clear();
+	static const uint16 kSeedBuffs[] = {
+		AL_BLESSING, AL_INCAGI, PR_KYRIE, PR_GLORIA, PR_MAGNIFICAT, PR_IMPOSITIO
+	};
+	for (uint16 skid : kSeedBuffs) {
+		const uint16 lv = pc_checkskill(sd, skid);
+		if (lv > 0) {
+			s_buff_skills b;
+			b.skill_id = skid;
+			b.skill_lv = lv;
+			sd->ac.buffskills.push_back(b);
+		}
+	}
+	sd->ac.last_buff_check = 0;
+	sd->ac.skill_cd        = 0;
+}
+
+void autocombat_support_party(map_session_data *leader, int64 tick)
+{
+	if (leader == nullptr || leader->prev == nullptr)
+		return;
+	// Fake-player gate: reuse the existing population-engine identification.
+	if (!population_engine_is_population_pc(leader->id))
+		return;
+	if (!party_id_is_fake(leader->status.party_id))
+		return;
+
+	party_data *p = party_search(leader->status.party_id);
+	if (p == nullptr || p->data[0].sd != leader)   // must still be THIS party's leader
+		return;
+
+	// Pace the decisions — never every tick.
+	if (tick < leader->ac.skill_cd)
+		return;
+	if (DIFF_TICK(tick, leader->ac.last_buff_check) < 1200 && leader->ac.last_buff_check != 0)
+		return;
+	if (pc_isdead(leader) || pc_issit(leader) || pc_cant_act(leader))
+		return;
+	if (leader->ud.skilltimer != INVALID_TIMER)
+		return;
+
+	// Valid support candidates (leader included). Handles dead / disconnected /
+	// different-map / inactive members without dereferencing bad pointers.
+	map_session_data *cand[MAX_PARTY];
+	int nc = 0;
+	for (int i = 0; i < MAX_PARTY; i++) {
+		map_session_data *m = p->data[i].sd;
+		if (m == nullptr || m->prev == nullptr)
+			continue;
+		if (m->m != leader->m)                      // different map -> skip
+			continue;
+		if (!m->state.active || pc_isdead(m))
+			continue;
+		cand[nc++] = m;
+	}
+	if (nc == 0)
+		return;
+
+	bool acted = false;
+
+	// ---- HEAL: the lowest-HP% member below threshold, within AL_HEAL range ----
+	{
+		const uint16 heal_lv = leader->ac.healskills[0].skill_lv;
+		const uint16 thr     = leader->ac.healskills[0].min_hp_sp;
+		if (heal_lv > 0 && thr > 0 && pc_checkskill(leader, AL_HEAL) > 0 &&
+		    ac_skillnotok(leader, nullptr, AL_HEAL, heal_lv)) {          // nullptr target => live-heal check, not the undead path
+			const int range = skill_get_range2(leader, AL_HEAL, heal_lv, true);
+			map_session_data *best = nullptr;
+			int best_pct = thr;
+			for (int i = 0; i < nc; i++) {
+				map_session_data *m = cand[i];
+				if (m->battle_status.max_hp <= 0)
+					continue;
+				const int pct = (int)((int64)m->battle_status.hp * 100 / m->battle_status.max_hp);
+				if (pct >= thr)
+					continue;                                          // healthy enough
+				if (m != leader && !check_distance_bl(leader, m, range))
+					continue;                                          // out of range -> just not chosen
+				if (pct < best_pct) { best_pct = pct; best = m; }
+			}
+			if (best != nullptr && unit_skilluse_id(leader, best->id, AL_HEAL, heal_lv)) {
+				skill_consume_requirement(leader, AL_HEAL, heal_lv, 2);
+				ac_set_cooldown(leader, tick, AL_HEAL, heal_lv);
+				acted = true;
+			}
+		}
+	}
+
+	// ---- BUFF: keep configured buffs up on a nearby member who is missing one ----
+	if (!acted && !leader->ac.buffskills.empty() &&
+	    DIFF_TICK(tick, leader->ac.last_buff_check) > 3000) {
+		for (auto &bs : leader->ac.buffskills) {
+			const uint16 lv = min(pc_checkskill(leader, bs.skill_id), bs.skill_lv);
+			if (lv <= 0)
+				continue;
+			if (!ac_skillnotok(leader, nullptr, bs.skill_id, lv))
+				continue;
+			const sc_type sc = skill_get_sc(bs.skill_id);
+			const int range  = skill_get_range2(leader, bs.skill_id, lv, true);
+			map_session_data *tgt = nullptr;
+			for (int i = 0; i < nc; i++) {
+				map_session_data *m = cand[i];
+				if (m == leader)
+					continue;
+				if (sc != SC_NONE && m->sc.getSCE(sc))                  // already buffed -> skip (no rebuff spam)
+					continue;
+				if (!check_distance_bl(leader, m, range))
+					continue;
+				tgt = m;
+				break;
+			}
+			if (tgt == nullptr && (sc == SC_NONE || !leader->sc.getSCE(sc)))
+				tgt = leader;                                           // fall back to self if the leader lacks it
+			if (tgt != nullptr && unit_skilluse_id(leader, tgt->id, bs.skill_id, lv)) {
+				skill_consume_requirement(leader, bs.skill_id, lv, 3);
+				ac_set_cooldown(leader, tick, bs.skill_id, lv);
+				acted = true;
+				break;
+			}
+		}
+		leader->ac.last_buff_check = tick;
+	}
+
+	// Natural "reaction lag" before the next support decision (matches how
+	// ac_set_cooldown assigns sd->ac.skill_cd = tick + delay).
+	if (acted) {
+		const int64 next_cd = tick + 700 + (int64)(rnd() % 900);
+		if (next_cd > leader->ac.skill_cd)
+			leader->ac.skill_cd = (int)next_cd;
 	}
 }
 

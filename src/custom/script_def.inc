@@ -18,3 +18,13 @@ BUILDIN_DEF(getavailablemobs, "r"),
 BUILDIN_DEF(getautocombatduration, "ii"),
 BUILDIN_DEF(getspbstate, ""),
 BUILDIN_DEF(getbattleinfostate, ""),
+
+// Population / default ammo (skill require.ammo); see custom script.inc
+BUILDIN_DEF(setarrow, "?"),
+BUILDIN_DEF(setbullet, "?"),
+BUILDIN_DEF(setkunai, "?"),
+
+// Population engine arena
+BUILDIN_DEF(population_arena_start, "si????"),
+BUILDIN_DEF(population_arena_stop,  "s"),
+BUILDIN_DEF(population_arena_jobs,  ""),

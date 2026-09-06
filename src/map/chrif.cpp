@@ -283,6 +283,14 @@ int32 chrif_save(map_session_data *sd, int32 flag) {
 
 	pc_makesavestatus(sd);
 
+	// Population engine shells are transient fake PCs with reserved AID/CID and
+	// no backing row in the char DB.  Any chrif_save path here would push fake
+	// state into char_reg_num, skill, achievement, combat_assistant_profiles,
+	// support_assistant_profiles, mvp_ranking, etc.  Short-circuit before any
+	// of the per-subsystem save calls fire.
+	if (IS_POPULATION_ENGINE_ACCOUNT_ID(sd->status.account_id))
+		return 0;
+
 	if ( (flag&CSAVE_QUITTING) && sd->state.active) { //Store player data which is quitting
 		if (chrif_isconnected()) {
 			chrif_save_scdata(sd);

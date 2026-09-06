@@ -34,6 +34,7 @@
 #include "navi.hpp"
 #include "pc.hpp"
 #include "pet.hpp"
+#include "population_engine.hpp"
 #include "script.hpp" // script_config
 
 using namespace rathena;
@@ -1782,6 +1783,11 @@ int32 npc_settimerevent_tick(npc_data* nd, int32 newtimer)
 
 int32 npc_event_sub(map_session_data* sd, struct event_data* ev, const char* eventname)
 {
+	// Population engine shells never run NPC scripts — skip silently to avoid
+	// filling the event queue with OnTouch/OnTouch_ events as shells roam past NPCs.
+	if (IS_POPULATION_ENGINE_ACCOUNT_ID(sd->status.account_id))
+		return 0;
+
 	if ( sd->npc_id != 0 )
 	{
 		//Enqueue the event trigger.
@@ -5900,6 +5906,8 @@ int32 npc_parsesrcfile(const char* filepath)
 
 size_t npc_script_event( map_session_data& sd, enum npce_event type ){
 	if (type == NPCE_MAX)
+		return 0;
+	if (IS_POPULATION_ENGINE_ACCOUNT_ID(sd.status.account_id))
 		return 0;
 
 	std::vector<struct script_event_s>& vector = script_event[type];

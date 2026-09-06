@@ -28,6 +28,7 @@
 #include "party.hpp"
 #include "pc.hpp"
 #include "pc_groups.hpp"
+#include "population_engine.hpp"
 #include "pet.hpp"
 #include "quest.hpp"
 #include "status.hpp"
@@ -401,6 +402,11 @@ int32 intif_saveregistry(map_session_data *sd)
 	int32 plen = 0;
 	size_t len;
 
+	if (sd && IS_POPULATION_ENGINE_ACCOUNT_ID(sd->status.account_id)) {
+		sd->vars_dirty = false;
+		return 0;
+	}
+
 	if (CheckForCharServer() || !sd->regs.vars)
 		return -1;
 
@@ -697,6 +703,11 @@ int32 intif_party_changemap(map_session_data *sd,int32 online)
 	if (CheckForCharServer())
 		return 0;
 	if(!sd)
+		return 0;
+	// Fake-player (population engine) shells use map-server-local parties only —
+	// their accounts do not exist on the char-server, so never send party
+	// map-change traffic for them (would log errors / risk orphan state).
+	if (population_engine_is_population_pc(sd->id))
 		return 0;
 
 	if ((m = map_mapindex2mapid(sd->mapindex)) >= 0) {
@@ -2234,6 +2245,11 @@ void intif_parse_achievementsave(int32 fd)
 	if (!sd) // User not online anymore
 		return;
 
+	if (sd && IS_POPULATION_ENGINE_ACCOUNT_ID(sd->status.account_id)) {
+		sd->achievement_data.save = false;
+		return;
+	}
+
 	if (!RFIFOB(fd, 6))
 		ShowError("intif_parse_achievementsave: Failed to save achievement(s) for character %s (%d)!\n", sd->status.name, cid);
 }
@@ -3588,8 +3604,11 @@ static void intif_parse_StorageSaved(int32 fd)
 			default:
 				break;
 		}
-	} else
-		ShowError("Failed to save inventory/cart/storage data (AID: %d, type: %d).\n", RFIFOL(fd, 2), RFIFOB(fd, 7));
+	} else {
+		uint32 account_id = RFIFOL(fd, 2);
+		if (!IS_POPULATION_ENGINE_ACCOUNT_ID(account_id))
+			ShowError("Failed to save inventory/cart/storage data (AID: %d, type: %d).\n", account_id, RFIFOB(fd, 7));
+	}
 }
 
 /**

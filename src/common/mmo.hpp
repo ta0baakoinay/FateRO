@@ -188,6 +188,14 @@ const t_itemid WEDDING_RING_F = 2635;
 #define END_ACCOUNT_NUM 100000000
 #define START_CHAR_NUM 150000
 
+// Population engine account ID range (runtime-generated, not in database)
+#define POPULATION_ENGINE_ACCOUNT_ID_BASE 95000000
+#define POPULATION_ENGINE_ACCOUNT_ID_END 100000000
+#define POPULATION_ENGINE_CHAR_ID_BASE 95000000
+
+#define IS_POPULATION_ENGINE_ACCOUNT_ID(account_id) \
+	((account_id) >= POPULATION_ENGINE_ACCOUNT_ID_BASE && (account_id) < POPULATION_ENGINE_ACCOUNT_ID_END)
+
 //Guilds
 #define MAX_GUILDMES1 60
 #define MAX_GUILDMES2 120

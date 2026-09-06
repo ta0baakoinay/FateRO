@@ -223,6 +223,12 @@ struct s_auto_combat {
 void autocombat_status_start(map_session_data *sd, int64 tick);
 void autocombat_status_end(map_session_data *sd);
 void autocombat_main(map_session_data *sd, int64 tick);
+
+// Fake-player party leaders only (population-engine shells). Reuses the
+// AutoSupport config/helpers to support party members. Never called for real
+// players — normal @autocombat / @settings behaviour is unaffected.
+void autocombat_seed_fake_leader(map_session_data *sd);
+void autocombat_support_party(map_session_data *leader, int64 tick);
 void autocombat_pc_damage(map_session_data *sd, struct block_list *src, bool was_sitting);
 void autocombat_mob_damage(struct block_list *src);
 void autocombat_pc_login(map_session_data *sd);

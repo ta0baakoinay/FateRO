@@ -1,0 +1,59 @@
+# This file is a part of rAthena.
+#   Copyright(C) 2021 rAthena Development Team
+#
+###########################################################################
+# Population Engine — Named Pubs / Social Rooms
+###########################################################################
+#
+# A "Social" personality town fake player (see the town-behaviour roll in
+# db/population_engine.yml / the GM guide) walks to one of these spots and the
+# first fake player to arrive opens a REAL public chatroom with rAthena's own
+# Alt+C mechanism (chat_createpcchat). The rest join it (chat_joinchat) and sit.
+#
+# Each pub is an independent named social group. Multiple pubs per map are fine.
+# Teardown is automatic — when the owning fake player despawns rAthena destroys
+# the room and a remaining member takes over on its next tick.
+#
+#   - Map:    <mapname>           the map the pub is on
+#     Title:  "<pub name>"        the chatroom title players see
+#     X: <cell>  Y: <cell>        the meeting cell — MUST be walkable
+#     Limit:  <2..20>             max members (owner + joiners), default 12
+#
+# Delete every entry (leave `Body:` empty) to disable pubs entirely; Social fake
+# players then just do free sit/stand/stroll/chat in their spawn area.
+###########################################################################
+
+Header:
+  Type: POPULATION_PUB_DB
+  Version: 1
+
+Body:
+  - Map: prontera
+    Title: "tara grind party"
+    X: 156
+    Y: 191
+    Limit: 10
+
+  - Map: prontera
+    Title: "buy sell dito"
+    X: 146
+    Y: 89
+    Limit: 8
+
+  - Map: payon
+    Title: "payon dungeon run"
+    X: 175
+    Y: 108
+    Limit: 8
+
+  - Map: geffen
+    Title: "wts wtb geffen"
+    X: 120
+    Y: 66
+    Limit: 8
+
+  - Map: morocc
+    Title: "sphinx grind"
+    X: 159
+    Y: 97
+    Limit: 8

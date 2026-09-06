@@ -63,6 +63,11 @@ int32 party_getmemberid(struct party_data* p, map_session_data* sd);
 map_session_data* party_getavailablesd(struct party_data *p);
 
 int32 party_create( map_session_data& sd, char *name, int32 item, int32 item2 );
+
+// Map-server-local fake-player parties (population engine shells only).
+bool party_id_is_fake(int32 party_id);
+int32 party_create_fake(map_session_data** members, int32 n);
+void party_fake_member_leave(map_session_data* sd);
 void party_created(uint32 account_id,uint32 char_id,int32 fail,int32 party_id,char *name);
 int32 party_request_info(int32 party_id, uint32 char_id);
 bool party_invite( map_session_data& sd, map_session_data* tsd );

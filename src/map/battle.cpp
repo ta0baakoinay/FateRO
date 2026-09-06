@@ -33,6 +33,7 @@
 #include "pc.hpp"
 #include "pc_groups.hpp"
 #include "pet.hpp"
+#include "population_engine.hpp"
 #include "./skills/skill_impl.hpp"
 
 using namespace rathena;
@@ -11591,6 +11592,26 @@ int32 battle_check_target( block_list *src, block_list *target,int32 flag)
 		if( state&BCT_ENEMY && strip_enemy )
 			state&=~BCT_ENEMY;
 		return (flag&state)?1:-1;
+	}
+
+	// Population engine arena (population_arena_start) — team 1 fights team 2;
+	// real player on the arena map is implicitly team 2. The hook returns
+	// +1 for allies and -1 for enemies; 0 means "no opinion" so normal logic
+	// (party/guild/bg) runs. This must run BEFORE the party/guild rivalry
+	// block so it can override an unrelated party_id match (e.g. two team-1
+	// shells happen to share a fake party id) and so autosupport sees the
+	// real player as a valid friendly target for team-2 shells.
+	{
+		const int arena_rel = population_engine_arena_relation(s_bl, t_bl);
+		if (arena_rel > 0) {
+			state |= BCT_PARTY;
+			state &= ~BCT_ENEMY;
+			return (flag&state) ? 1 : -1;
+		} else if (arena_rel < 0) {
+			state |= BCT_ENEMY;
+			state &= ~(BCT_PARTY|BCT_GUILD);
+			return (flag&state) ? 1 : -1;
+		}
 	}
 
 	if( mapdata_flag_vs(mapdata) )

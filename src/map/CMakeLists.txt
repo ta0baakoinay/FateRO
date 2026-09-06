@@ -11,6 +11,10 @@ if( BUILD_SERVERS )
 message( STATUS "Creating target map-server" )
 file(GLOB_RECURSE MAP_HEADERS ${MAP_SOURCE_DIR}/*.hpp)
 file(GLOB_RECURSE MAP_SOURCES ${MAP_SOURCE_DIR}/*.cpp)
+# population_engine/*.cpp (except population_engine.cpp itself, which is not under
+# this subdirectory) are unity-built via #include into population_engine.cpp -
+# compiling them again as separate translation units causes duplicate symbols.
+list(FILTER MAP_SOURCES EXCLUDE REGEX ".*/population_engine/.*")
 set( DEPENDENCIES common ryml)
 set( LIBRARIES ${GLOBAL_LIBRARIES} ${MYSQL_LIBRARIES} )
 set( INCLUDE_DIRS ${GLOBAL_INCLUDE_DIRS} ${COMMON_BASE_INCLUDE_DIRS} ${RA_INCLUDE_DIRS} ${MYSQL_INCLUDE_DIRS} )

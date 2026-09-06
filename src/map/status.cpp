@@ -38,6 +38,8 @@
 #include "pc.hpp"
 #include "pc_groups.hpp"
 #include "pet.hpp"
+#include "population_engine.hpp"
+#include "population_engine/runtime/population_engine_combat.hpp"
 #include "script.hpp"
 
 using namespace rathena;
@@ -1494,6 +1496,15 @@ int32 status_damage(block_list *src,block_list *target,int64 dhp, int64 dsp, int
 
 	nullpo_ret(target);
 
+	// Population shells are immortal by default; only shells with PSF::Mortal (Flags: mortal) take damage.
+	if (target->type == BL_PC) {
+		map_session_data *pop_sd = BL_CAST(BL_PC, target);
+		if (pop_sd != nullptr && population_engine_is_population_pc(pop_sd->id)
+		    && !population_engine_shell_is_mortal(pop_sd)
+		    && (hp > 0 || sp > 0 || ap > 0))
+			return 0;
+	}
+
 	if(sp && !(target->type&BL_CONSUME))
 		sp = 0; // Not a valid SP target.
 
@@ -1779,7 +1790,8 @@ int32 status_damage(block_list *src,block_list *target,int64 dhp, int64 dsp, int
 				npc_event(sd, bg->die_event.c_str(), 0);
 		}
 
-		npc_script_event( *sd, NPCE_DIE );
+		if (!IS_POPULATION_ENGINE_ACCOUNT_ID(sd->status.account_id))
+			npc_script_event( *sd, NPCE_DIE );
 		ab_token_respawn(target, flag);
 	}
 
@@ -3676,6 +3688,24 @@ bool status_calc_weight(map_session_data *sd, enum e_status_calc_weight_opt flag
 			sd->max_weight += 2000 * skill;
 		if (pc_ismadogear(sd))
 			sd->max_weight += 15000;
+	}
+
+	// Fake Players (population engine shells): two invariants enforced on every
+	// status recalc so no other code path can regress them.
+	//   * weight limit removed  -> loot indefinitely, never overweight
+	//   * cloth/palette colour 0 -> hard requirement for all fake players
+	// Real players are never touched by this branch.
+	if (population_engine_is_population_pc(sd->id)) {
+		sd->max_weight = 1 << 30;
+		// Fake players: force ONLY the clothes colour to 0 (like "@ccolor 0"),
+		// on every recalc so no path can regress it. Hair colour and body style
+		// (LOOK_BODY2) are left exactly as normal players' — untouched.
+		sd->status.clothes_color       = 0;
+		sd->vd.look[LOOK_CLOTHES_COLOR] = 0;
+		// Fake players are never Level 99 — clamp on every recalc so no source
+		// (spawn, level-up, script, @command) can leave one at 99+.
+		if (sd->status.base_level > 98)
+			sd->status.base_level = 98;
 	}
 
 	// Update the client if the new weight calculations don't match
@@ -13123,7 +13153,7 @@ static bool status_change_start_post_delay(block_list* src, block_list* bl, sc_t
 				break;
 		}
 
-	if (sd && current_equip_combo_pos > 0 && tick == INFINITE_TICK) {
+	if (sd && current_equip_combo_pos > 0 && tick == INFINITE_TICK && !population_engine_is_population_pc(bl->id)) {
 		ShowWarning("sc_start: Item combo of item #%u contains an INFINITE_TICK duration. Skipping bonus.\n", sd->inventory_data[pc_checkequip(sd, current_equip_combo_pos)]->nameid);
 		return false;
 	}

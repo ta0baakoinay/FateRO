@@ -3,7 +3,10 @@
 
 #include "party.hpp"
 
+#include <cctype>
 #include <cstdlib>
+#include <cstring>
+#include <initializer_list>
 
 #include <common/cbasetypes.hpp>
 #include <common/malloc.hpp>
@@ -17,6 +20,7 @@
 
 #include "achievement.hpp"
 #include "atcommand.hpp"	//msg_txt()
+#include "autocombat.hpp"
 #include "battle.hpp"
 #include "chrif.hpp" // charserver_name
 #include "clif.hpp"
@@ -76,6 +80,216 @@ map_session_data* party_getavailablesd(struct party_data *p)
 	nullpo_retr(nullptr, p);
 	ARR_FIND(0, MAX_PARTY, i, p->data[i].sd != nullptr);
 	return( i < MAX_PARTY ) ? p->data[i].sd : nullptr;
+}
+
+// ===========================================================================
+// Map-server-local fake-player parties.
+//
+// Population-engine shells use reserved account/char IDs that the char-server
+// has never seen, so the normal intif_create_party() round-trip cannot be used
+// (it would fail or create orphan `party` SQL rows). These helpers build a
+// fully-functional party_data entirely inside the map-server's party_db — no
+// SQL, no inter-server traffic — for fake players ONLY. Real players always use
+// the normal party_create()/intif path above; this code never runs for them.
+// ===========================================================================
+static void party_check_state(struct party_data *p); // defined later in this file
+
+#define FAKE_PARTY_ID_BASE 0x70000000
+static int32 last_fake_party_id = FAKE_PARTY_ID_BASE;
+
+// ---------------------------------------------------------------------------
+// Fake-player party name generator. Deliberately varied and a bit messy so
+// 100 fake parties do NOT read as "<Name>'s Party" x100. No "Word + Number"
+// patterns. Names are lower-cased (players usually do) and de-duplicated
+// against every currently-loaded party.
+// ---------------------------------------------------------------------------
+static void party_gen_fake_name(char* out, size_t outsz, const char* leader_name)
+{
+	auto P = [](std::initializer_list<const char*> l) -> const char* {
+		const char* a[48]; int n = 0;
+		for (const char* s : l) if (n < 48) a[n++] = s;
+		return n ? a[rnd() % (uint32)n] : "";
+	};
+	// loose adjectives
+	auto adj  = [&]{ return P({ "lazy","sleepy","angry","chill","salty","broke","sweaty","cozy","spicy","goofy",
+	                            "grumpy","shiny","toxic","cracked","washed","feral","mid","elite","casual","hardcore",
+	                            "afk","drunk","bored","hyper","moody","silly","sus","based","tired","random","cursed" }); };
+	// nouns / groups / critters
+	auto noun = [&]{ return P({ "porings","lunatics","goblins","orcs","kids","gang","crew","squad","guys","ppl",
+	                            "friends","clowns","nerds","pals","homies","bros","hunters","farmers","grinders","randos",
+	                            "legends","noobs","vets","duo","trio","the boys","the girls","misfits","potatoes","goons" }); };
+	// activities
+	auto act  = [&]{ return P({ "grinding","farming","leveling","hunting","camping","questing","chilling","afking",
+	                            "looting","training","xp run","card hunt","mvp hunt","zeny run","loot run","just vibing" }); };
+	// places / targets
+	auto place= [&]{ return P({ "in gh","at orcs","payon dun","byalan","pyramid","culvert","geffenia","clock tower",
+	                            "sphinx","turtle isle","anthell","toy factory","sunken ship","coal mine","thor","nifl",
+	                            "abyss","moc fild","prt fild","glast heim","juperos","magma dun" }); };
+	// short / messy single-ish
+	auto shrt = [&]{ return P({ "yolo","gg no re","brb","lfm","wp","ez clap","rip","meh","oof","zzz","poggers","sadge",
+	                            "aight","sheesh","good vibes","no thoughts","help pls","chaos","nap time","just us",
+	                            "idk man","whatever","trust","clueless","one more run","last pull","almost 99","need heals" }); };
+
+	char cand[NAME_LENGTH];
+	char lead[16] = "";
+	if (leader_name && leader_name[0]) {
+		safestrncpy(lead, leader_name, sizeof(lead));
+		for (char* c = lead; *c; ++c) *c = (char)tolower((unsigned char)*c);
+	}
+
+	for (int attempt = 0; attempt < 26; ++attempt) {
+		const uint32 style = rnd() % 100u;
+		cand[0] = '\0';
+		if      (style < 16) safesnprintf(cand, sizeof(cand), "%s %s", adj(), noun());
+		else if (style < 30) safesnprintf(cand, sizeof(cand), "%s %s", act(), place());
+		else if (style < 42) safesnprintf(cand, sizeof(cand), "%s", shrt());
+		else if (style < 52) safesnprintf(cand, sizeof(cand), "%s and %s", adj(), adj());
+		else if (style < 62) safesnprintf(cand, sizeof(cand), "%s %s", P({ "lfm","lf1m","lf2m","lfg","w>","need" }), P({ act(), place(), noun() }));
+		else if (style < 72) safesnprintf(cand, sizeof(cand), "%s %s", noun(), P({ "only","inc","united","assemble","ftw","rise","unite","gang" }));
+		else if (style < 80 && lead[0]) safesnprintf(cand, sizeof(cand), P({ "%s n co","%ss crew","%s + pals","carry %s","%s is afk","%s squad" }), lead);
+		else if (style < 90) safesnprintf(cand, sizeof(cand), "%s %s", P({ "just","still","forever","casually","slowly","semi" }), act());
+		else                 safesnprintf(cand, sizeof(cand), "%s %s", adj(), act());
+
+		if (cand[0] == '\0')
+			safesnprintf(cand, sizeof(cand), "%s", shrt());
+		// lower-case, trim to fit
+		for (char* c = cand; *c; ++c) *c = (char)tolower((unsigned char)*c);
+		cand[NAME_LENGTH - 1] = '\0';
+
+		if (party_searchname(cand) == nullptr) {
+			safestrncpy(out, cand, outsz);
+			return;
+		}
+	}
+	// Everything collided — append a single lowercase letter (still human-ish).
+	size_t l = strlen(cand);
+	if (l > NAME_LENGTH - 3) l = NAME_LENGTH - 3;
+	cand[l] = ' ';
+	cand[l + 1] = (char)('a' + (rnd() % 26));
+	cand[l + 2] = '\0';
+	safestrncpy(out, cand, outsz);
+}
+
+bool party_id_is_fake(int32 party_id)
+{
+	return party_id >= FAKE_PARTY_ID_BASE;
+}
+
+int32 party_create_fake(map_session_data** members, int32 n)
+{
+	if (members == nullptr || n < 2)
+		return 0;
+	if (n > MAX_PARTY)
+		n = MAX_PARTY;
+
+	int32 pid = 0;
+	for (int32 tries = 0; tries < 0x100000 && pid == 0; ++tries) {
+		if (++last_fake_party_id >= FAKE_PARTY_ID_BASE + 0x0FFFFFFF)
+			last_fake_party_id = FAKE_PARTY_ID_BASE + 1;
+		if (idb_get(party_db, last_fake_party_id) == nullptr)
+			pid = last_fake_party_id;
+	}
+	if (pid == 0)
+		return 0;
+
+	struct party_data* p;
+	CREATE(p, struct party_data, 1);
+	p->party.party_id = pid;
+	party_gen_fake_name(p->party.name, NAME_LENGTH, members[0]->status.name);
+	p->party.exp  = 0;
+	p->party.item = 3; // round-robin + shared pickup so members don't fight over loot
+
+	int32 cnt = 0;
+	for (int32 i = 0; i < n; ++i) {
+		map_session_data* msd = members[i];
+		if (msd == nullptr)
+			continue;
+		party_fill_member(p->party.member[cnt], *msd, cnt == 0 ? 1 : 0);
+		p->data[cnt].sd = msd;
+		p->data[cnt].hp = msd->battle_status.hp;
+		p->data[cnt].x  = msd->x;
+		p->data[cnt].y  = msd->y;
+		msd->status.party_id = pid;
+		++cnt;
+	}
+	if (cnt < 2) {
+		for (int32 i = 0; i < cnt; ++i)
+			if (p->data[i].sd)
+				p->data[i].sd->status.party_id = 0;
+		aFree(p);
+		return 0;
+	}
+	p->party.count = cnt;
+	idb_put(party_db, pid, p);
+	party_check_state(p);
+
+	clif_party_info(*p, nullptr);
+	for (int32 i = 0; i < cnt; ++i) {
+		map_session_data* msd = p->data[i].sd;
+		if (msd == nullptr)
+			continue;
+		clif_party_member_info(*p, *msd);
+		clif_party_hp(*msd);
+		clif_party_xy(*msd);
+		clif_name_area(msd);
+	}
+	return pid;
+}
+
+// Remove one fake member; dissolve + free the party once the last one leaves.
+// Safe to call for a shell that is not in a fake party (no-op).
+void party_fake_member_leave(map_session_data* sd)
+{
+	if (sd == nullptr)
+		return;
+	int32 pid = sd->status.party_id;
+	if (!party_id_is_fake(pid)) {
+		if (pid != 0 && party_search(pid) == nullptr)
+			sd->status.party_id = 0; // clear a stale id defensively
+		return;
+	}
+	struct party_data* p = (struct party_data*)idb_get(party_db, pid);
+	sd->status.party_id = 0;
+	if (p == nullptr)
+		return;
+
+	int32 i;
+	ARR_FIND(0, MAX_PARTY, i, p->data[i].sd == sd);
+	if (i < MAX_PARTY) {
+		uint32 aid = p->party.member[i].account_id;
+		char nm[NAME_LENGTH];
+		safestrncpy(nm, p->party.member[i].name, NAME_LENGTH);
+		memset(&p->data[i], 0, sizeof(p->data[0]));
+		memset(&p->party.member[i], 0, sizeof(p->party.member[i]));
+		if (p->party.count > 0)
+			p->party.count--;
+		for (int32 k = 0; k < MAX_PARTY; ++k)
+			if (p->data[k].sd)
+				clif_party_withdraw(*p->data[k].sd, aid, nm, PARTY_MEMBER_WITHDRAW_LEAVE, SELF);
+	}
+
+	int32 alive;
+	ARR_FIND(0, MAX_PARTY, alive, p->data[alive].sd != nullptr);
+	if (alive == MAX_PARTY) {
+		idb_remove(party_db, pid); // DB_OPT_RELEASE_DATA -> frees p
+		return;
+	}
+
+	// Leader (slot 0) left: promote the lowest surviving member into slot 0 and
+	// hand it the AutoSupport config so the party keeps a support caster.
+	if (p->data[0].sd == nullptr && alive > 0 && alive < MAX_PARTY) {
+		p->data[0]         = p->data[alive];
+		p->party.member[0] = p->party.member[alive];
+		p->party.member[0].leader = 1;
+		memset(&p->data[alive], 0, sizeof(p->data[0]));
+		memset(&p->party.member[alive], 0, sizeof(p->party.member[alive]));
+		if (p->data[0].sd != nullptr) {
+			autocombat_seed_fake_leader(p->data[0].sd);
+			for (int32 k = 0; k < MAX_PARTY; ++k)
+				if (p->data[k].sd)
+					clif_party_info(*p, p->data[k].sd);
+		}
+	}
 }
 
 /*==========================================

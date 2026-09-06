@@ -1,0 +1,273 @@
+# This file is a part of rAthena.
+#   Copyright(C) 2021 rAthena Development Team
+#   https://rathena.org - https://github.com/rathena
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+###########################################################################
+# Population Engine — Shared Gear Sets Database
+###########################################################################
+#
+# Loaded by every population engine database (main, pvp, vendor). Job entries
+# reference these GearSets by name via  GearSet: <name>.
+#
+# DIVERSITY: every slot is a POOL and one entry is picked at random per fake
+# player, so two fake players of the same job look different. Pools deliberately
+# mix weak / average / stronger pre-renewal items (and include `0` = empty in
+# optional slots) so a crowd looks like a real, progressed player population
+# rather than clones. Every item is a real pre-renewal AegisName from
+# db/pre-re/item_db_equip.yml; if a rolled item is invalid for the fake player's
+# job or level, pc_equipitem simply rejects it and the guaranteed-weapon /
+# empty-slot fallbacks apply — nothing nonsensical is worn.
+#
+###########################################################################
+
+Header:
+  Type: POPULATION_ENGINE_DB
+  Version: 2
+
+Body:
+
+  # ------------------------------------------------------------------ Novice
+  - GearSetName: novice_set
+    HeadTop: [ 0, 0, Novice_Egg_Cap, Hair_Band, Bandana, Ribbon_, Flower_Hairband, Cat_Hairband, Bunny_Band, Hat_, Cap_, Feather_Bonnet, Egg_Shell, Boy's_Cap ]
+    HeadMid: [ 0, 0, 0, Sunglasses_, Glasses_, Blinker, Eye_Bandage ]
+    HeadBottom: [ 0, 0, 0, Well_Baked_Toast, Centimental_Flower, Romantic_White_Flower ]
+    Armor: [ N_Adventurer's_Suit, Novice_Plate, Cotton_Shirt_, Cotton_Shirt, Leather_Jacket_, Adventurere's_Suit_ ]
+    Weapon: [ Knife_, Knife_, Knife_, Cutter_, Cutter_, Club_, Club_, Main_Gauche_, Novice_Knife ]
+    Shield: [ 0, 0, Novice_Guard, Novice_Shield, Guard_, Buckler_ ]
+    Garment: [ 0, Novice_Hood, Novice_Manteau, Hood_, Muffler, Undershirt_ ]
+    Shoes: [ Novice_Boots, Novice_Shoes, Sandals_, Shoes_, Slipper ]
+    AccL: [ 0, 0, Novice_Figure, Ring, Clip, Earring, Belt ]
+    AccR: [ 0, 0, Novice_Figure, Ring, Clip, Necklace, Belt ]
+
+  # ------------------------------------------------------------ Swordsman line
+  - GearSetName: para_swordsman
+    HeadTop: [ 0, 0, Helm_, Bandana, Hair_Band, Hat_, Cap_, Feather_Bonnet, Sweet_Gents, Viking_Helm, Gemmed_Sallet_, Bone_Helm, Magestic_Goat, Corsair, Western_Grace, Ph.D_Hat, Sahkkat, Ear_Mufs, Antler, Pirate_Bandana ]
+    HeadMid: [ 0, 0, 0, 0, Sunglasses_, Glasses_, Elven_Ears, Blinker, Eye_Bandage, Masquerade, Robo_Eye, Fin_Helm ]
+    HeadBottom: [ 0, 0, 0, 0, Cigar, Beard, Granpa_Beard, Iron_Cane, Well_Baked_Toast, Centimental_Flower ]
+    Armor: [ Coat_, Coat, Mantle_, Padded_Armor_, Padded_Armor, Chain_Mail_, Chain_Mail, Plate_Armor_, Wooden_Mail_, Full_Plate_Armor_, Formal_Suit ]
+    # 1-handed only: this set also offers a shield, and a 2-handed weapon
+    # (2hSword / 2hSpear) is knocked off by pc_equipitem when the shield equips.
+    Weapon: [ Sword_, Sword_, Falchion_, Blade_, Blade_, Lapier_, Scimiter_, Saber, Tsurugi_, Ring_Pommel_Saber, Haedonggum, Flamberge, Javelin_, Spear_, Pike_ ]
+    Shield: [ 0, 0, Guard_, Buckler_, Buckler_, Shield_, Stone_Buckler, Mirror_Shield_, Arm_Guard_ ]
+    Garment: [ 0, 0, Muffler, Muffler_, Muffler_, Manteau, Manteau_, Hood_, Ragamuffin_Cape, Wool_Scarf ]
+    Shoes: [ Sandals_, Shoes_, Shoes_, Boots_, Boots_, Grave_, Black_Leather_Boots, Cuffs, High_Fashion_Sandals ]
+    AccL: [ 0, 0, Swordman_Figure, Ring_, Ring, Earring, Brooch, Belt, Gold_Ring, Skul_Ring, Critical_Ring ]
+    AccR: [ 0, 0, Swordman_Figure, Ring_, Ring, Necklace, Brooch, Belt, Silver_Ring, Skul_Ring ]
+
+  - GearSetName: para_knight_base
+    HeadTop: [ 0, Helm_, Bone_Helm, Gemmed_Sallet_, Magestic_Goat, Viking_Helm, Sweet_Gents, Golden_Gear, Sharp_Gear, Corsair, Feather_Bonnet, Western_Grace, Ph.D_Hat, Hat_, Cap_, Star_Dust ]
+    HeadMid: [ 0, 0, 0, Sunglasses_, Elven_Ears, Robo_Eye, Fin_Helm, Ear_Of_Angel's_Wing, Ear_Of_Devil's_Wing, Blush, Masquerade ]
+    HeadBottom: [ 0, 0, 0, Cigar, Beard, Granpa_Beard, Iron_Cane, Centimental_Leaf ]
+    Armor: [ Chain_Mail_, Chain_Mail, Plate_Armor_, Plate_Armor_, Full_Plate_Armor_, Padded_Armor_, Wooden_Mail_, Formal_Suit ]
+    # 1-handed only (shield-compatible): 2hSword / 2hSpear get unequipped by the shield.
+    Weapon: [ Blade_, Blade_, Saber, Saber, Tsurugi_, Haedonggum, Ring_Pommel_Saber, Flamberge, Spear_, Spear_, Pike_, Pike_, Javelin_ ]
+    Shield: [ 0, 0, Shield_, Mirror_Shield_, Stone_Buckler, Buckler_, Holy_Guard, Arm_Guard_ ]
+    Garment: [ 0, 0, Muffler_, Muffler_, Manteau, Manteau_, Manteau_, Wool_Scarf, Ragamuffin_Cape ]
+    Shoes: [ Boots_, Boots_, Shoes_, Grave_, Black_Leather_Boots, Cuffs, High_Fashion_Sandals ]
+    AccL: [ 0, Ring_, Ring, Earring, Brooch, Gold_Ring, Belt, Skul_Ring, Critical_Ring, Safety_Ring ]
+    AccR: [ 0, Ring_, Ring, Necklace, Brooch, Silver_Ring, Belt, Skul_Ring, Critical_Ring ]
+
+  - GearSetName: para_crusader
+    HeadTop: [ 0, Helm_, Bone_Helm, Gemmed_Sallet_, Magestic_Goat, Holy_Bonnet, Coronet, Circlet_, Feather_Bonnet, Western_Grace, Sweet_Gents, Corsair, Hat_, Ph.D_Hat, Golden_Gear ]
+    HeadMid: [ 0, 0, 0, Sunglasses_, Elven_Ears, Robo_Eye, Fin_Helm, Ear_Of_Angel's_Wing, Blush ]
+    HeadBottom: [ 0, 0, 0, Iron_Cane, Beard, Granpa_Beard, Centimental_Flower, Romantic_White_Flower ]
+    Armor: [ Chain_Mail_, Plate_Armor_, Plate_Armor_, Full_Plate_Armor_, Saint_Robe_, Holy_Robe, Padded_Armor_, Formal_Suit ]
+    # 1-handed only (Crusaders almost always carry a shield here).
+    Weapon: [ Saber, Saber, Tsurugi_, Haedonggum, Ring_Pommel_Saber, Blade_, Blade_, Flamberge, Spear_, Spear_, Pike_, Pike_, Javelin_ ]
+    Shield: [ Holy_Guard, Holy_Guard, Shield_, Shield_, Mirror_Shield_, Mirror_Shield_, Stone_Buckler, Buckler_, Arm_Guard_ ]
+    Garment: [ 0, Muffler_, Muffler_, Manteau, Manteau_, Manteau_, Wool_Scarf, Ragamuffin_Cape ]
+    Shoes: [ Boots_, Boots_, Shoes_, Grave_, Black_Leather_Boots, High_Fashion_Sandals ]
+    AccL: [ 0, Necklace_, Necklace, Rosary, Ring, Brooch, Gold_Ring, Belt, Safety_Ring ]
+    AccR: [ 0, Necklace_, Necklace, Rosary, Ring, Brooch, Silver_Ring, Belt ]
+
+  # ---------------------------------------------------------------- Mage line
+  - GearSetName: para_mage
+    HeadTop: [ 0, 0, Circlet_, Circlet_, Coronet, Fillet, Ribbon_, Big_Sis'_Ribbon, Flower_Hairband, Tiara, Ph.D_Hat, Hat_, Cap_, Star_Dust, Blue_Ribbon, Drooping_White_Kitty, Apple_Of_Archer, Feather_Bonnet ]
+    HeadMid: [ 0, 0, 0, Luxury_Sunglasses, Sunglasses_, Glasses_, Spinning_Eyes, Elven_Ears, Blinker, Robo_Eye, Blush ]
+    HeadBottom: [ 0, 0, 0, 0, Granpa_Beard, Centimental_Flower, Centimental_Leaf, Romantic_White_Flower, Well_Baked_Toast ]
+    Armor: [ Silk_Robe_, Silk_Robe_, Silk_Robe, Mink_Coat, Saint_Robe_, Silver_Robe_, Tights_, Wooden_Mail_, Mage_Coat, Scapulare_ ]
+    Weapon: [ Rod_, Rod_, Wand_, Wand_, Staff_, Staff_, Arc_Wand_, Arc_Wand_, Bone_Wand, Survival_Rod_, Mighty_Staff, Blessed_Wand ]
+    Shield: [ 0, 0, 0, Guard_, Guard, Buckler_, Memorize_Book_, Magic_Study_Vol1 ]
+    Garment: [ 0, 0, Muffler_, Muffler_, Hood_, Hood_, Manteau, Ragamuffin_Cape, Wool_Scarf ]
+    Shoes: [ Shoes_, Shoes_, Sandals_, Boots_, Chrystal_Pumps, Spiky_Heel, High_Fashion_Sandals, Slipper ]
+    AccL: [ 0, 0, Necklace, Necklace, Clip, Rosary, Earring, Ring, Nile_Rose_ ]
+    AccR: [ 0, 0, Necklace, Necklace, Clip, Rosary, Ring, Gold_Ring ]
+
+  # ------------------------------------------------- Acolyte / Priest (mace / book)
+  - GearSetName: para_acolyte
+    HeadTop: [ 0, 0, Biretta_, Biretta_, Coronet, Circlet_, Holy_Bonnet, Fillet, Ribbon_, Flower_Hairband, Cat_Hairband, Hat_, Nurse_Cap, Angelic_Chain, Ph.D_Hat, Big_Sis'_Ribbon ]
+    HeadMid: [ 0, 0, 0, 0, Sunglasses_, Glasses_, Elven_Ears, Ear_Of_Angel's_Wing, Blush ]
+    HeadBottom: [ 0, 0, 0, Romantic_White_Flower, Centimental_Flower, Well_Baked_Toast ]
+    Armor: [ Saint_Robe_, Saint_Robe_, Saint_Robe, Holy_Robe, Silk_Robe_, Mink_Coat, Silver_Robe_, Wooden_Mail_, Scapulare_ ]
+    Weapon: [ Club_, Club_, Mace_, Mace_, Smasher_, Flail_, Morning_Star_, Sword_Mace_, Chain_, Stunner, Book, Bible, Tablet ]
+    Shield: [ 0, 0, Guard_, Buckler_, Shield_, Holy_Guard, Stone_Buckler ]
+    Garment: [ 0, 0, Muffler_, Muffler_, Hood_, Manteau, Wool_Scarf, Ragamuffin_Cape ]
+    Shoes: [ Shoes_, Shoes_, Sandals_, Boots_, Chrystal_Pumps, High_Fashion_Sandals, Slipper ]
+    AccL: [ 0, 0, Rosary, Rosary, Clip, Necklace, Earring, Ring, Nile_Rose_ ]
+    AccR: [ 0, 0, Rosary, Rosary, Clip, Necklace, Ring, Gold_Ring ]
+
+  # ------------------------------------------------------------- Archer line
+  - GearSetName: para_bow
+    HeadTop: [ 0, 0, Apple_Of_Archer, Apple_Of_Archer, Feather_Bonnet, Bandana, Hair_Band, Hat_, Cap_, Ribbon_, Flower_Hairband, Cat_Hairband, Corsair, Ghost_Bandana, Red_Bandana, Star_Dust, Ph.D_Hat, Big_Sis'_Ribbon ]
+    HeadMid: [ 0, 0, 0, Binoculars, Binoculars, Luxury_Sunglasses, Sunglasses_, Elven_Ears, Robo_Eye, Blinker, Masquerade ]
+    HeadBottom: [ 0, 0, 0, 0, Granpa_Beard, Centimental_Flower, Well_Baked_Toast, Romantic_White_Flower ]
+    Armor: [ Mink_Coat, Coat_, Silk_Robe_, Tights_, Wooden_Mail_, Sniping_Suit, Padded_Armor_, Formal_Suit, Leather_Jacket_ ]
+    Weapon: [ Bow_, Bow_, Composite_Bow_, Composite_Bow_, Great_Bow_, CrossBow_, Arbalest_, Kakkung_ ]
+    Shield: 0
+    Garment: [ 0, 0, Muffler_, Muffler_, Hood_, Manteau, Falcon_Robe, Wool_Scarf, Ragamuffin_Cape ]
+    Shoes: [ Shoes_, Shoes_, Boots_, Sandals_, Grave_, High_Fashion_Sandals, Cuffs ]
+    AccL: [ 0, 0, Glove, Glove, Clip, Earring, Ring, Belt, Nile_Rose_ ]
+    AccR: [ 0, 0, Glove, Glove, Clip, Necklace, Ring, Belt ]
+
+  # -------------------------------------------------------------- Monk (knuckle)
+  - GearSetName: para_monk
+    HeadTop: [ 0, 0, Biretta_, Bandana, Hair_Band, Hat_, Cap_, Feather_Bonnet, Coronet, Holy_Bonnet, Magestic_Goat, Antler, Ear_Mufs, Ph.D_Hat ]
+    HeadMid: [ 0, 0, 0, 0, Sunglasses_, Elven_Ears, Blinker, Blush ]
+    HeadBottom: [ 0, 0, 0, Iron_Cane, Centimental_Flower, Well_Baked_Toast ]
+    Armor: [ Saint_Robe_, Saint_Robe_, Mink_Coat, Silk_Robe_, Chain_Mail_, Padded_Armor_, Wooden_Mail_, Scapulare_ ]
+    Weapon: [ Waghnakh_, Waghnakh_, Knuckle_Duster_, Hora_, Fist_, Claw_, Finger_, Chain_, Stunner, Mace_ ]
+    Shield: [ 0, 0, Guard_, Buckler_, Shield_, Holy_Guard ]
+    Garment: [ 0, 0, Muffler_, Muffler_, Hood_, Manteau, Wool_Scarf ]
+    Shoes: [ Shoes_, Shoes_, Boots_, Sandals_, Grave_, High_Fashion_Sandals ]
+    AccL: [ 0, 0, Rosary, Rosary, Clip, Necklace, Ring, Belt ]
+    AccR: [ 0, 0, Rosary, Rosary, Clip, Necklace, Ring, Belt ]
+
+  # ------------------------------------------------------------- Thief line
+  - GearSetName: para_thief
+    HeadTop: [ 0, 0, Bandana, Hair_Band, Hat_, Cap_, Ghost_Bandana, Red_Bandana, Pirate_Bandana, Corsair, Feather_Bonnet, Ribbon_, Jack_A_Dandy, Star_Dust, Ph.D_Hat, Cat_Hairband ]
+    HeadMid: [ 0, 0, 0, Sunglasses_, Glasses_, Elven_Ears, Eye_Bandage, Masquerade, Blinker, Robo_Eye ]
+    HeadBottom: [ 0, 0, 0, 0, Cigar, Centimental_Flower, Centimental_Leaf, Well_Baked_Toast ]
+    Armor: [ Mink_Coat, Coat_, Silk_Robe_, Thief_Clothes_, Tights_, Ninja_Suit, Wooden_Mail_, Leather_Jacket_ ]
+    Weapon: [ Knife_, Knife_, Cutter_, Main_Gauche_, Main_Gauche_, Dirk_, Dagger_, Stiletto_, Gladius_, Damascus_ ]
+    Shield: 0
+    Garment: [ 0, 0, Muffler_, Muffler_, Hood_, Manteau, Ragamuffin_Cape, Wool_Scarf ]
+    Shoes: [ Shoes_, Shoes_, Boots_, Sandals_, Grave_, Black_Leather_Boots, High_Fashion_Sandals ]
+    AccL: [ 0, 0, Ring, Ring, Clip, Earring, Brooch, Belt, Gold_Ring ]
+    AccR: [ 0, 0, Ring, Ring, Clip, Necklace, Brooch, Belt, Silver_Ring ]
+
+  - GearSetName: para_assassin_katar   # Assassin / Assassin Cross — katar build
+    HeadTop: [ 0, 0, Bandana, Hat_, Cap_, Ghost_Bandana, Pirate_Bandana, Corsair, Feather_Bonnet, Star_Dust, Ph.D_Hat, Jack_A_Dandy ]
+    HeadMid: [ 0, 0, 0, Luxury_Sunglasses, Sunglasses_, Elven_Ears, Eye_Bandage, Masquerade, Robo_Eye ]
+    HeadBottom: [ 0, 0, 0, Cigar, Centimental_Flower, Centimental_Leaf ]
+    Armor: [ Mink_Coat, Coat_, Silk_Robe_, Thief_Clothes_, Tights_, Ninja_Suit, Wooden_Mail_ ]
+    Weapon: [ Jur_, Jur_, Katar_, Katar_, Jamadhar_, Jamadhar_, Ghoul_Leg, Various_Jur ]
+    Shield: 0
+    Garment: [ 0, 0, Muffler_, Muffler_, Hood_, Manteau, Ragamuffin_Cape ]
+    Shoes: [ Shoes_, Shoes_, Boots_, Sandals_, Grave_, Black_Leather_Boots ]
+    AccL: [ 0, 0, Ring, Ring, Clip, Earring, Brooch, Belt ]
+    AccR: [ 0, 0, Ring, Ring, Clip, Necklace, Brooch, Belt ]
+
+  # ----------------------------------------------------------- Merchant line
+  - GearSetName: para_merchant
+    HeadTop: [ 0, 0, Hat_, Cap_, Bandana, Hair_Band, Feather_Bonnet, Ph.D_Hat, Corsair, Doctor_Cap, Ear_Mufs, Antler, Sahkkat, Star_Dust, Ghost_Bandana ]
+    HeadMid: [ 0, 0, 0, 0, Sunglasses_, Glasses_, Elven_Ears, Blinker, Eye_Bandage ]
+    HeadBottom: [ 0, 0, 0, Cigar, Iron_Cane, Beard, Well_Baked_Toast, Centimental_Flower ]
+    Armor: [ Coat_, Coat_, Mink_Coat, Padded_Armor_, Chain_Mail_, Wooden_Mail_, Formal_Suit, Leather_Jacket_ ]
+    # 1-handed only (2hAxe conflicts with the shield roll below).
+    Weapon: [ Club_, Club_, Mace_, Mace_, Smasher_, Flail_, Morning_Star_, Sword_Mace_, Chain_, Axe_, Axe_, Orcish_Axe_, Cleaver ]
+    Shield: [ 0, 0, Guard_, Buckler_, Shield_, Stone_Buckler ]
+    Garment: [ 0, 0, Muffler_, Muffler_, Manteau, Hood_, Wool_Scarf, Ragamuffin_Cape ]
+    Shoes: [ Shoes_, Shoes_, Boots_, Sandals_, Grave_, High_Fashion_Sandals ]
+    AccL: [ 0, 0, Ring, Ring, Clip, Earring, Belt, Gold_Ring, Nile_Rose_ ]
+    AccR: [ 0, 0, Ring, Ring, Clip, Necklace, Belt, Silver_Ring ]
+
+  # -------------------------------------------------------- Taekwon (unarmed)
+  - GearSetName: para_taekwon
+    HeadTop: [ 0, 0, Bandana, Hair_Band, Hat_, Cap_, Ribbon_, Flower_Hairband, Cat_Hairband, Feather_Bonnet, Star_Dust, Ghost_Bandana ]
+    HeadMid: [ 0, 0, 0, Sunglasses_, Glasses_, Elven_Ears, Blinker ]
+    HeadBottom: [ 0, 0, 0, Centimental_Flower, Well_Baked_Toast ]
+    Armor: [ Cotton_Shirt_, Mink_Coat, Tights_, Ninja_Suit, Silk_Robe_, Leather_Jacket_ ]
+    Weapon: 0
+    Shield: 0
+    Garment: [ 0, 0, Muffler_, Hood_, Manteau, Wool_Scarf ]
+    Shoes: [ Shoes_, Sandals_, Boots_, Grave_, High_Fashion_Sandals ]
+    AccL: [ 0, 0, Ring, Clip, Earring, Belt ]
+    AccR: [ 0, 0, Ring, Clip, Necklace, Belt ]
+
+  # ---------------------------------------------------------- Gunslinger
+  - GearSetName: para_gun
+    HeadTop: [ 0, 0, Hat_, Cap_, Bandana, Pirate_Bandana, Ghost_Bandana, Corsair, Feather_Bonnet, Jack_A_Dandy, Star_Dust, Ph.D_Hat ]
+    HeadMid: [ 0, 0, 0, Sunglasses_, Glasses_, Eye_Bandage, Masquerade, Blinker ]
+    HeadBottom: [ 0, 0, 0, Cigar, Centimental_Flower ]
+    Armor: [ Coat_, Mink_Coat, Padded_Armor_, Chain_Mail_, Tights_, Formal_Suit ]
+    Weapon: [ Six_Shooter_, Six_Shooter_, Crimson_Bolt_, The_Garrison_, P_Revolver1, P_Revolver2 ]
+    Shield: 0
+    Garment: [ 0, 0, Muffler_, Manteau, Hood_, Wool_Scarf ]
+    Shoes: [ Shoes_, Boots_, Sandals_, Grave_, Black_Leather_Boots ]
+    AccL: [ 0, 0, Ring, Clip, Earring, Belt ]
+    AccR: [ 0, 0, Ring, Clip, Necklace, Belt ]
+
+  # -------------------------------------------------------------- Ninja
+  - GearSetName: para_ninja
+    HeadTop: [ 0, 0, Bandana, Hat_, Cap_, Ghost_Bandana, Pirate_Bandana, Feather_Bonnet, Ribbon_, Star_Dust ]
+    HeadMid: [ 0, 0, 0, Sunglasses_, Elven_Ears, Eye_Bandage, Masquerade ]
+    HeadBottom: [ 0, 0, 0, Centimental_Flower, Well_Baked_Toast ]
+    Armor: [ Ninja_Suit, Ninja_Suit, Mink_Coat, Thief_Clothes_, Tights_, Silk_Robe_ ]
+    Weapon: [ Knife_, Main_Gauche_, Gladius_, Damascus_, Dirk_, Stiletto_, Dagger_ ]
+    Shield: 0
+    Garment: [ 0, 0, Muffler_, Hood_, Manteau, Wool_Scarf ]
+    Shoes: [ Shoes_, Boots_, Sandals_, Grave_ ]
+    AccL: [ 0, 0, Ring, Clip, Earring, Belt ]
+    AccR: [ 0, 0, Ring, Clip, Necklace, Belt ]
+
+  # ------------------------------------------------------- Bare-weapon sets
+  - GearSetName: bare_dagger
+    HeadTop: 0
+    HeadMid: 0
+    HeadBottom: 0
+    Armor: 0
+    Weapon: [1201]
+    Shield: 0
+    Garment: 0
+    Shoes: 0
+    AccL: 0
+    AccR: 0
+
+  - GearSetName: bare_axe
+    HeadTop: 0
+    HeadMid: 0
+    HeadBottom: 0
+    Armor: 0
+    Weapon: [1301]
+    Shield: 0
+    Garment: 0
+    Shoes: 0
+    AccL: 0
+    AccR: 0
+
+  - GearSetName: bare_gun
+    HeadTop: 0
+    HeadMid: 0
+    HeadBottom: 0
+    Armor: 0
+    Weapon: [13101]
+    Shield: 0
+    Garment: 0
+    Shoes: 0
+    AccL: 0
+    AccR: 0
+
+  - GearSetName: bare_kunai
+    HeadTop: 0
+    HeadMid: 0
+    HeadBottom: 0
+    Armor: 0
+    Weapon: [1951]
+    Shield: 0
+    Garment: 0
+    Shoes: 0
+    AccL: 0
+    AccR: 0

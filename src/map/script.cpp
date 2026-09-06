@@ -63,6 +63,7 @@
 #include "pc.hpp"
 #include "pc_groups.hpp"
 #include "pet.hpp"
+#include "population_engine.hpp"
 #include "quest.hpp"
 #include "storage.hpp"
 
@@ -25146,6 +25147,13 @@ BUILDIN_FUNC(hateffect){
 
 	int16 effectID = script_getnum(st,2);
 	bool enable = script_getnum(st,3) ? true : false;
+
+	// Fake players (population engine shells) never receive / maintain a Hat
+	// Effect — swallow the request so no server-side state is stored on them
+	// (headgear equip-scripts commonly call hateffect).
+	if( bl->type == BL_PC && population_engine_is_population_pc( bl->id ) ){
+		return SCRIPT_CMD_SUCCESS;
+	}
 
 	if( effectID <= HAT_EF_MIN || effectID >= HAT_EF_MAX ){
 		ShowError( "buildin_hateffect: unsupported hat effect id %d\n", effectID );

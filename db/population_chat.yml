@@ -1,0 +1,479 @@
+# This file is a part of rAthena.
+#   Copyright(C) 2021 rAthena Development Team
+#   https://rathena.org - https://github.com/rathena
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+###########################################################################
+# Population Engine Chat Database  —  Tagalog / Taglish
+###########################################################################
+#
+# Ambient map chat + whisper/mention replies for fake players. Short, casual,
+# Filipino-server style: mostly Tagalog/Taglish with RO slang. Keep lines short.
+#
+#   - ChatGlobal.Categories:  <name>: [ "line", ... ]   shared line pools
+#   - ChatProfile: <key>       Categories: [ names ]     a "personality" = a set
+#                                                        of categories to draw from
+#
+# Referenced from db/population_engine.yml via  ChatProfile: <key>
+# (omit ChatProfile: on a profile -> uses "default").
+#
+# Placeholders usable in any line:  {name}  {map}  {job}
+# Lines matching a db/population_names.yml Blocklist entry are skipped.
+#
+# Frequency is NOT controlled here. It is controlled by:
+#   conf/battle/population_engine.conf:
+#     population_engine_chat_enable          on/off master switch
+#     population_engine_chat_speak_chance    per-tick % a shell off cooldown speaks
+#     population_engine_chat_cooldown_ms     min gap between a shell's lines
+#     population_engine_chat_cooldown_jitter_ms
+#     population_engine_chat_max_per_tick    cap so a crowd never all speak at once
+#     population_engine_chat_reply_enable    reply to whisper / name mention
+#   plus a per-shell random "chattiness" personality weight (quiet..talkative).
+###########################################################################
+
+Header:
+  Type: POPULATION_CHAT_DB
+  Version: 1
+
+Body:
+  - ChatGlobal:
+      Categories:
+
+        greet:
+          - "uy"
+          - "hoy"
+          - "kamusta"
+          - "musta"
+          - "hello po"
+          - "hi"
+          - "yo"
+          - "balik ako"
+          - "andito na ko"
+          - "grabe daming tao"
+          - "ang tahimik dito ah"
+          - "kanina pa ko dito"
+          - "uy {name} daw ako haha"
+          - "buhay pa naman"
+          - "gising pa ako haha"
+          - "afk lang kanina"
+          - "kaka-log in ko lang"
+          - "sandali lang bibili lang ako"
+          - "o/"
+          - "wave"
+
+        idle:
+          - "ang bagal ng exp"
+          - "antok na ko"
+          - "gutom na ko haha"
+          - "sandali kumakain lang"
+          - "brb cr"
+          - "wait lang may kausap ako"
+          - "lag ba kayo? ako oo"
+          - "ang init sa labas"
+          - "isang round na lang tapos log na ko"
+          - "wala akong pang pot eh"
+          - "puno na inventory ko"
+          - "nakalimutan ko mag fly wing"
+          - "next week na lang farm"
+          - "sana may drop"
+          - "sad walang card"
+          - "malapit na ko mag level up"
+          - "grabe ang mahal ng gears ngayon"
+          - "tipid muna zeny"
+          - "puyat na naman ako"
+          - "isang game na lang haha"
+          - "chill lang muna"
+          - "tambay lang"
+          - "nagbabantay lang"
+          - "iniisip ko pa build ko"
+          - "mamaya ko na aayusin storage ko"
+          - "bakit ang daming red pot ko"
+          - "wala akong blue pot naman"
+          - "sana all may pang gear"
+          - "andaming quest kulang oras"
+
+        lost:
+          - "san ba to"
+          - "paano bumalik sa town"
+          - "may warp ba papuntang town"
+          - "nawawala ata ako haha"
+          - "ligaw ako sorry"
+          - "san dito? {map} ba?"
+          - "may kilala ba dito"
+          - "first time ko sa {map}"
+          - "asan yung npc dito"
+          - "san yung portal papasok"
+
+        shop:
+          - "sino may benta ng gears"
+          - "bili ako pot"
+          - "may tindahan ba dito"
+          - "pahingi presyo"
+          - "magkano yan"
+          - "sino nag vevend jusko ang mahal"
+          - "may mura bang armor"
+          - "bibili lang ako white pot"
+          - "may benta ng arrows"
+          - "kulang pa zeny ko"
+          - "papa-repair muna gears"
+          - "may buyer ba ng loots"
+          - "benta na kayo mura na yan"
+          - "sino may extra fly wing"
+          - "may nagtitinda ba ng blue pot"
+
+        party:
+          - "tara party"
+          - "may party?"
+          - "pwede sumali"
+          - "sino may slot sa party"
+          - "party tayo grind"
+          - "may kasama ba?"
+          - "solo lang ako pwede ba mag join"
+          - "sige invite mo ako"
+          - "wait lang bago mag party"
+          - "sino leader"
+          - "san party niyo mag farm"
+          - "tara tayong dalawa"
+          - "kulang tao natin ah"
+          - "isa pa tao kulang"
+          - "ok na tayo tara na"
+          - "party full na ba"
+          - "next run na lang ako sali"
+
+        reaction:
+          - "haha"
+          - "hahaha"
+          - "lakas"
+          - "grabe"
+          - "sheesh"
+          - "oks"
+          - "sige"
+          - "ayos"
+          - "gg"
+          - "salamat"
+          - "salamat po"
+          - "welcome"
+          - "hays"
+          - "aray"
+          - "patay"
+          - "buti na lang"
+          - "eto na"
+          - "wait lang"
+          - "sandali"
+          - "g"
+          - "tara na"
+          - "ingat"
+          - "ingat kayo"
+          - "sakto"
+          - "swerte mo naman"
+          - "malas ko today"
+
+        question:
+          - "san kayo?"
+          - "anong oras?"
+          - "may warp ba?"
+          - "may portal?"
+          - "san maganda mag level nito?"
+          - "ilan level niyo?"
+          - "may event ba ngayon?"
+          - "san mababa mobs para farm?"
+          - "may kasama ba kayo?"
+          - "online pa ba guild niyo?"
+          - "san ba mababili nito?"
+          - "may quest ba dito na maganda?"
+          - "anong build niyo?"
+          - "ok pa ba mag {job} ngayon?"
+          - "san malapit na dungeon dito?"
+
+        banter:
+          - "wala lang trip ko lang mag laro"
+          - "isang oras na ko dito wala pa drop"
+          - "yung RNG parang ayaw sakin"
+          - "last hit ko yan ha haha"
+          - "kaltas ang def ko dito"
+          - "sana pumatak card ngayon"
+          - "puro slime lang nakikita ko"
+          - "wala akong maganda sasabihin haha"
+          - "eto tayo naglalaro imbes na matulog"
+          - "fashion endgame talaga"
+          - "petix yung dye ko final na yan"
+          - "reset stats sa panaginip ko"
+          - "buff pls sino aco dyan"
+          - "sino may bless jusko"
+          - "sipagin lang tayo mamaya"
+
+        job_flavor:
+          - "tank lang ako wag kayo mag alala"
+          - "buff kayo dyan sandali"
+          - "sino gusto ma-heal"
+          - "arrow check bago tayo umalis"
+          - "kokonti pa sp ko"
+          - "cast lang muna ako sandali"
+          - "hide muna delikado"
+          - "cart ko malapit lang wag mag alala"
+          - "sw pag delikado sabihan niyo ko"
+          - "asura ready pag kailangan"
+          - "double strafe spam tayo"
+          - "provoke ko muna to"
+          - "steal muna baka may drop"
+          - "pneuma sa may ranged"
+          - "agi up kayo dyan"
+
+        whisper_vibe:
+          - "wait lang may kausap ako"
+          - "sandali busy lang"
+          - "oo bakit"
+          - "andito lang ako"
+          - "sagot kita sandali"
+          - "pm mo na lang ako"
+          - "type mo lang dito"
+          - "ok lang yan"
+          - "sige sabihan mo lang ako"
+          - "andito pa ba kayo"
+
+        night_day:
+          - "gabi na pala"
+          - "puyatan na naman"
+          - "umaga na ulit haha"
+          - "one more tapos tulog"
+          - "hatinggabi na tara pa rin"
+          - "aga mo naman naglalaro"
+          - "kape muna bago mag grind"
+          - "antok pero sayang exp"
+
+        hunt:
+          - "tara grind"
+          - "tara farm"
+          - "san tayo mag grind"
+          - "payon tayo"
+          - "sa fields muna tayo"
+          - "hanap tayo mob dense"
+          - "kaltas hp neto ah"
+          - "isa pa level today deal tayo"
+          - "spawn naman kayo bilis"
+          - "tulong dito daming mob"
+          - "loot niyo yung nahulog"
+          - "sino may loot share"
+          - "puro trash drop haha"
+          - "malapit na next level ko"
+          - "wag mag pull sabay sabay"
+          - "chain kill tayo dito"
+          - "steady lang wag mag agawan mob"
+          - "may mvp ba dito minsan?"
+          - "ingat may aggro dyan"
+          - "back to town muna bili pot"
+
+        grind:
+          - "grind pa more"
+          - "isang oras pa dito"
+          - "exp bar move ka naman"
+          - "sakit sa mata neto haha"
+          - "petix konti pa"
+          - "malapit na 3 bar na lang"
+          - "puro miss ako today"
+          - "swerte may card nadrop kanina sa kabila"
+          - "sino may buff pshare"
+          - "diretso lang tayo dito"
+          - "wag muna bumalik town sayang buff"
+          - "wait mag pot lang ako"
+          - "low hp na ko heal naman"
+          - "ok pa ba kaya niyo pa?"
+          - "tuloy tuloy lang exp mo yan"
+
+        dungeon:
+          - "ingat delikado dito"
+          - "sino may healer"
+          - "wag mag lagalag baka ma swarm"
+          - "daming mob sa loob"
+          - "steady bago pumasok"
+          - "may pang pot pa ba kayo"
+          - "wait tank muna mauna"
+          - "buff check bago pumasok"
+          - "papasok na tayo malalim"
+          - "loot niyo yung box"
+          - "sino may extra fly wing baka kailangan"
+          - "delikado yung mvp dito ha"
+          - "atras muna low hp na ako"
+          - "may portal pababa dito"
+          - "gg dito muna tayo mag farm"
+          - "wag mag solo dito delikado"
+          - "sabay sabay tayo pababa"
+          - "healer sa likod ka lang"
+          - "may trap dito mag ingat"
+          - "kumpleto ba tayo bago lumalim"
+
+        pvp:
+          - "laban tayo"
+          - "1v1 sino"
+          - "tara sparring"
+          - "sino matigas dito"
+          - "ready ka na ba"
+          - "wag ka aatras"
+          - "solo mo ako kung kaya mo"
+          - "gg sa laban"
+          - "rematch tayo"
+          - "steady lang bro laro lang to"
+
+        pvp_taunt:
+          - "ang bagal mo naman"
+          - "yun lang ba"
+          - "atras ka na haha"
+          - "hindi ka pa yata ready"
+          - "sensya na ha"
+          - "next time practice ka muna"
+          - "ang lakas mo sa salita"
+          - "dali pa"
+          - "petix ka lang naman"
+          - "wag ka na lumaban baka masaktan ka"
+
+        pvp_kill:
+          - "gg $victim"
+          - "sensya na $victim laro lang"
+          - "next time $victim ha"
+          - "ez laban $victim salamat"
+          - "wag ka mag alala $victim rematch tayo"
+          - "close fight yun $victim"
+          - "$victim practice pa tayo"
+          - "gg wp $victim"
+
+        party_invite_accept:
+          - "sige sali ako"
+          - "ok tara"
+          - "g invite mo"
+          - "sali ako sandali lang"
+          - "oo pwede ako"
+          - "tara sama ako"
+          - "ayos sali na ko"
+          - "wait lang papunta na ko"
+
+        party_invite_decline:
+          - "sensya solo muna ako"
+          - "next time na lang salamat"
+          - "malapit na ko mag log eh"
+          - "busy lang muna ako sorry"
+          - "afk pa ako mamaya na lang"
+
+        vendor_call:
+          - "mura lang dito bili na kayo"
+          - "may pot ako dito buy na"
+          - "gears mura tignan niyo vend ko"
+          - "buy na bago mag dungeon"
+          - "fly wing at pot eto dito"
+          - "sulit dito boss"
+          - "vend ko bukas pasyal kayo"
+          - "murang loots dito sa cart ko"
+          - "bili na habang bago"
+          - "arrow at pot kompleto dito"
+          - "check niyo presyo ko sulit"
+          - "wag mag laban gutom bili muna pot"
+
+  ###########################################################################
+  # Personalities. Reference from db/population_engine.yml via ChatProfile:
+  ###########################################################################
+
+  - ChatProfile: default
+    Categories:
+      - greet
+      - idle
+      - lost
+      - shop
+      - party
+      - reaction
+      - question
+      - banter
+      - whisper_vibe
+      - night_day
+      - hunt
+      - grind
+
+  # Chatty, party-seeking grinder.
+  - ChatProfile: talkative
+    Categories:
+      - greet
+      - party
+      - reaction
+      - question
+      - banter
+      - hunt
+      - grind
+      - idle
+      - shop
+      - night_day
+
+  # Rarely speaks; short reactions only.
+  - ChatProfile: quiet
+    Categories:
+      - reaction
+      - idle
+      - greet
+
+  # Heads-down farmer.
+  - ChatProfile: grinder
+    Categories:
+      - hunt
+      - grind
+      - reaction
+      - party
+      - job_flavor
+      - idle
+      - question
+
+  # New player vibe: asks a lot, gets lost, buys pots.
+  - ChatProfile: newbie
+    Categories:
+      - lost
+      - question
+      - greet
+      - shop
+      - reaction
+      - idle
+      - party
+
+  # Merchant / vendor personality.
+  - ChatProfile: merchant
+    Categories:
+      - vendor_call
+      - shop
+      - greet
+      - idle
+      - reaction
+      - banter
+
+  # Kept for existing references (population_engine.yml / population_pvp.yml).
+  - ChatProfile: hunter_field
+    Categories:
+      - greet
+      - hunt
+      - grind
+      - idle
+      - job_flavor
+      - reaction
+      - banter
+      - shop
+      - party
+
+  - ChatProfile: pvp
+    Categories:
+      - pvp
+      - pvp_taunt
+      - pvp_kill
+      - reaction
+      - banter
+      - job_flavor
+      - party
+      - greet
+      - hunt
+      - grind
+      - idle
+      - shop
+
+  - ChatProfile: vendor
+    Categories:
+      - vendor_call
+      - shop
+      - greet
+      - idle

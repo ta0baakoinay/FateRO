@@ -31,3 +31,11 @@
 Header:
   Type: ATCOMMAND_DB
   Version: 1
+
+Body:
+  - Command: populate
+    Help: |
+      Population engine: spawn runtime PC shells (@populate <n> [map], stop, stats, status).
+  - Command: reloadpopenginedb
+    Help: |
+      Reload population engine YAML databases (population_engine.yml, etc.) at runtime.

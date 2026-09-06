@@ -51,6 +51,9 @@
 #include "pc.hpp"
 #include "pc_groups.hpp"
 #include "pet.hpp"
+#include "population_engine.hpp"
+#include "population_engine/core/pe_perf.hpp"
+#include "population_engine/runtime/population_engine_path.hpp"
 #include "quest.hpp"
 #include "script.hpp"
 #include "storage.hpp"
@@ -3362,8 +3365,12 @@ ACMD_FUNC(recall) {
 
 	if((pl_sd=map_nick2sd(atcmd_player_name,true)) == nullptr && (pl_sd=map_charid2sd(atoi(atcmd_player_name))) == nullptr)
 	{
-		clif_displaymessage(fd, msg_txt(sd,3)); // Character not found.
-		return -1;
+		// Fake players (population engine shells) are not in pc_db / nick_db.
+		pl_sd = population_engine_find_by_name(atcmd_player_name);
+		if (pl_sd == nullptr) {
+			clif_displaymessage(fd, msg_txt(sd,3)); // Character not found.
+			return -1;
+		}
 	}
 
 	if ( pc_get_group_level(sd) < pc_get_group_level(pl_sd) )
@@ -4184,6 +4191,17 @@ ACMD_FUNC(recallall)
 		}
 	}
 	mapit_free(iter);
+
+	// Fake players (population engine shells) are not in pc_db, so the iterator
+	// above skips them. Include them here — recalled, never despawned.
+	{
+		const bool anywhere = pc_has_permission(sd, PC_PERM_WARP_ANYWHERE);
+		int fcount = population_engine_recall_all(sd->mapindex, sd->x, sd->y, anywhere);
+		if (fcount > 0) {
+			sprintf(atcmd_output, "%d fake player(s) recalled.", fcount);
+			clif_displaymessage(fd, atcmd_output);
+		}
+	}
 
 	clif_displaymessage(fd, msg_txt(sd,92)); // All characters recalled!
 	if (count) {

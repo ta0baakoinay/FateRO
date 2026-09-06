@@ -42,6 +42,7 @@
 #include "pc.hpp"
 #include "pc_groups.hpp"
 #include "pet.hpp"
+#include "population_engine.hpp"
 #include "script.hpp"
 #include "status.hpp"
 #include "unit.hpp"
@@ -13945,11 +13946,19 @@ TIMER_FUNC(skill_castend_id){
 					ud->skilltimer = tid;
 					return skill_castend_pos(tid,tick,id,data);
 				}
+			case CR_GRANDCROSS:
+			case NPC_GRANDDARKNESS:
 			case GN_WALLOFTHORN:
 			case SC_ESCAPE:
 			case WL_FROSTMISTY:
 			case SU_CN_POWDERING:
 			case AG_RAIN_OF_CRYSTAL:
+				// Self/target-cast skills that actually place a ground skill unit.
+				// Redirect to skill_castend_pos so skill_castend_pos2 ->
+				// skill_unitsetting() lays the unit at the target cell (= the
+				// caster's own cell for a TargetSelf skill like Grand Cross).
+				// Without this a self-cast Grand Cross falls through to
+				// skill_castend_nodamage_id and hits the "missing code case".
 				ud->skillx = target->x;
 				ud->skilly = target->y;
 				ud->skilltimer = tid;
@@ -19986,6 +19995,10 @@ struct s_skill_condition skill_get_requirement(map_session_data* sd, uint16 skil
 	req.spiritball = skill->require.spiritball[skill_lv-1];
 	req.state = skill->require.state;
 
+	// Runtime population PCs have no client; relax weapon/ammo/item requirements (see pc_isequip for equip).
+	if (population_engine_is_population_pc(sd->id))
+		return req;
+
 	req.mhp = skill->require.mhp[skill_lv-1];
 	req.weapon = skill->require.weapon;
 	req.ammo_qty = skill->require.ammo_qty[skill_lv-1];
@@ -22453,7 +22466,8 @@ static int32 skill_unit_timer_sub(DBKey key, DBData *data, va_list ap)
 			case UNT_ICEBOUNDTRAP:
 			{
 				block_list* src;
-				if( unit->val1 > 0 && (src = map_id2bl(group->src_id)) != nullptr && src->type == BL_PC )
+				if( unit->val1 > 0 && (src = map_id2bl(group->src_id)) != nullptr && src->type == BL_PC
+					&& !population_engine_is_population_pc(src->id) )
 				{ // revert unit back into a trap
 					struct item item_tmp;
 					memset(&item_tmp,0,sizeof(item_tmp));
