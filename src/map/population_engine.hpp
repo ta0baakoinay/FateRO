@@ -99,6 +99,37 @@ int  population_engine_manual_add_vendors(int32_t map_id, uint32_t count, int *o
 /// Count live fake players that currently have a real vend open (state.vending).
 size_t population_engine_vendor_count();
 
+// ============================================================
+// @populate AutoCombat <Job> <qty> <map> — fake players driven by the REAL
+// autocombat.cpp loop (SC_AUTOCOMBAT), for stress-testing the AutoCombat
+// workload at scale. Mortal + auto-respawn. No quantity cap beyond
+// battle_config.population_engine_max_count.
+// ============================================================
+
+/// Spawn `count` AutoCombat fake players of `job_id` on `map_id` (naturally
+/// spread). If `map_id` is not appropriate for the job's tier the group is
+/// redirected to a job-appropriate map and `*out_redirected` gets the count.
+/// Returns the number actually created (may be < count if the global cap is hit).
+int population_engine_manual_add_autocombat(uint16_t job_id, int32_t map_id, uint32_t count, int *out_redirected = nullptr);
+
+/// Release every AutoCombat fake player. Real players and all other fake-player
+/// kinds (manual/auto/vending/arena) are untouched. Returns the number removed.
+int population_engine_autocombat_remove_all();
+
+/// Release AutoCombat fake players of one job on one map (job_id 0 = any job,
+/// map_id < 0 = any map). Returns the number removed.
+int population_engine_autocombat_remove(uint16_t job_id, int32_t map_id);
+
+/// One row per live (job,map) AutoCombat group.
+struct PopulationAutoCombatGroupRow {
+	uint16_t job_id = 0;
+	int16_t  map_id = 0;
+	char     map_name[12] = {};
+	uint32_t alive = 0;
+	uint32_t dead  = 0;   ///< subset of `alive` currently dead / awaiting respawn
+};
+size_t population_engine_autocombat_list(std::vector<PopulationAutoCombatGroupRow> &out);
+
 /// Run exactly one db/population_spawn.yml distribution pass right now (same
 /// logic the autosummon timer uses), even when autosummon is disabled.
 /// Returns the number of shells created by the pass.

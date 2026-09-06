@@ -31,6 +31,7 @@
 #include <common/strlib.hpp>
 #include <common/timer.hpp>
 #include <common/utils.hpp>
+#include "autocombat.hpp"
 #include "battle.hpp"
 #include "clif.hpp"
 #include "itemdb.hpp"
@@ -670,6 +671,10 @@ void population_engine_shell_release(map_session_data* sd)
 			delete_timer(sd->pop.respawn_timer, population_engine_respawn_shell_timer);
 		sd->pop.respawn_timer = INVALID_TIMER;
 	}
+	// AutoCombat shells: end the real SC_AUTOCOMBAT loop cleanly (no SQL, no
+	// GM-kick / warp-to-save — those paths are for real players only).
+	if (static_cast<PopulationBehavior>(sd->pop.behavior) == PopulationBehavior::AutoCombat)
+		autocombat_shell_stop(sd);
 	population_engine_combat_shell_teardown(sd);
 	// Re-check after teardown: combat_changestate / hat-effect callbacks may have
 	// triggered map_quit on shells with non-zero action_on_end, freeing `sd`.
@@ -1429,6 +1434,10 @@ TIMER_FUNC(population_engine_respawn_shell_timer)
 	// Restart the combat session for battle-oriented behaviors so the combat timer picks them up.
 	if (beh == PopulationBehavior::Combat || beh == PopulationBehavior::Guard)
 		population_engine_combat_start_session(sd, PopulationCombatStartMode::AutoCombat, 0, 0);
+	// AutoCombat shells: re-seed sd->ac and re-arm SC_AUTOCOMBAT (both cleared by
+	// the death / unit_remove_map teardown).
+	else if (beh == PopulationBehavior::AutoCombat)
+		autocombat_shell_start(sd);
 	return 0;
 }
 
@@ -3075,6 +3084,13 @@ static map_session_data* population_engine_spawn_shell(int16_t map_id, int x, in
 		}
 	}
 
+	// AutoCombat shells: hand the shell to the REAL autocombat.cpp loop. This
+	// seeds sd->ac from the learned skill tree + built-in per-class defaults and
+	// starts SC_AUTOCOMBAT (unbounded). The population-engine AI never touches
+	// these shells (sd->state.population_combat stays false).
+	if (pe_beh == PopulationBehavior::AutoCombat)
+		autocombat_shell_start(sd);
+
     return sd;
 }
 
@@ -4627,6 +4643,203 @@ int population_engine_manual_fill_from_spawndb()
 	g_autosummon_force_once = true;
 	population_engine_autosummon_timer(INVALID_TIMER, gettick(), 0, 0);
 	return static_cast<int>(g_population_engine_count.load() - before);
+}
+
+// ---------------------------------------------------------------------------
+// @populate AutoCombat <Job> <qty> <map>   — fake players on the REAL loop
+// ---------------------------------------------------------------------------
+// Spawns population shells whose per-tick brain is autocombat.cpp's
+// autocombat_main() (via SC_AUTOCOMBAT), NOT the population-engine AI. Purpose:
+// stress-test the actual AutoCombat workload (target search / A* / movement /
+// battle / skills / autoloot / teleport) at large scale. Mortal + auto-respawn.
+// No hard quantity cap here — bounded only by population_engine_max_count.
+
+static void population_manual_release_one(map_session_data *sd); // defined just below
+
+static bool population_spawn_one_autocombat(int16_t map_id, uint16_t job)
+{
+	struct map_data *md = map_getmapdata(map_id);
+	if (md == nullptr || md->cell == nullptr || md->xs <= 0 || md->ys <= 0)
+		return false;
+	if (!pcdb_checkid(job))
+		return false;
+
+	// Gear / name profile: the job's own profile if it has one, else its base
+	// job's, else nullptr (built-in defaults still produce a usable shell).
+	PopulationDbSource src = PopulationDbSource::Main;
+	std::shared_ptr<PopulationEngine> cfg = population_engine_find_any(job, &src);
+	if (!cfg) {
+		const uint16_t bj = get_base_job(job);
+		if (bj != job) cfg = population_engine_find_any(bj, &src);
+	}
+	const PopulationEngine *pop_cfg = cfg ? cfg.get() : nullptr;
+
+	// Natural spread: independent random walkable cell per shell.
+	int16 x = 0, y = 0;
+	for (int attempt = 0; attempt < 80 && (x == 0 && y == 0); ++attempt) {
+		int16 sx = static_cast<int16>(2 + (rnd() % std::max<int>(1, md->xs - 4)));
+		int16 sy = static_cast<int16>(2 + (rnd() % std::max<int>(1, md->ys - 4)));
+		if (population_cell_is_good_spawn(map_id, sx, sy)) { x = sx; y = sy; }
+	}
+	if (x == 0 && y == 0) {
+		int16 sx = static_cast<int16>(md->xs / 2), sy = static_cast<int16>(md->ys / 2);
+		if (map_search_freecell(nullptr, map_id, &sx, &sy,
+		        std::min<int>(40, md->xs / 2), std::min<int>(40, md->ys / 2), 1)
+		    && population_cell_is_good_spawn(map_id, sx, sy)) { x = sx; y = sy; }
+	}
+	if (x == 0 && y == 0)
+		return false;
+
+	const uint32_t index = population_engine_allocate_index();
+	if (index == 0)
+		return false;
+
+	char sex = get_job_required_sex(job);
+	if (sex == '\0') sex = (rnd() % 2) ? SEX_MALE : SEX_FEMALE;
+
+	uint16_t weapon = 0, shield = 0, head_top = 0, head_mid = 0, head_bottom = 0, garment = 0;
+	struct script_code *init_script = nullptr;
+	if (pop_cfg) {
+		auto pick = [](const std::vector<uint16_t>& p) -> uint16_t {
+			return p.empty() ? 0 : (p.size() == 1 ? p[0] : p[rnd() % p.size()]);
+		};
+		weapon      = pick(pop_cfg->weapon_pool);
+		shield      = pick(pop_cfg->shield_pool);
+		head_top    = pick(pop_cfg->head_top_pool);
+		head_mid    = pick(pop_cfg->head_mid_pool);
+		head_bottom = pick(pop_cfg->head_bottom_pool);
+		garment     = pick(pop_cfg->garment_pool);
+		init_script = pop_cfg->script;
+	} else {
+		weapon = get_job_weapon(job);
+	}
+
+	const uint8_t cat = population_manual_map_category(map_id);
+
+	map_session_data *sd = population_engine_spawn_shell(
+		map_id, x, y, index, job, sex, MAX_HAIR_STYLE,
+		static_cast<uint16_t>(rnd() % 131), weapon, shield, head_top, head_mid, head_bottom,
+		0 /*option*/, 0 /*cloth_color*/, garment, init_script, /*skip_arrow=*/false,
+		pop_cfg, cat, src,
+		PopulationBehavior::AutoCombat, nullptr);
+	if (sd == nullptr)
+		return false;
+
+	g_population_engine_pcs.push_back(sd);
+	g_population_engine_count++;
+	g_population_engine_stats.total_created++;
+	g_population_engine_stats.active_units++;
+	sd->pop.source = 0;                   // MANUAL
+	sd->pop.flags |= PSF::Mortal;          // take damage, die, auto-respawn
+	// spawn_shell already called autocombat_shell_start() for AutoCombat behaviour.
+	return true;
+}
+
+int population_engine_manual_add_autocombat(uint16_t job_id, int32_t map_id, uint32_t count, int *out_redirected)
+{
+	if (out_redirected)
+		*out_redirected = 0;
+	if (count == 0 || !pcdb_checkid(job_id))
+		return 0;
+	extern struct Battle_Config battle_config;
+	const size_t max_global = static_cast<size_t>(battle_config.population_engine_max_count);
+	const size_t before = g_population_engine_count.load();
+	if (before >= max_global) {
+		ShowWarning("Population engine: @populate AutoCombat refused — already at population_engine_max_count (%zu).\n", max_global);
+		return 0;
+	}
+
+	if (map_id < 0 || !population_map_is_valid(static_cast<int16_t>(map_id), nullptr))
+		return 0;
+
+	// If the requested map is not appropriate for the job's progression tier,
+	// redirect to a job-appropriate map (same policy as @populate add).
+	int16_t target = static_cast<int16_t>(map_id);
+	bool redir = false;
+	if (!population_engine_job_fits_map(job_id, target)) {
+		bool r2 = false; uint8_t c2 = 0;
+		const int16_t alt = population_resolve_job_spawn_map(job_id, -1, &r2, &c2);
+		if (alt >= 0) { target = alt; redir = true; }
+	}
+
+	int made = 0;
+	for (uint32_t i = 0; i < count; ++i) {
+		if (g_population_engine_count.load() >= max_global)
+			break;
+		if (population_spawn_one_autocombat(target, job_id))
+			++made;
+	}
+
+	if (out_redirected)
+		*out_redirected = redir ? made : 0;
+	if (made > 0)
+		g_population_engine_running = true;
+	return made;
+}
+
+/// Release every AutoCombat shell (behavior == AutoCombat). Never touches real
+/// players, manual/auto/vending/arena shells. Returns the number removed.
+int population_engine_autocombat_remove_all()
+{
+	int removed = 0;
+	for (size_t i = g_population_engine_pcs.size(); i-- > 0; ) {
+		map_session_data *sd = g_population_engine_pcs[i];
+		if (!sd || static_cast<PopulationBehavior>(sd->pop.behavior) != PopulationBehavior::AutoCombat)
+			continue;
+		g_population_engine_pcs.erase(g_population_engine_pcs.begin() + i);
+		population_manual_release_one(sd);
+		++removed;
+	}
+	if (g_population_engine_pcs.empty() && !population_engine_auto_active())
+		g_population_engine_running = false;
+	return removed;
+}
+
+/// Release AutoCombat shells of one job on one map (job_id 0 = any job,
+/// map_id < 0 = any map). Returns the number removed.
+int population_engine_autocombat_remove(uint16_t job_id, int32_t map_id)
+{
+	int removed = 0;
+	for (size_t i = g_population_engine_pcs.size(); i-- > 0; ) {
+		map_session_data *sd = g_population_engine_pcs[i];
+		if (!sd || static_cast<PopulationBehavior>(sd->pop.behavior) != PopulationBehavior::AutoCombat)
+			continue;
+		if (job_id != 0 && sd->status.class_ != job_id)
+			continue;
+		if (map_id >= 0 && sd->m != map_id)
+			continue;
+		g_population_engine_pcs.erase(g_population_engine_pcs.begin() + i);
+		population_manual_release_one(sd);
+		++removed;
+	}
+	if (g_population_engine_pcs.empty() && !population_engine_auto_active())
+		g_population_engine_running = false;
+	return removed;
+}
+
+size_t population_engine_autocombat_list(std::vector<PopulationAutoCombatGroupRow> &out)
+{
+	out.clear();
+	for (const map_session_data *sd : g_population_engine_pcs) {
+		if (!sd || static_cast<PopulationBehavior>(sd->pop.behavior) != PopulationBehavior::AutoCombat)
+			continue;
+		const int16_t m = static_cast<int16_t>(sd->m);
+		PopulationAutoCombatGroupRow *row = nullptr;
+		for (auto &r : out)
+			if (r.job_id == sd->status.class_ && r.map_id == m) { row = &r; break; }
+		if (row == nullptr) {
+			PopulationAutoCombatGroupRow nr{};
+			nr.job_id = sd->status.class_;
+			nr.map_id = m;
+			safestrncpy(nr.map_name, map_mapid2mapname(m) ? map_mapid2mapname(m) : "?", sizeof(nr.map_name));
+			out.push_back(nr);
+			row = &out.back();
+		}
+		row->alive++;
+		if (pc_isdead(sd))
+			row->dead++;
+	}
+	return out.size();
 }
 
 /// Shared teardown for the manual remove commands: pop `sd` from the registry,

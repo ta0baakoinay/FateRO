@@ -31,6 +31,7 @@ enum class PopulationBehavior : uint8_t {
 	Social  = 5, ///< Wander + frequent chat + emotes
 	Vendor  = 6, ///< Stand at spawn, display overhead shop message
 	Guard   = 7, ///< Stand at spawn, attack on approach; return after combat
+	AutoCombat = 8, ///< Driven by the REAL autocombat.cpp loop (SC_AUTOCOMBAT), not the population-engine AI. Spawned only by `@populate AutoCombat`.
 };
 
 /// Named gear set for GearSet: inheritance in db/population_engine.yml.

@@ -228,6 +228,23 @@ void autocombat_main(map_session_data *sd, int64 tick);
 // AutoSupport config/helpers to support party members. Never called for real
 // players — normal @autocombat / @settings behaviour is unaffected.
 void autocombat_seed_fake_leader(map_session_data *sd);
+
+// ---------------------------------------------------------------------------
+// Population-engine AutoCombat shells (`@populate AutoCombat <Job> <qty> <map>`)
+// ---------------------------------------------------------------------------
+// These run the SAME autocombat_main() loop real players use via @settings, so
+// a stress test exercises the real target/path/move/attack/skill/loot/teleport
+// code. Never called for a real player. No SQL: the config is built in memory.
+//
+// autocombat_shell_start: seed sd->ac from the shell's learned skill tree +
+//   built-in per-class defaults, grant AL_TELEPORT / ammo, inflate the weight
+//   cap, then sc_start(SC_AUTOCOMBAT, val1=1) for an unbounded run.
+// autocombat_shell_stop: end SC_AUTOCOMBAT cleanly (no SQL, no GM-kick / warp).
+// autocombat_shell_recover: called from ac_abort() for a shell instead of the
+//   real-player teardown — clears the abort cause and keeps the loop alive.
+void autocombat_shell_start(map_session_data *sd);
+void autocombat_shell_stop(map_session_data *sd);
+void autocombat_shell_recover(map_session_data *sd, uint8 flag);
 void autocombat_support_party(map_session_data *leader, int64 tick);
 void autocombat_pc_damage(map_session_data *sd, struct block_list *src, bool was_sitting);
 void autocombat_mob_damage(struct block_list *src);

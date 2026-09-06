@@ -242,6 +242,52 @@ static int ac_generate_destination(int16 m, int16 *x, int16 *y)
 	return i;
 }
 
+// Roam-destination picker used by autocombat_main's "no target" walk.
+//
+// Real players roam the WHOLE map (unchanged: falls through to
+// ac_generate_destination).
+//
+// Population-engine AutoCombat shells are AFK farmers: they must stay in the
+// pocket of the map where the GM placed them so that (a) when the mobs they
+// were farming respawn, or the GM spawns fresh mobs, the shell is still within
+// its 14-cell target scan and re-engages within one tick, and (b) A* paths stay
+// short (cheap for thousands of shells). Without this a shell that clears its
+// area random-walks to the far side of the map and never comes back — which
+// looks exactly like "AutoCombat stopped after the monsters died".
+#define AUTOCOMBAT_SHELL_ROAM_RADIUS 16
+static void ac_generate_roam_destination(map_session_data *sd, int16 *x, int16 *y)
+{
+	nullpo_retv(sd);
+	if (population_engine_is_population_pc(sd->id) && sd->pop.spawn_map_id == sd->m) {
+		struct map_data *mapd = map_getmapdata(sd->m);
+		if (mapd != nullptr) {
+			const int16 cx = sd->pop.spawn_x;
+			const int16 cy = sd->pop.spawn_y;
+			const int R = AUTOCOMBAT_SHELL_ROAM_RADIUS;
+			for (int tries = 0; tries < 30; tries++) {
+				int tx = cx + (int)(rnd() % (2 * R + 1)) - R;
+				int ty = cy + (int)(rnd() % (2 * R + 1)) - R;
+				if (tx < 1) tx = 1;
+				else if (tx > mapd->xs - 2) tx = mapd->xs - 2;
+				if (ty < 1) ty = 1;
+				else if (ty > mapd->ys - 2) ty = mapd->ys - 2;
+				if (!map_getcell(sd->m, tx, ty, CELL_CHKNOPASS) &&
+				    !map_getcell(sd->m, tx, ty, CELL_CHKNPC)) {
+					*x = tx;
+					*y = ty;
+					return;
+				}
+			}
+			// Anchor area unusable this time — keep the shell where it is
+			// rather than flinging it across the map.
+			*x = sd->x;
+			*y = sd->y;
+			return;
+		}
+	}
+	ac_generate_destination(sd->m, x, y);
+}
+
 static int ac_randomwarp(map_session_data *sd)
 {
 	nullpo_ret(sd);
@@ -265,6 +311,13 @@ static bool ac_teleport(map_session_data *sd, bool forced)
     if (!sd->sc.getSCE(SC_AUTOCOMBAT) || sd->state.autotrade || map_getmapflag(sd->m, MF_NOTELEPORT)) {
         return teleported;
     }
+
+    // Population-engine AutoCombat shells never teleport: pc_setpos on a
+    // socket-less shell needs the engine's own re-add sequence, which this path
+    // does not run. They walk everywhere instead (heavier pathfinding load —
+    // which is the point of the stress test). ac_walk failure just retries.
+    if (population_engine_is_population_pc(sd->id))
+        return teleported;
 
 	// Check if user has teleport capabilities before attempting forced teleport
 	if (forced) {
@@ -355,7 +408,11 @@ static bool ac_teleport(map_session_data *sd, bool forced)
 
 	if (teleported == true) {
 		sd->ac.last_teleport = gettick();
-		clif_parse_LoadEndAck(sd->fd, sd);
+		// Population shells have no client socket (fd <= 0); the map-move is
+		// finalised by pc_setpos itself. Only a real player needs the manual
+		// load-end handshake here.
+		if (!population_engine_is_population_pc(sd->id))
+			clif_parse_LoadEndAck(sd->fd, sd);
 	}
 
 	return teleported;
@@ -367,6 +424,14 @@ static bool ac_teleport(map_session_data *sd, bool forced)
 void ac_abort(map_session_data *sd, uint8 flag)
 {
 	nullpo_retv(sd);
+
+	// Population-engine AutoCombat shells never actually abort: an abort would
+	// permanently stop the loop (and, worse, GM-kick / warp the fake player).
+	// Recover from the abort cause instead and keep autocombat_main running.
+	if (population_engine_is_population_pc(sd->id)) {
+		autocombat_shell_recover(sd, flag);
+		return;
+	}
 
 	struct status_change_entry *sce = sd->sc.getSCE(SC_AUTOCOMBAT);
 	if (sce) {
@@ -446,8 +511,10 @@ void autocombat_status_start(map_session_data *sd, int64 tick)
 
     while (!sd->ac.walk_xy.empty())
         sd->ac.walk_xy.pop();
-	ac_generate_destination(sd->m, &sd->ac.destination.first, &sd->ac.destination.second);
-	ac_pc_save(sd);
+	ac_generate_roam_destination(sd, &sd->ac.destination.first, &sd->ac.destination.second);
+	// Fake players have no char_id row — never touch the autocombat_* SQL tables.
+	if (!population_engine_is_population_pc(sd->id))
+		ac_pc_save(sd);
 }
 
 /**
@@ -532,6 +599,30 @@ static void ac_heal_potions(map_session_data *sd)
 {
 	nullpo_retv(sd);
 	int i;
+
+	// ---- Population-engine AutoCombat shells: unlimited, inventory-free -----
+	// "Use an HP/SP potion at <=80%". Implemented at the AI level: a direct
+	// restore, no item lookup, no pc_useitem, no inventory stacks to hold in
+	// RAM. Throttled to ~1.4/s so we don't repaint HP/SP bars every 250ms tick.
+	if (population_engine_is_population_pc(sd->id)) {
+		const int64 now = gettick();
+		if (DIFF_TICK(now, sd->ac.last_potion_check) < 700)
+			return;
+		bool acted = false;
+		if (sd->battle_status.max_hp > 0 &&
+		    (sd->battle_status.hp * 100 / sd->battle_status.max_hp) <= 80) {
+			status_percent_heal(sd, 40, 0);   // ~one White Potion, scaled to max HP
+			acted = true;
+		}
+		if (sd->battle_status.max_sp > 0 &&
+		    (sd->battle_status.sp * 100 / sd->battle_status.max_sp) <= 80) {
+			status_percent_heal(sd, 0, 40);
+			acted = true;
+		}
+		if (acted)
+			sd->ac.last_potion_check = now;
+		return;
+	}
 
     for (auto it = sd->ac.hp_potions.begin(); it != sd->ac.hp_potions.end(); ++it) {
         if (it->min_hp > 0 && ((sd->battle_status.hp * 100 / sd->battle_status.max_hp) < it->min_hp)) {
@@ -899,8 +990,13 @@ static void ac_check_target_alive(map_session_data *sd)
 	if (!ac_check_target(sd, sd->ac.target_id)) {
 		sd->ac.target_id = 0;
 
-		// Only search for new targets every 0.3 second to reduce CPU usage
-		if (DIFF_TICK(current_tick, sd->ac.last_target_search) > 300) {
+		// Real players: throttle target search to 0.3s to save CPU.
+		// Population-engine AutoCombat shells: search every tick so a shell locks
+		// onto the next monster the instant its current target dies / leaves /
+		// becomes unreachable — no idle gap. One BL_MOB range sweep per 250ms
+		// tick is cheap enough to run for thousands of shells on one core.
+		const int retarget_ms = population_engine_is_population_pc(sd->id) ? 0 : 300;
+		if (DIFF_TICK(current_tick, sd->ac.last_target_search) > retarget_ms) {
 			int target_id  = 0;
 			int best_dist2 = 0;
 
@@ -1174,7 +1270,7 @@ static bool ac_walk(map_session_data *sd, int64 tick, int teleport_tick, int wal
 	}
 
 	if (ac_is_destination(bl->x, bl->y, sd->ac.destination) || sd->ac.walk_retries > 2) {
-		ac_generate_destination(bl->m, &sd->ac.destination.first, &sd->ac.destination.second);
+		ac_generate_roam_destination(sd, &sd->ac.destination.first, &sd->ac.destination.second);
 		sd->ac.walk_retries = 0;
 	}
 
@@ -1184,7 +1280,7 @@ static bool ac_walk(map_session_data *sd, int64 tick, int teleport_tick, int wal
 		int searched = 0;
 		do {
 			if (searched > 0)
-				ac_generate_destination(bl->m, &sd->ac.destination.first, &sd->ac.destination.second);
+				ac_generate_roam_destination(sd, &sd->ac.destination.first, &sd->ac.destination.second);
 			searched++;
 			if (searched > AUTOCOMBAT_MAX_ASTAR_SEARCH) {
 				// Before giving up completely, try one more teleport attempt if player has capability
@@ -1266,12 +1362,21 @@ void autocombat_main(map_session_data *sd, int64 tick)
 		return; // Status ended, stop processing
 	}
 
+	// Population-engine AutoCombat shell that is dead / warping / not on map:
+	// the respawn timer re-seeds and re-arms SC_AUTOCOMBAT after revive.
+	if (population_engine_is_population_pc(sd->id) && (pc_isdead(sd) || sd->prev == nullptr))
+		return;
+
 	int teleport_tick = DIFF_TICK(tick, sd->ac.last_teleport);
 	int walk_tick = DIFF_TICK(tick, sd->ac.last_move);
 	int hit_tick = DIFF_TICK(tick, sd->ac.last_hit);
 	bool skip = false;
 	bool teleported = false;
-	bool overweight = (sd->weight * 100 >= sd->max_weight * 90);
+	// Population-engine AutoCombat shells are fake stress dummies: their carry
+	// weight is irrelevant and must never end the loop. (A real player still
+	// aborts at 90% weight as before.)
+	const bool is_pop_shell = population_engine_is_population_pc(sd->id);
+	bool overweight = !is_pop_shell && (sd->weight * 100 >= sd->max_weight * 90);
 	// Track idle state for performance optimization
 	if (!sd->ac.target_id && !sd->ac.attack_target_id && hit_tick > 5000) {
 		sd->ac.idle_ticks++;
@@ -1380,7 +1485,7 @@ void autocombat_main(map_session_data *sd, int64 tick)
 #endif
 
 	//====== SIT REGEN =========================================
-	bool overweight_sit = (sd->weight * 100 >= sd->max_weight * 50);
+	bool overweight_sit = !is_pop_shell && (sd->weight * 100 >= sd->max_weight * 50);
 	if (!pc_issit(sd)
 		&& ((sd->ac.sit_min_hp > 0 && ((sd->battle_status.hp * 100 / sd->battle_status.max_hp) < sd->ac.sit_min_hp))
 		|| (sd->ac.sit_min_sp > 0 && ((sd->battle_status.sp * 100 / sd->battle_status.max_sp) < sd->ac.sit_min_sp)))
@@ -1503,11 +1608,19 @@ void autocombat_main(map_session_data *sd, int64 tick)
 					index = 0;
 			auto &attackskills = sd->ac.attackskills[index];
 				if (ac_skillnotok(sd, target, attackskills.skill_id, attackskills.skill_lv) ) {
-					int ac_skill_range = skill_get_range(attackskills.skill_id, attackskills.skill_lv);
+					// Use the caster-resolved range: skill_get_range() returns the DB
+					// base range, which is 0 / negative ("use weapon range") for
+					// AC_DOUBLE, AC_SHOWER, SN_SHARPSHOOTING and every other bow / gun
+					// attack skill. The old code collapsed that to 2 (melee), so a
+					// ranged AutoCombat user — real Sniper or a fake AutoCombat shell —
+					// would endlessly walk toward the monster trying to reach point
+					// blank and never actually shoot. skill_get_range2() resolves the
+					// real effective range for THIS caster (weapon range + Vulture's
+					// Eye / Snake Eye, etc.).
+					int ac_skill_range = skill_get_range2(bl, attackskills.skill_id, attackskills.skill_lv, true);
 					if (ac_skill_range <= 0)
-						ac_skill_range = ac_skill_range * -1;
-					if (ac_skill_range == 0 || attackskills.skill_id == CR_GRANDCROSS)
-						ac_skill_range = 2;
+						ac_skill_range = (attackskills.skill_id == CR_GRANDCROSS)
+							? 2 : max((int)status_get_range(bl), 2);
 					if (!battle_check_range(bl, target, ac_skill_range)) {
 						if (unit_walktobl(bl, target, ac_skill_range, 2))
 							return;
@@ -1600,6 +1713,143 @@ void autocombat_seed_fake_leader(map_session_data *sd)
 	}
 	sd->ac.last_buff_check = 0;
 	sd->ac.skill_cd        = 0;
+}
+
+// ===========================================================================
+// Population-engine AutoCombat shells
+// ===========================================================================
+
+// Ensure `sd` holds at least `amount` of item `nameid` (identified). Cheap:
+// only adds when the current stack is short. No logging (fake player).
+static void ac_shell_ensure_item(map_session_data *sd, t_itemid nameid, int amount)
+{
+	if (nameid == 0 || amount <= 0)
+		return;
+	int have = 0;
+	int idx = pc_search_inventory(sd, nameid);
+	if (idx >= 0)
+		have = sd->inventory.u.items_inventory[idx].amount;
+	if (have >= amount)
+		return;
+	struct item it = {};
+	it.nameid = nameid;
+	it.identify = 1;
+	it.amount = amount - have;
+	pc_additem(sd, &it, it.amount, LOG_TYPE_NONE);
+}
+
+void autocombat_shell_start(map_session_data *sd)
+{
+	if (sd == nullptr || !population_engine_is_population_pc(sd->id))
+		return;
+
+	// ---- reset any prior config -------------------------------------------
+	sd->ac = s_auto_combat();
+
+	// ---- offensive rotation: learned skills ∩ the AutoCombat attack table -
+	for (uint16 skid : attack_skills) {
+		if (sd->ac.attackskills.size() >= 8)
+			break;
+		const uint16 lv = pc_checkskill(sd, skid);
+		if (lv > 0) {
+			s_attack_skills a;
+			a.skill_id = skid;
+			a.skill_lv = lv;
+			sd->ac.attackskills.push_back(a);
+		}
+	}
+	// ---- self-buffs: learned skills ∩ the AutoCombat buff table ----------
+	for (uint16 skid : buff_skills) {
+		if (sd->ac.buffskills.size() >= 8)
+			break;
+		const uint16 lv = pc_checkskill(sd, skid);
+		if (lv > 0) {
+			s_buff_skills b;
+			b.skill_id = skid;
+			b.skill_lv = lv;
+			sd->ac.buffskills.push_back(b);
+		}
+	}
+	// ---- heal skills ----------------------------------------------------
+	for (int i = 0; i < (int)ARRAYLENGTH(heal_skill_id); i++) {
+		const uint16 lv = pc_checkskill(sd, heal_skill_id[i]);
+		sd->ac.healskills[i].skill_lv  = lv;
+		sd->ac.healskills[i].min_hp_sp = (lv > 0) ? ((i == 2) ? 40 : 50) : 0;
+	}
+
+	// ---- consumables --------------------------------------------------
+	// HP/SP potions are NOT stocked as inventory items: ac_heal_potions() has a
+	// dedicated shell fast-path that restores HP/SP directly at <=80% with no
+	// item lookup and no stacks held in RAM (see that function). Leaving
+	// hp_potions / sp_potions empty keeps the real-player potion loop a no-op
+	// for shells.
+	// Ranged shells still need real ammo so autocombat_main does not abort on
+	// "out of ammunition" (that check reads the equipped ammo slot).
+	ac_shell_ensure_item(sd, 1750, 30000); // Arrow
+	ac_shell_ensure_item(sd, 1550, 30000); // Bullet
+
+	// ---- behaviour flags ------------------------------------------------
+	sd->ac.disable_normal_atk = false;
+	sd->ac.retaliate          = true;
+	sd->ac.element_switch      = false;
+	// NO looting for shells. With AC_LOOT_ALL, autocombat_main's loot pass
+	// (ac_loot_items) returns true every tick as long as any drop is on the
+	// ground within 14 cells — which, right after a kill on a real hunting map,
+	// is always — so autocombat_main returns before it ever reaches the
+	// re-target / attack code and the shell freezes on the corpse. Drops are
+	// cosmetic for a stress test; skip them so combat is continuous.
+	sd->ac.loot_item_config    = AC_LOOT_NONE;
+	sd->ac.end_status_config   = 0;                  // never warp-to-save / logout
+	// Never sit to regen: the inventory-free potion fast-path in ac_heal_potions
+	// keeps HP/SP topped up, and sitting is pure idle time (defeats "always
+	// actively attack").
+	sd->ac.sit_min_hp          = 0;
+	sd->ac.sit_min_sp          = 0;
+	// Teleport is disabled for shells (see ac_teleport): they walk everywhere.
+	sd->ac.teleport.disable_tp_skill = true;
+	sd->ac.teleport.disable_flywing  = true;
+	sd->ac.teleport.tp_when_mvp       = false;
+	sd->ac.teleport.emergency_hp      = 0;
+	sd->ac.teleport.no_mob_delay      = 0;
+	sd->ac.mob_id.clear();                           // attack any monster
+
+	// NOTE: do NOT inflate sd->max_weight here — sd->max_weight * 90 in
+	// autocombat_main's overweight check overflows int32 for huge values and
+	// makes the check fire every tick. The overweight abort is instead disabled
+	// for population shells directly in autocombat_main (is_pop_shell).
+
+	// Start the REAL loop. val1 = 1 -> unbounded (val4 = INT_MAX), same as the
+	// @settings NPC's "infinite duration" path.
+	sc_start(sd, sd, SC_AUTOCOMBAT, 100, 1, 1);
+}
+
+void autocombat_shell_stop(map_session_data *sd)
+{
+	if (sd == nullptr)
+		return;
+	if (sd->sc.getSCE(SC_AUTOCOMBAT))
+		status_change_end(sd, SC_AUTOCOMBAT);
+}
+
+void autocombat_shell_recover(map_session_data *sd, uint8 flag)
+{
+	if (sd == nullptr)
+		return;
+	switch (flag) {
+	case 1: // overweight — cannot actually happen for a shell any more (the
+	        // overweight check is disabled for population shells in
+	        // autocombat_main); nothing to do.
+		break;
+	case 2: // "warped" — the shell's own teleport or a respawn moved it; resync
+		sd->ac.mapindex = sd->m;
+		break;
+	default:
+		break;
+	}
+	// Keep the loop alive: SC_AUTOCOMBAT / val4 were never touched (we intercept
+	// before ac_abort's body). Just clear the transient blockers.
+	sd->ac.walk_retries = 0;
+	sd->ac.last_hit = gettick();
 }
 
 void autocombat_support_party(map_session_data *leader, int64 tick)

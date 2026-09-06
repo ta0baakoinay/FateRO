@@ -350,6 +350,9 @@ ACMD_FUNC(populate)
 		clif_displaymessage(fd, "    @populate auto <n> <map>  - keep n auto fake players on <map>");
 		clif_displaymessage(fd, "    @populate auto <n> allmap - keep n auto fake players across eligible maps");
 		clif_displaymessage(fd, "    @populate auto stop [map] - stop auto (one map, or all); players stay");
+		clif_displaymessage(fd, "  AUTOCOMBAT (fake players on the REAL @settings AutoCombat loop, for stress testing):");
+		clif_displaymessage(fd, "    @populate AutoCombat <Job> <qty> <map>   - e.g. @populate AutoCombat Knight 100 prontera");
+		clif_displaymessage(fd, "    @populate AutoCombat list | clear [<Job> <map>]");
 		clif_displaymessage(fd, "  REMOVE (actually deletes fake players):");
 		clif_displaymessage(fd, "    @populate remove <n> | <name> | <map> [n] | removeall");
 		clif_displaymessage(fd, "  INFO:  @populate status | where [map] | list [map] | count [map] | find <name>");
@@ -767,6 +770,116 @@ ACMD_FUNC(populate)
 		population_engine_path_reset_timing();
 		pe_perf::reset();
 		clif_displaymessage(fd, "Population wander timing reset.");
+	} else if (strcmpi(cmd, "AutoCombat") == 0 || strcmpi(cmd, "ac") == 0) {
+		// @populate AutoCombat <Job> <qty> <map>   — fake players on the REAL
+		// autocombat.cpp loop (SC_AUTOCOMBAT), for VPS stress testing.
+		// @populate AutoCombat list | clear [<Job> <map>]
+		char sub[32] = "";
+		sscanf(param, "%31s", sub);
+
+		if (sub[0] == '\0') {
+			clif_displaymessage(fd, "Usage: @populate AutoCombat <Job> <qty> <map>");
+			clif_displaymessage(fd, "       @populate AutoCombat list");
+			clif_displaymessage(fd, "       @populate AutoCombat clear [<Job> <map>]");
+			clif_displaymessage(fd, "  <Job> = single-word job name (Knight, Priest, Hunter, Wizard, ...) or numeric id.");
+			return -1;
+		}
+
+		if (strcmpi(sub, "list") == 0) {
+			std::vector<PopulationAutoCombatGroupRow> rows;
+			population_engine_autocombat_list(rows);
+			if (rows.empty()) {
+				clif_displaymessage(fd, "No AutoCombat fake players.");
+				return 0;
+			}
+			clif_displaymessage(fd, "Job              Map            Alive  Dead");
+			clif_displaymessage(fd, "-------------------------------------------------");
+			char m[160];
+			uint32_t tot = 0;
+			for (const auto &r : rows) {
+				const char *jn = job_name(r.job_id);
+				safesnprintf(m, sizeof(m), "%-16s %-14s %-6u %u", (jn && jn[0]) ? jn : "?", r.map_name, r.alive, r.dead);
+				clif_displaymessage(fd, m);
+				tot += r.alive;
+			}
+			safesnprintf(m, sizeof(m), "Total AutoCombat fake players: %u", tot);
+			clif_displaymessage(fd, m);
+			return 0;
+		}
+
+		if (strcmpi(sub, "clear") == 0) {
+			char jobtok[32] = "", mapname[32] = "";
+			const int np = sscanf(param, "%*s %31s %31s", jobtok, mapname);
+			if (np < 1) {
+				const int gone = population_engine_autocombat_remove_all();
+				char m[96];
+				safesnprintf(m, sizeof(m), "Removed %d AutoCombat fake player(s).", gone);
+				clif_displaymessage(fd, m);
+				return 0;
+			}
+			// clear <Job> [map]
+			int32 job = atoi(jobtok);
+			if (job <= 0) {
+				for (int i = JOB_NOVICE; i < JOB_MAX_BASIC && job <= 0; i++)
+					if (strncmpi(jobtok, job_name(i), 16) == 0) job = i;
+				for (int i = JOB_NOVICE_HIGH; i < JOB_MAX && job <= 0; i++)
+					if (strncmpi(jobtok, job_name(i), 16) == 0) job = i;
+			}
+			if (job <= 0 || !pcdb_checkid(job)) {
+				clif_displaymessage(fd, "Unknown job.");
+				return -1;
+			}
+			int32 map_id = -1;
+			if (mapname[0]) {
+				map_id = map_mapname2mapid(mapname);
+				if (map_id < 0) { clif_displaymessage(fd, "Invalid map name."); return -1; }
+			}
+			const int gone = population_engine_autocombat_remove((uint16)job, map_id);
+			char m[128];
+			safesnprintf(m, sizeof(m), "Removed %d AutoCombat fake player(s) [%s%s%s].",
+				gone, job_name(job), mapname[0] ? " @ " : "", mapname[0] ? mapname : "");
+			clif_displaymessage(fd, m);
+			return 0;
+		}
+
+		// @populate AutoCombat <Job> <qty> <map>
+		char jobtok[32] = "", mapname[32] = "";
+		uint32 qty = 0;
+		if (sscanf(param, "%31s %u %31s", jobtok, &qty, mapname) < 3 || qty == 0 || !mapname[0]) {
+			clif_displaymessage(fd, "Usage: @populate AutoCombat <Job> <qty> <map>   e.g. @populate AutoCombat Knight 100 prontera");
+			return -1;
+		}
+		int32 job = atoi(jobtok);
+		if (job <= 0) {
+			for (int i = JOB_NOVICE; i < JOB_MAX_BASIC && job <= 0; i++)
+				if (strncmpi(jobtok, job_name(i), 16) == 0) job = i;
+			for (int i = JOB_NOVICE_HIGH; i < JOB_MAX && job <= 0; i++)
+				if (strncmpi(jobtok, job_name(i), 16) == 0) job = i;
+		}
+		if (job <= 0 || !pcdb_checkid(job)) {
+			clif_displaymessage(fd, "Unknown job. Use a single-word job name (Knight, Priest, Hunter, ...) or a numeric job id.");
+			return -1;
+		}
+		const char *why = nullptr;
+		if (!population_engine_map_allowed(mapname, &why)) {
+			char m[128];
+			safesnprintf(m, sizeof(m), "This map is not available for Fake Player population (%s).", why ? why : "restricted");
+			clif_displaymessage(fd, m);
+			return -1;
+		}
+		const int32 map_id = map_mapname2mapid(mapname);
+		clif_displaymessage(fd, "Spawning AutoCombat fake players (this may take a moment for large counts)...");
+		int redir = 0;
+		const int made = population_engine_manual_add_autocombat((uint16)job, map_id, qty, &redir);
+		char m[192];
+		safesnprintf(m, sizeof(m), "Created %d / %u AutoCombat fake player(s) [%s @ %s]. Total fake players: %zu.",
+			made, qty, job_name(job), mapname, population_engine_get_count());
+		clif_displaymessage(fd, m);
+		if (redir > 0)
+			clif_displaymessage(fd, "  (requested map not suitable for that job's tier — group redirected to a job-appropriate map)");
+		if (made < (int)qty)
+			clif_displaymessage(fd, "  (fewer than requested — global cap battle_config.population_engine_max_count reached, or no walkable cell)");
+		return 0;
 	} else {
 		uint32_t quantity = 0;
 		char map_name[32] = "";
