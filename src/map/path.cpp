@@ -37,11 +37,43 @@ struct path_node {
 	int16 g_cost; ///< Actual cost from start to this node
 	int16 f_cost; ///< g_cost + heuristic(this, goal)
 	int16 flag; ///< SET_OPEN / SET_CLOSED
+	uint64 gen; ///< generation stamp: slot is "live" only when gen == g_path_gen (see path_search A*)
 };
 
 /// Binary heap of path nodes
 BHEAP_STRUCT_DECL(node_heap, struct path_node*);
 static BHEAP_STRUCT_VAR(node_heap, g_open_set);	// use static heap for all path calculations
+
+// A* known-node table + its generation stamp.
+//
+// The A* branch of path_search() used to declare `struct path_node tp[1024]`
+// on the stack and `memset(tp, 0, sizeof(tp))` (~24 KB) on EVERY call, purely
+// so that "slot unused" could be detected as x==0 && y==0. On a populated
+// server that zero-fill is one of the hottest single instructions (thousands
+// of path_search calls/sec). We move the table to a single static buffer
+// (path_search is already documented as non-reentrant / non-parallel because
+// of g_open_set) and replace the per-call memset with a monotonically
+// increasing generation counter: a slot counts as empty unless its .gen
+// matches the current search. Only slots actually touched by a given search
+// are written. Behaviour is identical (same nodes, same costs, same path);
+// the wrap branch below keeps it correct for the ~4-billionth search.
+static struct path_node g_path_tp[MAX_WALKPATH * MAX_WALKPATH];
+static uint64 g_path_gen = 0;
+
+// Lightweight, always-on counters for scaling diagnostics (read via
+// path_search_get_stats / cleared via path_search_reset_stats; surfaced by
+// the @populate timing atcommand). Single-threaded map loop -> plain uint64.
+static uint64 g_path_search_calls = 0; ///< every path_search() entry
+static uint64 g_path_astar_runs   = 0; ///< entries that fell through to full A*
+
+void path_search_get_stats(uint64 *calls, uint64 *astar) {
+	if (calls) *calls = g_path_search_calls;
+	if (astar) *astar = g_path_astar_runs;
+}
+void path_search_reset_stats() {
+	g_path_search_calls = 0;
+	g_path_astar_runs = 0;
+}
 												// it get's initialized in do_init_path, freed in do_final_path.
 
 
@@ -225,7 +257,7 @@ static int32 add_path(struct node_heap *heap, struct path_node *tp, int16 x, int
 {
 	int32 i = calc_index(x, y);
 
-	if (tp[i].x == x && tp[i].y == y) { // We processed this node before
+	if (tp[i].gen == g_path_gen && tp[i].x == x && tp[i].y == y) { // We processed this node before
 		if (g_cost < tp[i].g_cost) { // New path to this node is better than old one
 			// Update costs and parent
 			tp[i].g_cost = g_cost;
@@ -242,10 +274,11 @@ static int32 add_path(struct node_heap *heap, struct path_node *tp, int16 x, int
 		return 0;
 	}
 
-	if (tp[i].x || tp[i].y) // Index is already taken; see `tp` array FIXME for details
+	if (tp[i].gen == g_path_gen) // Index is already taken by a different node this search; see `tp` array FIXME
 		return 1;
 
-	// New node
+	// New node (slot was from an older search generation -> treat as empty)
+	tp[i].gen = g_path_gen;
 	tp[i].x = x;
 	tp[i].y = y;
 	tp[i].g_cost = g_cost;
@@ -271,6 +304,8 @@ bool path_search(struct walkpath_data *wpd, int16 m, int16 x0, int16 y0, int16 x
 	int32 i, x, y, dx = 0, dy = 0;
 	struct map_data *mapdata = map_getmapdata(m);
 	struct walkpath_data s_wpd;
+
+	g_path_search_calls++;
 
 	if (flag&2)
 		return path_search_long(nullptr, m, x0, y0, x1, y1, cell);
@@ -327,7 +362,7 @@ bool path_search(struct walkpath_data *wpd, int16 m, int16 x0, int16 y0, int16 x
 		// FIXME: This array is too small to ensure all paths shorter than MAX_WALKPATH
 		// can be found without node collision: calc_index(node1) = calc_index(node2).
 		// Figure out more proper size or another way to keep track of known nodes.
-		struct path_node tp[MAX_WALKPATH * MAX_WALKPATH];
+		struct path_node *tp = g_path_tp; // single static known-node table (see decl)
 		struct path_node *current, *it;
 		int32 xs = mapdata->xs - 1;
 		int32 ys = mapdata->ys - 1;
@@ -339,10 +374,20 @@ bool path_search(struct walkpath_data *wpd, int16 m, int16 x0, int16 y0, int16 x
 		// Easy pathfinding cuts corners of non-walkable cells, but client always walks around it.
 		BHEAP_RESET(g_open_set);
 
-		memset(tp, 0, sizeof(tp));
+		g_path_astar_runs++;
+
+		// New search generation. A slot in tp[] counts as empty unless its
+		// .gen == g_path_gen, so no per-call zero-fill is needed. On the
+		// (very rare) wrap back to 0, clear the table once so stale slots
+		// that happen to carry gen==0 can't be mistaken for live ones.
+		if (++g_path_gen == 0) {
+			memset(g_path_tp, 0, sizeof(g_path_tp));
+			g_path_gen = 1;
+		}
 
 		// Start node
 		i = calc_index(x0, y0);
+		tp[i].gen    = g_path_gen;
 		tp[i].parent = nullptr;
 		tp[i].x      = x0;
 		tp[i].y      = y0;

@@ -11,6 +11,7 @@
 #include <common/random.hpp>
 
 #include "autocombat.hpp"
+#include "population_engine/core/pe_perf.hpp"
 #include "battle.hpp"
 #include "log.hpp"
 #include "map.hpp"
@@ -919,34 +920,64 @@ static bool ac_skillnotok(map_session_data *sd, struct block_list *target, uint1
 	return true;
 }
 
+// Cheap, allocation-free half of target validation: everything EXCEPT the
+// walkable-path check. Alive, not hide/cloak, within range, and (when the
+// shell/player has a monster-selection filter and no locked target yet) on
+// the allowed mob_id list. Split out so the range sweep can reject the bulk
+// of candidates without ever touching path_search().
+static bool ac_candidate_valid(map_session_data *sd, struct block_list *bl)
+{
+	struct mob_data *md = BL_CAST(BL_MOB, bl);
+	if (md == nullptr || status_isdead(*bl))
+		return false;
+	if (distance_xy(sd->x, sd->y, bl->x, bl->y) >= AUTOCOMBAT_TARGETRANGE)
+		return false;
+	if (md->sc.option & (OPTION_HIDE|OPTION_CLOAK))
+		return false;
+	if (!sd->ac.target_id && !sd->ac.mob_id.empty())
+		return std::find(sd->ac.mob_id.begin(), sd->ac.mob_id.end(), md->mob_id) != sd->ac.mob_id.end();
+	return true;
+}
+
+// Expensive half: does a walkable path to the candidate exist? Unchanged
+// semantics vs the old ac_check_target (path_search flag&1 = easy path, then
+// A* fallback). Now only ever run on the few nearest candidates, not on
+// every monster in the sweep.
+static bool ac_target_reachable(map_session_data *sd, struct block_list *bl)
+{
+	return path_search(nullptr, sd->m, sd->x, sd->y, bl->x, bl->y, 1, CELL_CHKNOPASS) != 0;
+}
+
 static bool ac_check_target(map_session_data *sd, unsigned int id)
 {
 	struct block_list *bl = map_id2bl(id);
-	struct mob_data *md = BL_CAST(BL_MOB, bl);
 	nullpo_retr(false, sd);
-
-	if (md == nullptr || status_isdead(*bl))
+	if (bl == nullptr || bl->type != BL_MOB)
 		return false;
-
-	if (path_search(nullptr, sd->m, sd->x, sd->y, bl->x, bl->y, 1, CELL_CHKNOPASS) && distance_xy(sd->x, sd->y, bl->x, bl->y) < AUTOCOMBAT_TARGETRANGE) {
-		if (md->sc.option & (OPTION_HIDE|OPTION_CLOAK))
-			return false;
-		if (!sd->ac.target_id && !sd->ac.mob_id.empty())
-			return std::find(sd->ac.mob_id.begin(), sd->ac.mob_id.end(), md->mob_id) != sd->ac.mob_id.end();
-		return true;
-	}
-	return false;
+	if (!ac_candidate_valid(sd, bl))
+		return false;
+	return ac_target_reachable(sd, bl);
 }
 
-// map_foreachinrange callback: keep the CLOSEST valid monster instead of
-// letting the last-iterated block_list win. *target_id / *best_dist2 accumulate
-// across the sweep; ties keep the first seen. Distance is compared squared so
-// there is no sqrt in the hot path.
+// Nearest-first candidate list gathered by the range sweep. Small fixed size:
+// we only ever need enough to survive a couple of "closest is unreachable"
+// misses before falling back to roam, and each extra slot is one more
+// potential path_search below.
+#define AC_MAX_CANDIDATES 4
+struct s_ac_candidates {
+	int   id[AC_MAX_CANDIDATES];
+	int   d2[AC_MAX_CANDIDATES];
+	int   n;
+};
+
+// map_foreachinrange callback: collect up to AC_MAX_CANDIDATES nearest valid
+// monsters by squared distance, sorted ascending. NO path_search here — that
+// was the per-mob A* fan-out that made thousands of shells expensive. The
+// walkable-path check is done once, on the best candidate(s), by the caller.
 static int ac_look_for_targets(struct block_list *bl, va_list ap)
 {
-	int *target_id  = va_arg(ap, int *);
-	int *best_dist2 = va_arg(ap, int *);
-	int src_id      = va_arg(ap, int);
+	s_ac_candidates *c = va_arg(ap, s_ac_candidates *);
+	int src_id         = va_arg(ap, int);
 	struct block_list *src = map_id2bl(src_id);
 	map_session_data *sd = map_id2sd(src_id);
 	struct mob_data *md = BL_CAST(BL_MOB, bl);
@@ -961,22 +992,30 @@ static int ac_look_for_targets(struct block_list *bl, va_list ap)
 	if (md != nullptr && md->db->mexp > 0 && sd->ac.teleport.tp_when_mvp)
 		ac_teleport(sd, false);
 
-	// Same validation as before (monster-selection filter, reachability,
-	// hide/cloak, alive, range) — untouched, just no longer clobbering.
-	if (!ac_check_target(sd, bl->id))
+	if (!ac_candidate_valid(sd, bl))
 		return 0;
 
 	int dx = bl->x - src->x;
 	int dy = bl->y - src->y;
 	int dist2 = dx * dx + dy * dy;
-	if (*target_id == 0 || dist2 < *best_dist2) {
-		*target_id  = bl->id;
-		*best_dist2 = dist2;
+
+	// Insertion sort into the fixed nearest-N buffer (N is tiny).
+	int pos = c->n < AC_MAX_CANDIDATES ? c->n : AC_MAX_CANDIDATES - 1;
+	if (c->n == AC_MAX_CANDIDATES && dist2 >= c->d2[pos])
+		return 1; // farther than everything we already kept
+	while (pos > 0 && c->d2[pos - 1] > dist2) {
+		c->id[pos] = c->id[pos - 1];
+		c->d2[pos] = c->d2[pos - 1];
+		pos--;
 	}
+	c->id[pos] = bl->id;
+	c->d2[pos] = dist2;
+	if (c->n < AC_MAX_CANDIDATES)
+		c->n++;
 	return 1;
 }
 
-static void ac_check_target_alive(map_session_data *sd)
+static void ac_check_target_alive(map_session_data *sd, bool allow_search = true)
 {
 	nullpo_retv(sd);
 	int64 current_tick = gettick();
@@ -990,23 +1029,38 @@ static void ac_check_target_alive(map_session_data *sd)
 	if (!ac_check_target(sd, sd->ac.target_id)) {
 		sd->ac.target_id = 0;
 
-		// Real players: throttle target search to 0.3s to save CPU.
-		// Population-engine AutoCombat shells: search every tick so a shell locks
-		// onto the next monster the instant its current target dies / leaves /
-		// becomes unreachable — no idle gap. One BL_MOB range sweep per 250ms
-		// tick is cheap enough to run for thousands of shells on one core.
-		const int retarget_ms = population_engine_is_population_pc(sd->id) ? 0 : 300;
+		if (!allow_search)
+			return; // this tick already ran acquisition once; only revalidating
+
+		// Shells reacquire almost instantly (150 ms) so there is no visible
+		// idle gap when a target dies; real players stay at 300 ms. The old
+		// value for shells was 0 (a full range sweep EVERY 250 ms tick) —
+		// 150 ms is below one AI tick and below human perception but stops
+		// the every-tick sweep from thousands of shells at once.
+		const int retarget_ms = population_engine_is_population_pc(sd->id) ? 150 : 300;
 		if (DIFF_TICK(current_tick, sd->ac.last_target_search) > retarget_ms) {
-			int target_id  = 0;
-			int best_dist2 = 0;
+			s_ac_candidates cand;
+			cand.n = 0;
 
-			// One circular spatial sweep (existing rAthena spatial primitive).
-			// ac_look_for_targets returns the NEAREST valid monster within
-			// AUTOCOMBAT_TARGETRANGE — cheaper than the old expanding-square
-			// re-scan and it no longer depends on block iteration order.
-			map_foreachinrange(ac_look_for_targets, sd, AUTOCOMBAT_TARGETRANGE, BL_MOB, &target_id, &best_dist2, sd->id);
+			// One circular spatial sweep — same primitive, same range — but it
+			// now only gathers the nearest few candidates (no path check).
+			{
+				PE_PERF_SCOPE("ac.sweep");
+				map_foreachinrange(ac_look_for_targets, sd, AUTOCOMBAT_TARGETRANGE, BL_MOB, &cand, sd->id);
+			}
 
-			sd->ac.target_id = target_id;
+			// Authoritative "nearest valid REACHABLE mob" selection, preserved:
+			// walk the candidates closest-first and pick the first one that has
+			// a walkable path. At most AC_MAX_CANDIDATES path_search calls
+			// instead of one per monster in range.
+			sd->ac.target_id = 0;
+			for (int i = 0; i < cand.n; i++) {
+				struct block_list *cbl = map_id2bl(cand.id[i]);
+				if (cbl != nullptr && ac_target_reachable(sd, cbl)) {
+					sd->ac.target_id = cand.id[i];
+					break;
+				}
+			}
 			sd->ac.last_target_search = current_tick;
 		}
 	}
@@ -1350,8 +1404,78 @@ static bool ac_battle_check_arrows(map_session_data *sd)
 	return true;
 }
 
+// map_foreachinrange callback: count REAL players (not population shells) in view.
+static int ac_count_real_pc(struct block_list *bl, va_list ap)
+{
+	int *n = va_arg(ap, int *);
+	if (bl != nullptr && bl->type == BL_PC && !population_engine_is_population_pc(bl->id))
+		(*n)++;
+	return 0;
+}
+
+// Cached, throttled "is a real player watching this shell?" query. The BL_PC
+// block list is tiny (real players only), and this runs at most once per
+// second per shell, so it is cheap even at very large shell counts.
+static int autocombat_watchers(map_session_data *sd, int64 tick)
+{
+	if (sd->ac.last_watch_scan != 0 && DIFF_TICK(tick, sd->ac.last_watch_scan) < 1000)
+		return sd->ac.watchers;
+	int n = 0;
+	map_foreachinrange(ac_count_real_pc, sd, AREA_SIZE + 4, BL_PC, &n);
+	sd->ac.watchers = (int16)n;
+	sd->ac.last_watch_scan = tick;
+	return n;
+}
+
+// Adaptive cadence gate. SC_AUTOCOMBAT still fires every AUTOCOMBAT_DEFAULTNEXTTICK
+// (250 ms) so the duration / val4 accounting is completely untouched, but the
+// expensive AI body only runs every Nth call, chosen from the shell's actual
+// situation:
+//   ACTIVE COMBAT (has target, or hit < 2 s ago)      -> 250 ms  (every tick)
+//   WATCHED, SEARCHING / MOVING                        -> 500 ms
+//   WATCHED, IDLE (regen / sit, no mobs)              -> 750 ms
+//   UNWATCHED + IDLE (no real player in view)         -> 1500 ms
+//   real (non-shell) players stay snappy (250/500)
+// A per-entity phase offset (id-derived) spreads thousands of shells across
+// the window instead of all firing on the same 250 ms boundary.
+// Returns true and stamps last_ai_run when the full body should run this call.
+static bool autocombat_should_run_now(map_session_data *sd, int64 tick)
+{
+	const bool has_target = (sd->ac.target_id != 0 || sd->ac.attack_target_id != 0);
+	const int  hit_tick   = DIFF_TICK(tick, sd->ac.last_hit);
+
+	int cadence_ms;
+	if (has_target || hit_tick < 2000) {
+		cadence_ms = AUTOCOMBAT_DEFAULTNEXTTICK;            // ACTIVE
+	} else if (!population_engine_is_population_pc(sd->id)) {
+		cadence_ms = (sd->ac.idle_ticks > 10) ? 500 : AUTOCOMBAT_DEFAULTNEXTTICK;
+	} else if (autocombat_watchers(sd, tick) == 0) {
+		cadence_ms = 1500;                                  // UNWATCHED IDLE
+	} else if (sd->ac.idle_ticks > 10) {
+		cadence_ms = 750;                                   // WATCHED IDLE
+	} else {
+		cadence_ms = 500;                                   // WATCHED SEARCHING/MOVING
+	}
+
+	if (cadence_ms <= AUTOCOMBAT_DEFAULTNEXTTICK) {
+		sd->ac.last_ai_run = tick;
+		return true;
+	}
+
+	if (sd->ac.last_ai_run == 0) // first run: deterministic stagger across the window
+		sd->ac.last_ai_run = tick - (int64)(sd->id % cadence_ms);
+
+	if (DIFF_TICK(tick, sd->ac.last_ai_run) + (AUTOCOMBAT_DEFAULTNEXTTICK / 2) < cadence_ms)
+		return false;
+
+	sd->ac.last_ai_run = tick;
+	return true;
+}
+
 void autocombat_main(map_session_data *sd, int64 tick)
 {
+	PE_PERF_SCOPE("ac.tick"); // every SC_AUTOCOMBAT invocation (throttled + full)
+
 	struct block_list *bl = sd;
 
 	nullpo_retv(bl);
@@ -1366,6 +1490,15 @@ void autocombat_main(map_session_data *sd, int64 tick)
 	// the respawn timer re-seeds and re-arms SC_AUTOCOMBAT after revive.
 	if (population_engine_is_population_pc(sd->id) && (pc_isdead(sd) || sd->prev == nullptr))
 		return;
+
+	// Adaptive scheduling: skip the heavy body on "off" ticks. The SC keeps
+	// firing at 250 ms; only the full simulation is throttled. Damage / target
+	// acquisition pull the shell straight back to full speed via the state
+	// check inside autocombat_should_run_now (has_target / recent last_hit).
+	if (!autocombat_should_run_now(sd, tick))
+		return;
+
+	PE_PERF_SCOPE("ac.main"); // full AI body only (calls here vs ac.tick = throttle ratio)
 
 	int teleport_tick = DIFF_TICK(tick, sd->ac.last_teleport);
 	int walk_tick = DIFF_TICK(tick, sd->ac.last_move);

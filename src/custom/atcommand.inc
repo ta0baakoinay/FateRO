@@ -766,9 +766,21 @@ ACMD_FUNC(populate)
 			}
 			clif_displaymessage(fd, "================================");
 		}
+		// Global path_search() volume (all systems, not just population).
+		{
+			uint64 ps_calls = 0, ps_astar = 0;
+			path_search_get_stats(&ps_calls, &ps_astar);
+			char row[256];
+			snprintf(row, sizeof(row), "  path_search calls: %" PRIu64 "   full A* runs: %" PRIu64 " (%.1f%%)",
+				ps_calls, ps_astar, ps_calls > 0 ? 100.0 * double(ps_astar) / double(ps_calls) : 0.0);
+			clif_displaymessage(fd, "=== path_search volume (since last timingreset) ===");
+			clif_displaymessage(fd, row);
+			clif_displaymessage(fd, "===================================================");
+		}
 	} else if (strcmpi(cmd, "timingreset") == 0) {
 		population_engine_path_reset_timing();
 		pe_perf::reset();
+		path_search_reset_stats();
 		clif_displaymessage(fd, "Population wander timing reset.");
 	} else if (strcmpi(cmd, "AutoCombat") == 0 || strcmpi(cmd, "ac") == 0) {
 		// @populate AutoCombat <Job> <qty> <map>   — fake players on the REAL

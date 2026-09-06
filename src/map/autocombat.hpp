@@ -208,6 +208,10 @@ struct s_auto_combat {
 	int64 last_buff_check;
 	int64 last_potion_check;
 	uint16 idle_ticks;
+	// Adaptive-cadence scheduling (see autocombat_should_run_now):
+	int64 last_ai_run = 0;      ///< gettick() of the last FULL autocombat_main body run
+	int64 last_watch_scan = 0;  ///< gettick() of the last real-PC proximity scan
+	int16 watchers = 0;         ///< cached count of real players within view (refreshed ~1/s)
 #if AUTOCOMBAT_LOOTING_CONFIG == 1
 	int loot_item_id;
 #endif

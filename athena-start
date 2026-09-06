@@ -19,14 +19,40 @@ print_start() {
 
 get_status(){
 	PIDFILE=.$1.pid
+	PSRUN=
 	if [ -e ${PIDFILE} ]; then
-		PSRUN=$(pgrep -F ${PIDFILE})
+		PSRUN=$(pgrep -F ${PIDFILE} 2>/dev/null)
 	fi
 	#return ${PSRUN} #seems to cause an issue for some os
 }
 
+# List PIDs of "$1" (e.g. map-server) that were launched from THIS directory
+# but are NOT the pid recorded in .$1.pid — i.e. orphans left behind by a
+# crashed/detached launcher or a clobbered pid file. cwd match keeps this from
+# ever touching a server belonging to a different rAthena install on the box.
+list_orphans(){
+	_srv=$1
+	_tracked=
+	[ -e ".${_srv}.pid" ] && _tracked=$(cat ".${_srv}.pid" 2>/dev/null)
+	_here=$(pwd -P)
+	for _p in $(pgrep -x "${_srv}" 2>/dev/null); do
+		[ "${_p}" = "${_tracked}" ] && continue
+		_pcwd=$(readlink -f "/proc/${_p}/cwd" 2>/dev/null)
+		[ "${_pcwd}" = "${_here}" ] && echo "${_p}"
+	done
+}
+
 #checking if already started, launch and mark in log
-start_serv(){ 
+start_serv(){
+	# Reap orphans from this directory before (re)starting so instances never
+	# stack up across crashes / bad shutdowns (see list_orphans).
+	for _op in $(list_orphans $1); do
+		echo "WARNING: orphan '$1' (pid ${_op}) from a previous run detected - terminating it"
+		kill ${_op} 2>/dev/null
+		_w=0
+		while kill -0 ${_op} 2>/dev/null && [ ${_w} -lt 15 ]; do sleep 1; _w=$((_w+1)); done
+		kill -0 ${_op} 2>/dev/null && { echo "  orphan ${_op} did not exit, sending KILL"; kill -9 ${_op} 2>/dev/null; }
+	done
 	get_status $1
 	if [ $2 ]; then #is logging on ?
 		LOGFILE="$LOG_DIR/$1.launch.log"
@@ -140,7 +166,7 @@ case $1 in
 			PIDFILE=.${i}.pid
 			if [ -e ./${PIDFILE} ]; then
 				kill $(cat ${PIDFILE})
-				
+
 				while true; do
 					get_status ${i}
 					if [ ${PSRUN} ]; then echo "'${i}' is still running p${PSRUN} waiting for the process to end"; sleep 2;
@@ -148,9 +174,18 @@ case $1 in
 						break
 					fi
 				done
-				
+
 				rm ${PIDFILE}
 			fi
+			# Also clear any orphan of this server started from this directory
+			# but not tracked by the pid file.
+			for _op in $(list_orphans ${i}); do
+				echo "'${i}' orphan pid ${_op} not in pid file - terminating"
+				kill ${_op} 2>/dev/null
+				_w=0
+				while kill -0 ${_op} 2>/dev/null && [ ${_w} -lt 15 ]; do sleep 1; _w=$((_w+1)); done
+				kill -0 ${_op} 2>/dev/null && kill -9 ${_op} 2>/dev/null
+			done
 		done
 	;;
 	'restart')

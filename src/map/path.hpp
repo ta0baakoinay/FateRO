@@ -66,6 +66,10 @@ bool path_search(struct walkpath_data *wpd,int16 m,int16 x0,int16 y0,int16 x1,in
 // tries to find a shootable path
 bool path_search_long(struct shootpath_data *spd,int16 m,int16 x0,int16 y0,int16 x1,int16 y1,cell_chk cell);
 
+// scaling diagnostics: total path_search() calls and how many ran full A*
+void path_search_get_stats(uint64 *calls, uint64 *astar);
+void path_search_reset_stats();
+
 // distance related functions
 bool check_distance(int32 dx, int32 dy, int32 distance);
 uint32 distance(int32 dx, int32 dy);
