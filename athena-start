@@ -65,6 +65,19 @@ srv_args(){     # echoes extra CLI args for a given server name
 		*)           echo "" ;;
 	esac
 }
+
+# The extra sharded map instances (map-server2, ...) are not build outputs -
+# they are hardlinks to the freshly built ./map-server so each carries a
+# distinct process name for pgrep / taskset. Recreate them from M_SRV up-front,
+# BEFORE check_files() runs, so a fresh build / cleaned tree / removed link
+# never aborts startup with "map-server2 does not exist". Idempotent.
+ensure_map_shards(){
+	[ -f ./map-server ] || return 0
+	for _m in ${M_SRV}; do
+		[ "${_m}" = "map-server" ] && continue
+		ln -f ./map-server "./${_m}" 2>/dev/null
+	done
+}
 # ---------------------------------------------------------------------------
 
 #checking if already started, launch and mark in log
@@ -161,6 +174,7 @@ restart(){
 case $1 in
 	'start')
 		print_start
+		ensure_map_shards
 		check_files
 		echo "Check complete."
 		echo "Looks like a good, nice rAthena!"
@@ -178,6 +192,7 @@ case $1 in
 		echo "rAthena was started."
 	;;
 	'watch')
+		ensure_map_shards
 		if [ ! -d "$LOG_DIR" ]; then mkdir -p $LOG_DIR; fi
 		if [ -z $2 ]; then Restart_count=10; else Restart_count=$2; fi
 		if [ -z $3 ]; then Restart_sleep=3; else Restart_sleep=$3; fi
