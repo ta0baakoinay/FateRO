@@ -43,36 +43,20 @@ list_orphans(){
 }
 
 
-# --- multi-core map sharding -------------------------------------------------
-# Two map-server processes, one pinned per CPU core, owning disjoint map sets:
-#   map-server   -> conf/map_athena_a.conf  (all maps except conf/maps_b.conf)  core 0
-#   map-server2  -> conf/map_athena_b.conf (only conf/maps_b.conf)             core 1
-# Both connect to the same char-server (6121) / DB. See conf/maps_b*.conf.
-NCPU=$(nproc 2>/dev/null || echo 1)
-srv_prefix(){  # echoes a "taskset -c N" prefix, or nothing if only 1 cpu / no taskset
-	[ "$NCPU" -ge 2 ] || { echo ""; return; }
-	command -v taskset >/dev/null 2>&1 || { echo ""; return; }
-	case "$1" in
-		map-server)  echo "taskset -c 0 " ;;
-		map-server2) echo "taskset -c 1 " ;;
-		*)           echo "" ;;
-	esac
-}
-srv_args(){     # echoes extra CLI args for a given server name
-	case "$1" in
-		map-server)  echo "--map-config conf/map_athena_a.conf" ;;
-		map-server2) echo "--map-config conf/map_athena_b.conf" ;;
-		*)           echo "" ;;
-	esac
-}
+# --- single map-server ------------------------------------------------------
+# One map-server process handles ALL maps (stock conf/map_athena.conf). The
+# earlier "map sharding" ran a 2nd map-server (map-server2) on a disjoint map
+# set; cross-instance warps then had to migrate the client between the two
+# map-servers via the char-server, which left characters stuck on the loading
+# screen. Reverted to a single instance: every warp is intra-server again.
+# srv_prefix()/srv_args() are kept as no-ops so the launch lines below are
+# unchanged in shape.
+srv_prefix(){ echo ""; }   # no CPU pinning: let the scheduler use every core
+srv_args(){   echo ""; }   # no --map-config override: use stock all-maps config
 # ---------------------------------------------------------------------------
 
 #checking if already started, launch and mark in log
 start_serv(){
-	# map-server2 is the same binary as map-server, hardlinked so it has a
-	# distinct process name for pgrep / taskset. Refresh it before every start
-	# so it never lags behind a rebuild of map-server.
-	if [ "$1" = "map-server2" ] && [ -f ./map-server ]; then ln -f ./map-server ./map-server2 2>/dev/null; fi
 	# Reap orphans from this directory before (re)starting so instances never
 	# stack up across crashes / bad shutdowns (see list_orphans).
 	for _op in $(list_orphans $1); do
