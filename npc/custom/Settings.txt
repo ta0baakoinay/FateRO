@@ -49,25 +49,16 @@ OnSettingsStart:
 	while (true) {
 		mes "Choose which personal setting you want to change.";
 		mes " ";
+		mes "^0000FFAuto Combat^000000 : " + (getstatus(SC_AUTOCOMBAT) ? .on$ : .off$);
+		mes "^0000FFAuto Support^000000 : " + (getstatus(SC_AUTOBUFF) ? .on$ : .off$);
 		mes "^0000FFSee Party Buffs^000000 : " + (getspbstate() ? .on$ : .off$);
 		mes "^0000FFBattle Information^000000 : " + (getbattleinfostate() ? .on$ : .off$);
 		mes "^0000FFPacket Filter^000000 : " + (#BLOCK_ ? .on$ : .off$);
-		mes "^0000FFAuto Combat^000000 : " + (getstatus(SC_AUTOCOMBAT) ? .on$ : .off$);
-		mes "^0000FFAuto Buff^000000 : " + (getstatus(SC_AUTOBUFF) ? .on$ : .off$);
 		mes "^0000FFHide Headgear^000000 : " + (#HIDEHEADGEAR ? .on$ : .off$);
 		next;
 
-		switch (select("Battle Information Settings:Packet Filter Settings:Show Party Buffs Settings:Auto Combat:Auto Buff:Hide Headgear:Battle Stats / Character Resistance:Available Fate Ragnarok Online Commands:Close")) {
+		switch (select("Auto Combat:Auto Support:Battle Information Settings:Packet Filter Settings:Show Party Buffs Settings:Hide Headgear:Battle Stats / Character Resistance:Available Fate Ragnarok Online Commands:Close")) {
 		case 1:
-			callsub OnBattleInfoMenu;
-			break;
-		case 2:
-			callsub OnPacketFilterMenu;
-			break;
-		case 3:
-			callsub OnSPBMenu;
-			break;
-		case 4:
 			close2;
 			if (getstatus(SC_AUTOCOMBAT)) {
 				switch (select("Stop Auto Combat:Reconfigure Auto Combat:Cancel")) {
@@ -86,10 +77,19 @@ OnSettingsStart:
 				end;
 			}
 			end;
-		case 5:
+		case 2:
 			close2;
 			callfunc "F_autobufftoggle";
 			end;
+		case 3:
+			callsub OnBattleInfoMenu;
+			break;
+		case 4:
+			callsub OnPacketFilterMenu;
+			break;
+		case 5:
+			callsub OnSPBMenu;
+			break;
 		case 6:
 			callsub OnHideHeadgearMenu;
 			break;
