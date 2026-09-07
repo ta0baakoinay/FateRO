@@ -1,6 +1,6 @@
 L_SRV=login-server
 C_SRV=char-server
-M_SRV=map-server
+M_SRV="map-server map-server2"
 W_SRV=web-server
 INST_PATH=/opt
 PKG=rathena

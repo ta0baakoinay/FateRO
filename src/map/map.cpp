@@ -50,6 +50,7 @@
 #include "npc.hpp"
 #include "party.hpp"
 #include "path.hpp"
+#include "population_engine/core/pe_perf.hpp"
 #include "pc.hpp"
 #include "pet.hpp"
 #include "population_engine.hpp"
@@ -4096,6 +4097,49 @@ int32 parse_console(const char* buf){
 		else if( !is_atcommand(sd.fd, &sd, command, 2) )
 			ShowInfo("Console: Invalid atcommand.\n");
 	}
+	else if( strcmpi("pe", type) == 0 ){
+		// Headless population-engine control for load testing (no attached player,
+		// so we must NOT go through is_atcommand / clif_displaymessage which
+		// dereference the fake console session fd and crash).
+		char verb[32] = "";
+		if( sscanf(command, "%31s", verb) < 1 ){
+			ShowInfo("pe: spawn <job_id> <qty> <mapname> | clear | stat | reset\n");
+		} else if( strcmpi(verb, "spawn") == 0 ){
+			unsigned int job = 0, qty = 0; char mname[32] = "";
+			if( sscanf(command, "%*s %u %u %31s", &job, &qty, mname) == 3 && job && qty && mname[0] ){
+				int16 mid = map_mapname2mapid(mname);
+				if( mid < 0 ){ ShowError("pe spawn: unknown map '%s'\n", mname); }
+				else {
+					int redir = 0;
+					int made = population_engine_manual_add_autocombat((uint16)job, mid, qty, &redir);
+					ShowStatus("pe spawn: created %d/%u AutoCombat shells (job=%u map=%s redir=%d). total shells=%u\n",
+						made, qty, job, mname, redir, (unsigned)population_engine_get_count());
+				}
+			} else ShowInfo("pe: spawn <job_id> <qty> <mapname>\n");
+		} else if( strcmpi(verb, "clear") == 0 ){
+			int gone = population_engine_autocombat_remove_all();
+			ShowStatus("pe clear: removed %d AutoCombat shells. total shells=%u\n", gone, (unsigned)population_engine_get_count());
+		} else if( strcmpi(verb, "stat") == 0 ){
+			uint64 ps = 0, ast = 0; path_search_get_stats(&ps, &ast);
+			ShowStatus("pe stat: shells=%u  path_search=%llu  A*=%llu (%.1f%%)\n",
+				(unsigned)population_engine_get_count(), (unsigned long long)ps, (unsigned long long)ast,
+				ps ? 100.0 * (double)ast / (double)ps : 0.0);
+			pe_perf::SectionStat sec[pe_perf::kMaxSections]; size_t n2 = 0;
+			pe_perf::snapshot(sec, n2);
+			for( size_t i = 0; i < n2; ++i ){
+				const pe_perf::SectionStat &e = sec[i];
+				double avg = e.calls ? (double)e.total_us / (double)e.calls : 0.0;
+				ShowStatus("  %-22s calls=%llu avg=%.1fus worst=%lluus total=%lluus\n",
+					e.name ? e.name : "?", (unsigned long long)e.calls, avg,
+					(unsigned long long)e.worst_us, (unsigned long long)e.total_us);
+			}
+		} else if( strcmpi(verb, "reset") == 0 ){
+			path_search_reset_stats(); pe_perf::reset();
+			ShowStatus("pe reset: path_search + pe_perf counters cleared.\n");
+		} else {
+			ShowInfo("pe: unknown verb '%s'\n", verb);
+		}
+	}
 	else if( n == 2 && strcmpi("server", type) == 0 ){
 		if( strcmpi("shutdown", command) == 0 || strcmpi("exit", command) == 0 || strcmpi("quit", command) == 0 ){
 			global_core->signal_shutdown();
@@ -4118,6 +4162,11 @@ int32 parse_console(const char* buf){
 /*==========================================
  * Read map server configuration files (conf/map_athena.conf...)
  *------------------------------------------*/
+// Optional per-instance override for the master NPC script list (set via the
+// "npc_scripts_main:" map-config key; used by a sharded grind map-server that
+// must not load town/WoE/BG/event control scripts). Empty = stock path.
+static char g_npc_scripts_main[256] = "";
+
 int32 map_config_read(const char *cfgName)
 {
 	char line[1024], w1[32], w2[1024];
@@ -4178,6 +4227,8 @@ int32 map_config_read(const char *cfgName)
 			npc_addsrcfile(w2, false);
 		else if (strcmpi(w1, "delnpc") == 0)
 			npc_delsrcfile(w2);
+		else if (strcmpi(w1, "npc_scripts_main") == 0)
+			safestrncpy(g_npc_scripts_main, w2, sizeof(g_npc_scripts_main));
 		else if (strcmpi(w1, "autosave_time") == 0) {
 			autosave_interval = atoi(w2);
 			if (autosave_interval < 1) //Revert to default saving.
@@ -4267,11 +4318,16 @@ void map_reloadnpc(bool clear)
 	if (clear)
 		npc_addsrcfile("clear", false); // this will clear the current script list
 
+	if( g_npc_scripts_main[0] != '\0' ){
+		ShowStatus("Using custom NPC script list: '%s'\n", g_npc_scripts_main);
+		map_reloadnpc_sub(g_npc_scripts_main);
+	} else {
 #ifdef RENEWAL
-	map_reloadnpc_sub("npc/re/scripts_main.conf");
+		map_reloadnpc_sub("npc/re/scripts_main.conf");
 #else
-	map_reloadnpc_sub("npc/pre-re/scripts_main.conf");
+		map_reloadnpc_sub("npc/pre-re/scripts_main.conf");
 #endif
+	}
 }
 
 int32 inter_config_read(const char *cfgName)

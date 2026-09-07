@@ -125,6 +125,8 @@ OnInit:
 	initnpctimer;
 // Timer logic
 OnTimer30000: // refresh every 30 seconds. Note the `char` table is unrealiable, player still need to perform certain task to save the character -> see 'save_settings' in conf\map-server.conf
+	// Skip cleanly if the statue NPCs did not load on this map-server.
+	if (!.statue[1] && !.statue[2] && !.statue[3]) { initnpctimer; end; }
 	.@query$  = "SELECT `char`.`char_id`, `char`.`name`, `char`.`guild_id`, `char`.`class`, `char`.`sex`, `char`.`hair`, `char`.`hair_color`, `char`.`clothes_color`, `char`.`body`, `char`.`head_top`, `char`.`head_mid`, `char`.`head_bottom`, ";
 	.@query$ +=   "`pvpladder`.`kills`, `pvpladder`.`streaks`, `pvpladder`.`deaths` ";
 	.@query$ += "FROM `char` RIGHT JOIN `pvpladder` ON `char`.`char_id` = `pvpladder`.`char_id` ORDER BY `kills` DESC LIMIT "+ .showstatue;
@@ -160,7 +162,7 @@ OnTimer30000: // refresh every 30 seconds. Note the `char` table is unrealiable,
 		}
 	}
 	for (.@i = .@nb; .@i < .showstatue; ++.@i)
-		setunitdata .statue[.@i +1], UNPC_CLASS, HIDDEN_WARP_NPC;
+		if (.statue[.@i +1] > 0) setunitdata .statue[.@i +1], UNPC_CLASS, HIDDEN_WARP_NPC;
 	initnpctimer;
 	end;
 

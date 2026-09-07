@@ -66,7 +66,9 @@ OnInit:
 
 	sleep 1;
 	
-OnTimer1000: // refresh statues every 30 seconds. Note the `char` table is unrealiable, player still need to perform certain task to save the character -> see 'save_settings' in conf\map-server.conf
+OnTimer1000: // refresh statues every 30 seconds. Skip cleanly if the statue NPCs did not load on this map-server
+	// (e.g. a sharded grind instance that does not own the statue map).
+	if (!.statue[1] && !.statue[2] && !.statue[3]) { initnpctimer; end; }
 	.@query$ = "SELECT `char`.`char_id`, `char`.`name`, `char`.`guild_id`, `char`.`class`, "
 			 + "`char`.`sex`, `char`.`hair`, `char`.`hair_color`, `char`.`clothes_color`, "
 			 + "`char`.`body`, `char`.`head_top`, `char`.`head_mid`, `char`.`head_bottom`, `char`.`robe`, "

@@ -12,6 +12,7 @@
 #include <common/cbasetypes.hpp>
 #include <common/database.hpp>
 #include <common/malloc.hpp>
+#include <common/mapindex.hpp>
 #include <common/nullpo.hpp>
 #include <common/showmsg.hpp>
 #include <common/strlib.hpp>
@@ -220,7 +221,13 @@ uint64 AchievementDatabase::parseBodyNode(const ryml::NodeRef& node){
 		achievement->mapindex = map_mapname2mapid( mapname.c_str() );
 
 		if( achievement->mapindex == -1 ){
-			this->invalidWarning( node["Map"], "Map %s does not exist, skipping.\n", mapname.c_str() );
+			// A sharded map-server does not own every map. If the map is real
+			// (present in the global map index) but simply not loaded on this
+			// instance, skip this achievement here silently - it loads normally
+			// on the map-server that owns the map. Only warn for a genuinely
+			// unknown map name.
+			if( mapindex_name2idx( mapname.c_str(), nullptr ) == 0 )
+				this->invalidWarning( node["Map"], "Map %s does not exist, skipping.\n", mapname.c_str() );
 			return 0;
 		}
 	}else{
