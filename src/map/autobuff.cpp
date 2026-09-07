@@ -215,21 +215,13 @@ void processFollow(bool skip, map_session_data* sd, party_data* p) {
 		if (DIFF_TICK(now, sd->ab.follow_unreachable_since) >= AB_UNREACHABLE_GRACE_MS) {
 			sd->ab.follow_unreachable_since = now; // start a fresh grace window either way
 			bool rescued = false;
-			if (ab_follow_teleport_ok(sd, target, false)) {
-				if (pc_checkskill(sd, AL_TELEPORT) > 0 && ab_canuseskill(sd, AL_TELEPORT, 1)
-					&& unit_skilluse_id(sd, sd->id, AL_TELEPORT, 1)) {
-					skill_consume_requirement(sd, AL_TELEPORT, 1, 2);
-					rescued = true;
-				} else {
-					int fw = pc_search_inventory(sd, 601);
-					if (fw < 0)
-						fw = pc_search_inventory(sd, 12887);
-					if (fw >= 0 && pc_useitem(sd, fw))
-						rescued = true;
-				}
-				if (!rescued)
-					rescued = ab_follow_do_teleport(sd, target);
-			}
+			// Warp straight to the followed player's current location - the
+			// internal equivalent of "@goto <partyleader>": ab_follow_do_teleport()
+			// -> pc_setpos() to the target's live mapindex/x/y, resolved
+			// dynamically each time and cross-map capable. No AL_TELEPORT and no
+			// random fly-wing blink.
+			if (ab_follow_teleport_ok(sd, target, false))
+				rescued = ab_follow_do_teleport(sd, target);
 			if (!rescued)
 				ab_partymessage(sd, "CompletelyStuck",
 					(char*)"AutoBuff: cannot reach the player - path blocked and teleport not allowed", 1500);
