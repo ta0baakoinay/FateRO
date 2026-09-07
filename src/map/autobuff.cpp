@@ -80,10 +80,10 @@ int ab_restore_state_timer(int tid, int64 tick, int id, intptr_t data) {
 // 250ms, feature.autobuff_timer) - only retry at this cadence.
 #define AB_REPATH_RETRY_MS 1000
 // How long the follower may make zero progress toward the target (blocked
-// path, brief out-of-view, latency, ...) before the config-gated teleport
-// rescue kicks in. Deliberately well above the "1-2s hiccup" range so normal
-// pathfinding gets a real chance to catch up before we ever consider a warp.
-#define AB_UNREACHABLE_GRACE_MS 6000
+// path, brief out-of-view, latency, ...) before the config-gated warp-to-
+// leader rescue kicks in. 1s: as soon as the follower is genuinely stuck it
+// snaps to the followed player rather than idling next to an obstacle.
+#define AB_UNREACHABLE_GRACE_MS 1000
 
 // Teleport-to-target policy gate. battle_config.feature_autobuff_teleportiflost:
 //   0 = no        : never teleport to the followed player
