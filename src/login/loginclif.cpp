@@ -108,7 +108,21 @@ static void logclif_auth_ok(struct login_session_data* sd) {
 		}
 	}
 
+// (^~_~^) FateShield Start
+/*
+// (^~_~^) FateShield End
 	login_log(ip, sd->userid, 100, "login ok");
+// (^~_~^) FateShield Start
+*/
+// (^~_~^) FateShield End
+
+// (^~_~^) FateShield Start
+
+	account_fateshield_update_last_unique_id(sd->account_id, session[fd]->fateshield_info.unique_id);
+	login_fateshield_log(fd, ip, sd->userid, 100, "login ok");
+
+// (^~_~^) FateShield End
+
 	ShowStatus("Connection of the account '%s' accepted.\n", sd->userid);
 
 	PACKET_AC_ACCEPT_LOGIN* p = reinterpret_cast<PACKET_AC_ACCEPT_LOGIN*>( packet_buffer );
@@ -211,12 +225,30 @@ static void logclif_auth_failed(struct login_session_data* sd, int32 result) {
 
 	if (login_config.log_login)
 	{
+// (^~_~^) FateShield Start
+/*
+// (^~_~^) FateShield End
 		if(result >= 0 && result <= 15)
 		    login_log(ip, sd->userid, result, msg_txt(result));
 		else if(result >= 99 && result <= 104)
 		    login_log(ip, sd->userid, result, msg_txt(result-83)); //-83 offset
 		else
 		    login_log(ip, sd->userid, result, msg_txt(22)); //unknow error
+// (^~_~^) FateShield Start
+*/
+// (^~_~^) FateShield End
+
+// (^~_~^) FateShield Start
+
+		if (result >= 0 && result <= 15)
+		    login_fateshield_log(fd, ip, sd->userid, result, msg_txt(result));
+		else if (result >= 99 && result <= 104)
+		    login_fateshield_log(fd, ip, sd->userid, result, msg_txt(result-83)); //-83 offset
+		else
+		    login_fateshield_log(fd, ip, sd->userid, result, msg_txt(22)); //unknow error
+
+// (^~_~^) FateShield End
+
 	}
 
 	if( (result == 0 || result == 1) && login_config.dynamic_pass_failure_ban )
@@ -420,7 +452,19 @@ static int32 logclif_parse_reqcharconnec(int32 fd, struct login_session_data *sd
 
 		ShowInfo("Connection request of the char-server '%s' @ %u.%u.%u.%u:%u (account: '%s', ip: '%s')\n", server_name, CONVIP(server_ip), server_port, sd->userid, ip);
 		sprintf(message, "charserver - %s@%u.%u.%u.%u:%u", server_name, CONVIP(server_ip), server_port);
+// (^~_~^) FateShield Start
+/*
+// (^~_~^) FateShield End
 		login_log(session[fd]->client_addr, sd->userid, 100, message);
+// (^~_~^) FateShield Start
+*/
+// (^~_~^) FateShield End
+
+// (^~_~^) FateShield Start
+
+		login_fateshield_log(fd, session[fd]->client_addr, sd->userid, 100, message);
+
+// (^~_~^) FateShield End
 
 		result = login_mmo_auth(sd, true);
 		if( global_core->is_running() &&
@@ -522,7 +566,19 @@ int32 logclif_parse(int32 fd) {
 		if( login_config.ipban && ipban_check(ipl) )
 		{
 			ShowStatus("Connection refused: IP isn't authorised (deny/allow, ip: %s).\n", ip);
+// (^~_~^) FateShield Start
+/*
+// (^~_~^) FateShield End
 			login_log(ipl, "unknown", -3, "ip banned");
+// (^~_~^) FateShield Start
+*/
+// (^~_~^) FateShield End
+
+// (^~_~^) FateShield Start
+
+	login_fateshield_log(fd, ipl, "unknown", -3, "ip banned");
+
+// (^~_~^) FateShield End
 
 			logclif_auth_failed( fd, 3 ); // 3 = Rejected from Server
 
@@ -538,6 +594,25 @@ int32 logclif_parse(int32 fd) {
 	while( RFIFOREST(fd) >= 2 )
 	{
 		uint16 command = RFIFOW(fd,0);
+
+// (^~_~^) FateShield Start
+
+		if (is_fateshield_active == true)
+		{
+			bool is_processed = fateshield_process_cs_packet(fd, session[fd], 0);
+
+			if (is_processed == true)
+			{
+				if (command == CS_FATESHIELD_INIT_ACK)
+				{
+					account_fateshield_check_unique_id(fd, session[fd]);
+				}
+
+				return 0;
+			}
+		}
+
+// (^~_~^) FateShield End
 
 		switch( command ){
 			// Connection request of a char-server

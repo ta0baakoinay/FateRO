@@ -812,7 +812,20 @@ void LoginServer::finalize(){
 		aFree(tmp);
 	}
 
+// (^~_~^) FateShield Start
+/*
+// (^~_~^) FateShield End
 	login_log(0, "login server", 100, "login server shutdown");
+// (^~_~^) FateShield Start
+*/
+// (^~_~^) FateShield End
+
+// (^~_~^) FateShield Start
+
+	login_fateshield_log(0, 0, "login server", 100, "login server shutdown");
+
+// (^~_~^) FateShield End
+
 	ShowStatus("Terminating...\n");
 
 	if( login_config.log_login )
@@ -905,7 +918,19 @@ bool LoginServer::initialize( int32 argc, char* argv[] ){
 	do_init_logincnslif();
 
 	ShowStatus("The login-server is " CL_GREEN "ready" CL_RESET " (Server is listening on the port %u).\n\n", login_config.login_port);
+// (^~_~^) FateShield Start
+/*
+// (^~_~^) FateShield End
 	login_log(0, "login server", 100, "login server started");
+// (^~_~^) FateShield Start
+*/
+// (^~_~^) FateShield End
+
+// (^~_~^) FateShield Start
+
+	login_fateshield_log(0, 0, "login server", 100, "login server started");
+
+// (^~_~^) FateShield End
 
 	return true;
 }

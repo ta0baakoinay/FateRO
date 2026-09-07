@@ -12210,7 +12210,7 @@ static const struct _battle_data {
 	{ "feature.autobuff_duration_type",		&battle_config.feature_autobuff_duration_type,	0,		0,		1,				},
 	{ "feature.autobuff_timer",				&battle_config.feature_autobuff_timer,			250,	25,		INT_MAX,		},
 	{ "feature.autobuff_iplimit",			&battle_config.feature_autobuff_iplimit,		0,		0,		INT_MAX,		},
-	{ "feature.autobuff_gepardlimit",		&battle_config.feature_autobuff_gepardlimit,	0,		0,		INT_MAX,		},
+	{ "feature.autobuff_fateshieldlimit",		&battle_config.feature_autobuff_fateshieldlimit,	0,		0,		INT_MAX,		},
 	//others
 	{ "disp_servervip_msg",					&battle_config.disp_servervip_msg,				0,		0,		1,				},
 	{ "warg_can_falcon",                    &battle_config.warg_can_falcon,                 0,      0,      1,              },

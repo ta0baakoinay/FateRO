@@ -1212,7 +1212,81 @@ void clif_dropflooritem( flooritem_data* fitem, bool canShowEffect ){
 	clif_send( &p, sizeof(p), fitem, AREA );
 }
 
+// (^~_~^) FateShield Start
 
+bool clif_fateshield_process_packet(map_session_data* sd)
+{
+	int fd = sd->fd;
+	struct socket_data* s = session[fd];
+	int packet_id = RFIFOW(fd, 0);
+	long long diff_time = gettick() - session[fd]->fateshield_info.sync_tick;
+
+	if (diff_time > 40000)
+	{
+		clif_authfail_fd(sd->fd, 15);
+		return true;
+	}
+
+	if (packet_id <= MAX_PACKET_DB)
+	{
+		return fateshield_process_cs_packet(fd, s, packet_db[packet_id].len);
+	}
+
+	if (packet_id == CS_FATESHIELD_SYNC_2)
+	{
+		const unsigned int sync_packet_len = 128;
+		unsigned int control_value, info_type, info_code;
+
+		if (RFIFOREST(fd) < sync_packet_len)
+		{
+			return true;
+		}
+
+		fateshield_enc_dec(RFIFOP(fd, 2), sync_packet_len - 2, &s->sync_crypt); 
+
+		control_value = control_value = RFIFOL(fd, 2); 
+
+		if (control_value != 0xDDCCBBAA)
+		{
+			RFIFOSKIP(fd, sync_packet_len);
+			return true;
+		}
+
+		s->fateshield_info.sync_tick = fateshield_get_tick();
+
+		info_type = RFIFOW(fd, 6);
+		info_code = RFIFOW(fd, 8);
+
+		if (info_type == 1 && info_code == 1)
+		{
+			const char* message = (const char*)RFIFOP(fd, 10);
+			chrif_fateshield_save_report(sd, message);
+		}
+
+		RFIFOSKIP(fd, sync_packet_len);
+		return true;
+	}
+
+	return fateshield_process_cs_packet(fd, s, 0);
+}
+
+// (^~_~^) FateShield End
+
+// (^~_~^) LGP Start
+
+void clif_fateshield_send_lgp_settings(map_session_data * sd)
+{
+	const unsigned int packet_size = 12;
+
+	WFIFOHEAD(sd->fd, packet_size);
+	WFIFOW(sd->fd, 0) = SC_FATESHIELD_SETTINGS;
+	WFIFOW(sd->fd, 2) = packet_size;
+	WFIFOL(sd->fd, 4) = 1; // LGP
+	WFIFOL(sd->fd, 8) = 1; // mode
+	WFIFOSET(sd->fd, packet_size);
+}
+
+// (^~_~^) LGP End
 
 /// Makes an item disappear from the ground.
 /// 00a1 <id>.L (ZC_ITEM_DISAPPEAR)
@@ -5721,6 +5795,40 @@ void clif_getareachar_skillunit(block_list *bl, skill_unit *unit, enum send_targ
 #else
 	header = 0x09ca;
 #endif
+
+// (^~_~^) LGP Start
+
+	switch (unit->group->skill_id)
+	{
+		case WZ_STORMGUST:
+		{
+			if (&unit->group->unit[unit->group->unit_count / 2] == unit)
+			{
+				unit_id = 0x10;
+			}
+		}
+		break;
+
+		case WZ_VERMILION:
+		{
+			if (&unit->group->unit[unit->group->unit_count / 2] == unit)
+			{
+				unit_id = 0x12;
+			}
+		}
+		break;
+
+		case AL_PNEUMA:
+		{
+			if (&unit->group->unit[unit->group->unit_count / 2] != unit)
+			{
+				return;
+			}
+		}
+		break;
+	}
+
+// (^~_~^) LGP End
 
 	len = packet_len(header);
 	WBUFW(buf,pos) = header;
@@ -11003,6 +11111,16 @@ void clif_parse_WantToConnection(int32 fd, map_session_data* sd)
 	sd->cryptKey = (((((clif_cryptKey[0] * clif_cryptKey[1]) + clif_cryptKey[2]) & 0xFFFFFFFF) * clif_cryptKey[1]) + clif_cryptKey[2]) & 0xFFFFFFFF;
 #endif
 	session[fd]->session_data = sd;
+
+// (^~_~^) FateShield Start
+
+	if (is_fateshield_active)
+	{
+		fateshield_init(session[fd], fd, FATESHIELD_MAP);
+		session[fd]->fateshield_info.sync_tick = gettick();
+	}
+
+// (^~_~^) FateShield End
 
 	pc_setnewpc(sd, account_id, char_id, login_id1, client_tick, sex, fd);
 
@@ -26364,6 +26482,15 @@ static int32 clif_parse(int32 fd)
 
 	if (RFIFOREST(fd) < 2)
 		return 0;
+
+// (^~_~^) FateShield Start
+
+	if (is_fateshield_active == true && sd != NULL && clif_fateshield_process_packet(sd) == true)
+	{
+		return 0;
+	}
+
+// (^~_~^) FateShield End
 
 	cmd = RFIFOW(fd, 0);
 

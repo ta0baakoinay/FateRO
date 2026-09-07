@@ -27,6 +27,139 @@
 
 #define FIFOSIZE_SERVERLINK 256*1024
 
+// (^~_~^) FateShield Start
+
+#define  LICENSE_ID  4281086466
+#define  CODE_VERSION  2025040101
+
+#define  SESSION_CONST_1  0x5E8EBDC4
+#define  SESSION_CONST_2  0x60CE2F03
+
+#define  ALGO_KEY_1  0x93
+#define  ALGO_KEY_2  0x17
+#define  ALGO_KEY_3  0x6B
+
+#define  DATA_HASH_CONST_1  0x84802A68
+#define  DATA_HASH_CONST_2  0x6889E45C
+
+// (^~_~^) FateShield End
+
+// (^~_~^) FateShield Start
+
+extern long long start_tick;
+extern bool is_fateshield_active;
+extern unsigned int min_allowed_license_version;
+
+#define MATRIX_SIZE     2048
+#define KEY_SIZE        32
+
+#define FATESHIELD_REPORT_LENGTH 85
+#define FATESHIELD_REASON_LENGTH 99
+#define FATESHIELD_TIME_STR_LENGTH 24
+#define FATESHIELD_RESULT_STR_LENGTH 100
+
+struct fateshield_crypt_unit
+{
+	unsigned int flag;
+	unsigned char pos_1;
+	unsigned char pos_2;
+	unsigned char pos_3;
+	unsigned char key[256];
+};
+
+struct fateshield_info_data
+{
+	long long sync_tick;
+	unsigned int unique_id;
+	unsigned int license_version;
+	unsigned char mac_address[6];
+	unsigned int is_init_ack_received;
+	unsigned short cs_packet_request_move;
+	unsigned short cs_packet_action_request;
+	unsigned short cs_packet_use_skill_to_id;
+	unsigned short cs_packet_use_skill_to_ground;
+};
+
+enum fateshield_server_types
+{
+	FATESHIELD_MAP      = 0xCCCC,
+	FATESHIELD_LOGIN    = 0xAAAA,
+};
+
+enum fateshield_info_type
+{
+	FATESHIELD_INFO_MESSAGE,
+	FATESHIELD_INFO_MESSAGE_EXIT,
+	FATESHIELD_INFO_INVALID_INIT_ACK,
+	FATESHIELD_INFO_BANNED,
+	FATESHIELD_INFO_OLD_LICENSE_VERSION,
+};
+
+enum fateshield_packets
+{
+	CS_LOAD_END_ACK        = 0x007D,
+	CS_WHISPER_TO          = 0x0096,
+
+	CS_LOGIN_PACKET_1      = 0x0064,
+	CS_LOGIN_PACKET_2      = 0x0277,
+	CS_LOGIN_PACKET_3      = 0x02b0,
+	CS_LOGIN_PACKET_4      = 0x01dd,
+	CS_LOGIN_PACKET_5      = 0x01fa,
+	CS_LOGIN_PACKET_6      = 0x027c,
+	CS_LOGIN_PACKET_7      = 0x0825,
+
+	SC_SET_UNIT_WALKING_1  = 0x07F7,
+	SC_SET_UNIT_WALKING_2  = 0x0856,
+	SC_SET_UNIT_WALKING_3  = 0x0914,
+	SC_SET_UNIT_WALKING_4  = 0x09DB,
+	SC_SET_UNIT_WALKING_5  = 0x09FD,
+
+	SC_SET_UNIT_IDLE_1     = 0x07F9,
+	SC_SET_UNIT_IDLE_2     = 0x0857,
+	SC_SET_UNIT_IDLE_3     = 0x0915,
+	SC_SET_UNIT_IDLE_4     = 0x09DD,
+	SC_SET_UNIT_IDLE_5     = 0x09FF,
+
+	SC_NOTIFY_TIME         = 0x007F,
+	SC_STATE_CHANGE        = 0x0229,
+
+	SC_MSG_STATE_CHANGE_1  = 0x0196,
+	SC_MSG_STATE_CHANGE_2  = 0x043F,
+	SC_MSG_STATE_CHANGE_3  = 0x0983,
+
+	SC_WHISPER_FROM        = 0x0097,
+	SC_WHISPER_SEND_ACK    = 0x0098,
+
+	CS_FATESHIELD_SYNC         = 0x8285,
+	CS_FATESHIELD_SYNC_2       = 0x8280,
+	CS_FATESHIELD_INIT_ACK     = 0xC392,
+
+	SC_FATESHIELD_INIT         = 0x4753,
+	SC_FATESHIELD_INFO         = 0xBCDE,
+	SC_FATESHIELD_SETTINGS     = 0x5395,
+};
+
+enum fateshield_internal_packets
+{
+	FATESHIELD_M2C_BLOCK_REQ   = 0x5000,
+	FATESHIELD_C2M_BLOCK_ACK   = 0x5001,
+	FATESHIELD_M2C_UNBLOCK_REQ = 0x5002,
+	FATESHIELD_C2M_UNBLOCK_ACK = 0x5003,
+	FATESHIELD_M2C_SAVE_REPORT = 0x5004,
+};
+
+void fateshield_set_eof(int fd);
+long long fateshield_get_tick(void);
+unsigned int fateshield_get_unique_id(int fd);
+struct socket_data* fateshield_get_socket_data(int fd);
+void fateshield_init(struct socket_data* s, int fd, uint16 server_type);
+void fateshield_send_info(int fd, unsigned short info_type, const char* message);
+bool fateshield_process_cs_packet(int fd, struct socket_data* s, size_t packet_size);
+void fateshield_process_sc_packet(int fd, struct socket_data* s, size_t packet_size);
+void fateshield_enc_dec(unsigned char* data, uint32 data_size, struct fateshield_crypt_unit* unit);
+
+// (^~_~^) FateShield End
+
 // socket I/O macros
 #define WFIFOHEAD( fd, size ) \
 	do{ \
@@ -111,6 +244,14 @@ struct socket_data
 	ParseFunc func_parse;
 
 	void* session_data; // stores application-specific data related to the session
+
+// (^~_~^) FateShield Start
+	struct fateshield_info_data fateshield_info;
+	struct fateshield_crypt_unit send_crypt;
+	struct fateshield_crypt_unit recv_crypt;
+	struct fateshield_crypt_unit sync_crypt;
+// (^~_~^) FateShield End
+
 };
 
 

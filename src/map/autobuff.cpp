@@ -1787,7 +1787,7 @@ bool ab_changestate_autobuff(map_session_data *sd, int flag) {
     map_data* mapdata;
     map_session_data* pl_sd;
     struct s_mapiterator* iter;
-    int ip_limitation = 0, gepard_limitation = 0;
+    int ip_limitation = 0, fateshield_limitation = 0;
 
     switch (flag) {
     case 1:
@@ -1809,8 +1809,8 @@ bool ab_changestate_autobuff(map_session_data *sd, int flag) {
             mapit_free(iter);
         }
 
-        if (battle_config.feature_autobuff_gepardlimit) {
-            // (your gepard checks here)
+        if (battle_config.feature_autobuff_fateshieldlimit) {
+            // (your fateshield checks here)
         }
 
         mapdata = map_getmapdata(sd->m);

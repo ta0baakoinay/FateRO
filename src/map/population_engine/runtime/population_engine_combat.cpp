@@ -1982,8 +1982,8 @@ const char *population_combat_reject_code_name(PopulationCombatRejectCode code)
 		return "LIMIT_IP";
 	case PopulationCombatRejectCode::LIMIT_MAC:
 		return "LIMIT_MAC";
-	case PopulationCombatRejectCode::LIMIT_GEPARD:
-		return "LIMIT_GEPARD";
+	case PopulationCombatRejectCode::LIMIT_FATESHIELD:
+		return "LIMIT_FATESHIELD";
 	case PopulationCombatRejectCode::MAP_INSTANCE_BLOCKED:
 		return "MAP_INSTANCE_BLOCKED";
 	case PopulationCombatRejectCode::MAP_WOE_BLOCKED:

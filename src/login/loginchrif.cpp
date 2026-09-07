@@ -635,7 +635,20 @@ int32 logchrif_parse_pincode_authfail(int32 fd){
 				return 0;
 			}
 
+// (^~_~^) FateShield Start
+/*
+// (^~_~^) FateShield End
 			login_log( host2ip(acc.last_ip), acc.userid, 100, "PIN Code check failed" );
+// (^~_~^) FateShield Start
+*/
+// (^~_~^) FateShield End
+
+// (^~_~^) FateShield Start
+
+	login_fateshield_log(fd, host2ip(acc.last_ip), acc.userid, 100, "PIN Code check failed");
+
+// (^~_~^) FateShield End
+
 		}
 		login_remove_online_user(acc.account_id);
 		RFIFOSKIP(fd,6);

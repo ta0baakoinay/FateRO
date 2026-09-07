@@ -2441,6 +2441,15 @@ void pc_reg_received(map_session_data *sd)
 	if (msg_checklangtype(sd->langtype,true) < 0)
 		sd->langtype = 0; //invalid langtype reset to default
 
+// (^~_~^) LGP Start
+
+	if (is_fateshield_active == true)
+	{
+		clif_fateshield_send_lgp_settings(sd);
+	}
+
+// (^~_~^) LGP End
+
 	// Cash shop
 	sd->cashPoints = static_cast<int32>(pc_readaccountreg(sd, add_str(CASHPOINT_VAR)));
 	sd->kafraPoints = static_cast<int32>(pc_readaccountreg(sd, add_str(KAFRAPOINT_VAR)));

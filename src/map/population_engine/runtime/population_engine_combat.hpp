@@ -30,7 +30,7 @@ enum class PopulationCombatRejectCode : uint16 {
 	OVERWEIGHT_BLOCKED = 13,
 	LIMIT_IP = 14,
 	LIMIT_MAC = 15,
-	LIMIT_GEPARD = 16,
+	LIMIT_FATESHIELD = 16,
 	MAP_INSTANCE_BLOCKED = 17,
 	MAP_WOE_BLOCKED = 18,
 };

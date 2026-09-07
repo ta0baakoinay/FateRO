@@ -629,7 +629,7 @@ struct Battle_Config
 	int32 feature_autobuff_duration_type;
 	int32 feature_autobuff_timer;
 	int32 feature_autobuff_iplimit;
-	int32 feature_autobuff_gepardlimit;
+	int32 feature_autobuff_fateshieldlimit;
 
 
 	// Fame points

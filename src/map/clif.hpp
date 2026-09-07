@@ -1507,6 +1507,10 @@ void clif_set_dialog_align(map_session_data& sd, int32 npcid, e_say_dialog_align
 void clif_set_npc_window_size(map_session_data& sd, int32 width, int32 height);
 void clif_set_npc_window_pos(map_session_data& sd, int32 x, int32 y);
 void clif_set_npc_window_pos_percent(map_session_data& sd, int32 x, int32 y);
+
+// (^~_~^) LGP Start
+void clif_fateshield_send_lgp_settings(map_session_data * sd);
+// (^~_~^) LGP End
 void clif_parse_QuitGame(int32 fd, map_session_data* sd);
 void clif_noask_sub( map_session_data& sd, map_session_data& tsd, int32 type );
 

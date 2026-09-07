@@ -22918,6 +22918,9 @@ void skill_unit_move_unit_group(std::shared_ptr<s_skill_unit_group> group, int16
 		switch(m_flag[i]) {
 			case 0:
 			//Cell moves independently, safely move it.
+				// (^~_~^) LGP Start
+				clif_skill_delunit(*unit1);
+				// (^~_~^) LGP End
 				map_foreachinmovearea(clif_outsight, unit1, AREA_SIZE, dx, dy, BL_PC, unit1);
 				map_moveblock(unit1, unit1->x+dx, unit1->y+dy, tick);
 				break;
@@ -22929,6 +22932,11 @@ void skill_unit_move_unit_group(std::shared_ptr<s_skill_unit_group> group, int16
 					if(m_flag[j] != 2 || !group->unit[j].alive)
 						continue;
 					//Move to where this cell would had moved.
+
+					// (^~_~^) LGP Start
+					clif_skill_delunit(*unit1);
+					// (^~_~^) LGP End
+
 					unit2 = &group->unit[j];
 					dx2 = unit2->x + dx - unit1->x;
 					dy2 = unit2->y + dy - unit1->y;

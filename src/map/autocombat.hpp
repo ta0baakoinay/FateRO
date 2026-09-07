@@ -36,7 +36,7 @@ extern std::vector<s_autocombat_skill_delay> autocombat_custom_delays;
  * @param 0 `24/7` - Auto combat can be used all the time
  * @param 1 `Per character` - duration is based on character variable
  * @param 2 `Account wide` - duration is based on account variable
- * @param 3 `Per Gepard Unique ID` - not implemented, extra modules required. pls pm me if you want this
+ * @param 3 `Per FateShield Unique ID` - not implemented, extra modules required. pls pm me if you want this
  * @param <item_id> `Item Based` - duration is based on rental item
  */
 #define AUTOCOMBAT_DURATION_CONFIG 0
