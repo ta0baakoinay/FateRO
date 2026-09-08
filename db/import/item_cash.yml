@@ -31,3 +31,55 @@
 Header:
   Type: ITEM_CASH_DB
   Version: 1
+
+Body:
+  - Tab: New
+    Items:
+      - Item: Eyes_Of_Darkness
+        Price: 20
+      - Item: Hairband_Of_Reginleif
+        Price: 20
+      - Item: Scissorhand_Model
+        Price: 20
+
+  - Tab: Hot
+    Items:
+      - Item: Helm_Of_Dragoon
+        Price: 20
+      - Item: Ice_Wing_Ear
+        Price: 20
+      - Item: Pirate_Dagger
+        Price: 20
+
+  - Tab: Limited
+    Items:
+      - Item: Parade_Cap
+        Price: 20
+      - Item: Toy_Syringe
+        Price: 20
+
+  - Tab: Rental
+    Items:
+      - Item: 24_Bolt
+        Price: 20
+
+  - Tab: Permanent
+    Items:
+      - Item: Fox_Ears_Bell_Ribbon
+        Price: 20
+      - Item: Fafnir_Mask
+        Price: 20
+
+  - Tab: Other
+    Items:
+      - Item: Angel_Spirit
+        Price: 20
+      - Item: Antique_Pipe
+        Price: 20
+
+  - Tab: Sale
+    Items:
+      - Item: F_Pecopeco_Hairband
+        Price: 20
+      - Item: Rockhand_Model
+        Price: 20
