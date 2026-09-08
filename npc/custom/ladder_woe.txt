@@ -387,6 +387,38 @@ OnPCLoadMapEvent:
 		.guild_ownage_time[.@guildid] = .@t;
 	}
 	end;
+
+// ---------------------------------------------------------------------
+//  Emperium Break counter + Breaker ranking
+//  Fires when a player lands the killing blow on the Emperium (mob 1288)
+//  while a WoE (SE or TE) is running. Stored in `woe_breaker` (per char)
+//  and `woe_breaker_guild` (per guild).
+//
+//  NOTE: the Emperium always carries its castle's OnAgitBreak event,
+//  which normally SUPPRESSES the global OnNPCKillEvent. A source hook in
+//  src/map/mob.cpp (mob_dead, `md->mob_id == MOBID_EMPERIUM`) fires
+//  OnNPCKillEvent explicitly for the Emperium so this handler runs.
+// ---------------------------------------------------------------------
+OnNPCKillEvent:
+	if (killedrid != 1288) end;                 // 1288 = Emperium
+	if (!agitcheck() && !agitcheck2()) end;
+
+	.@cid    = getcharid(0);
+	.@name$  = strcharinfo(0);
+	.@gid    = getcharid(2);
+
+	query_sql("INSERT INTO `woe_breaker` (`char_id`,`name`,`breaks`,`last_break`) "
+		+ "VALUES ("+ .@cid +",'"+ escape_sql(.@name$) +"',1,NOW()) "
+		+ "ON DUPLICATE KEY UPDATE `breaks`=`breaks`+1,`name`='"+ escape_sql(.@name$) +"',`last_break`=NOW()");
+
+	if (.@gid)
+		query_sql("INSERT INTO `woe_breaker_guild` (`guild_id`,`name`,`breaks`,`last_break`) "
+			+ "VALUES ("+ .@gid +",'"+ escape_sql(getguildname(.@gid)) +"',1,NOW()) "
+			+ "ON DUPLICATE KEY UPDATE `breaks`=`breaks`+1,`name`='"+ escape_sql(getguildname(.@gid)) +"',`last_break`=NOW()");
+
+	.@gname$ = (.@gid) ? getguildname(.@gid) : "no guild";
+	announce .@name$ +" of "+ .@gname$ +" has broken The Emperium!", bc_all, 0xFFFF00;
+	end;
 }
 
 maintown,158,150,4	script	WoE-StatsViewer	20385,{
@@ -396,7 +428,7 @@ maintown,158,150,4	script	WoE-StatsViewer	20385,{
 		mes "Hello "+ strcharinfo(0) +"...";
 		mes "If you want to I can show you your WoE stats.";
 		next;
-		switch (select("Most Kills","Highest Streak","Longest Ownage","Own Information","Explanation")) {
+		switch (select("Most Kills","Highest Streak","Longest Ownage","Own Information","Explanation","Emperium Breakers")) {
 		mes "["+ .@npcname$ +"]";
 		case 1:
 			.@nb = query_sql("select name, kills, deaths from woeladder order by kills desc limit "+ getvariableofnpc(.showtotal, "DOTAWOE"), .@name$, .@kills, .@deaths);
@@ -559,6 +591,34 @@ maintown,158,150,4	script	WoE-StatsViewer	20385,{
 				mes "Higher base level kills lower level gets nothing, however lower level player kills higher level will get the announcement.";
 				next;
 			}
+			break;
+		case 6:
+			mes "^996600Top Emperium Breakers^000000";
+			mes " ";
+			.@nb = query_sql("SELECT `name`,`breaks`,DATE_FORMAT(`last_break`,'%a %e/%c/%y %r') FROM `woe_breaker` ORDER BY `breaks` DESC, `last_break` ASC LIMIT "+ getvariableofnpc(.showtotal,"DOTAWOE"), .@name$, .@breaks, .@time$);
+			if (!.@nb) {
+				mes "No Emperium has been broken yet.";
+				next;
+				break;
+			}
+			for (.@j = 0; .@j < .@nb; .@j += getvariableofnpc(.showpage,"DOTAWOE")) {
+				for (.@i = .@j; .@i < (getvariableofnpc(.showpage,"DOTAWOE") + .@j) && .@i < .@nb; ++.@i) {
+					mes "^996600"+ (.@i+1) +": ^006699"+ .@name$[.@i] +" ^AA00AA["+ .@breaks[.@i] +" break"+ ((.@breaks[.@i] == 1) ? "" : "s") +"]^000000";
+					mes "    ^EE8800"+ .@time$[.@i] +"^000000";
+				}
+				next;
+			}
+			mes "["+ .@npcname$ +"]";
+			.@gid = getcharid(2);
+			if (.@gid) {
+				.@gb = 0;
+				query_sql("SELECT `breaks` FROM `woe_breaker_guild` WHERE `guild_id` = "+ .@gid, .@gb);
+				mes "Your guild ^006699"+ strcharinfo(2) +"^000000 has broken the Emperium ^AA00AA"+ .@gb +"^000000 time(s).";
+			}
+			.@mb = 0;
+			query_sql("SELECT `breaks` FROM `woe_breaker` WHERE `char_id` = "+ getcharid(0), .@mb);
+			mes "You have broken the Emperium ^AA00AA"+ .@mb +"^000000 time(s).";
+			next;
 			break;
 		}
 	}

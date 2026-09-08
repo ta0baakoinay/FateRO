@@ -3624,6 +3624,21 @@ int32 mob_dead(mob_data *md, block_list *src, int32 type)
 				npc_event(first_sd,md->npc_event,0);
 			} else
 				npc_event_do(md->npc_event);
+
+			// The Emperium always carries its castle's OnAgitBreak event, which
+			// would otherwise suppress the global OnNPCKillEvent below. Fire it
+			// explicitly so scripts can count Emperium breaks without hooking
+			// every castle script. [FateMMO]
+			if( md->mob_id == MOBID_EMPERIUM ){
+				map_session_data* emp_sd = sd ? sd : first_sd;
+
+				if( emp_sd != nullptr ){
+					pc_setparam(emp_sd, SP_KILLEDGID, md->id);
+					pc_setparam(emp_sd, SP_KILLEDRID, md->mob_id);
+					pc_setparam(emp_sd, SP_KILLERRID, emp_sd->id);
+					npc_script_event( *emp_sd, NPCE_KILLNPC );
+				}
+			}
 		} else if( first_sd != nullptr && !md->state.npc_killmonster ) {
 			pc_setparam(first_sd, SP_KILLEDGID, md->id);
 			pc_setparam(first_sd, SP_KILLEDRID, md->mob_id);
