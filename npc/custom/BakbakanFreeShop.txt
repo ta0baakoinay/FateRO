@@ -1,4 +1,4 @@
-prontera,150,175,3	script	Bakbakan Shop#WP1z	113,{
+maintown,155,119,3	script	Bakbakan Shop#WP1z	113,{
     callfunc "bakbakanshop",1,2;
     end;
 
@@ -71,10 +71,6 @@ OnInit:
 
 // Armors and Accessories
 	Add(2,30000,1,0,0,30034,1);
-    Add(2,30001,1,0,0,30034,1);
-    Add(2,30002,1,0,0,30034,1);
-    Add(2,30003,1,0,0,30034,1);
-    Add(2,30004,1,0,0,30034,1);
 
 
 // -----------------------------------------------------------

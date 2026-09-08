@@ -350,78 +350,46 @@ maintown,140,132,6	script	Daily Mission Board	857,{
 				deletearray(.@itmhunt);
 				deletearray(.@limit);
 				deletearray(.@reward);
-				.@j = select(sprintf("%s%s^000000", (F_Limit(1, .@i, 70, 10) ? "^FF0000" : "^009900"), .mission_name$[1]),
-							sprintf("%s%s^000000", (F_Limit(2, .@i, 99, 60) ? "^FF0000" : "^009900"), .mission_name$[2]),
+				.@j = select(sprintf("%s%s^000000", (F_Limit(1, .@i, 10, 10) ? "^FF0000" : "^009900"), .mission_name$[1]),
+							sprintf("%s%s^000000", (F_Limit(2, .@i, 40, 60) ? "^FF0000" : "^009900"), .mission_name$[2]),
 							sprintf("%s%s^000000", (F_Limit(3, .@i, 10, 60) ? "^FF0000" : "^009900"), .mission_name$[3]),
 							sprintf("%s%s^000000", (F_Limit(4, .@i, 1, 3, Job_Archer, Job_Rogue) ? "^FF0000" : "^009900"), .mission_name$[4]),
-							sprintf("%s%s^000000", (F_Limit(5, .@i, 70, 60) ? "^FF0000" : "^009900"), .mission_name$[5]),
-							sprintf("%s%s^000000", (F_Limit(6, .@i, 255, 30) ? "^FF0000" : "^009900"), .mission_name$[6]),
-							sprintf("%s%s^000000", (F_Limit(7, .@i, 255, 30) ? "^FF0000" : "^009900"), .mission_name$[7]),
-							sprintf("%s%s^000000", (F_Limit(8, .@i, 255, 30) ? "^FF0000" : "^009900"), .mission_name$[8]),
-							sprintf("%s%s^000000", (F_Limit(9, .@i, 255, 30) ? "^FF0000" : "^009900"), .mission_name$[9]));
+							sprintf("%s%s^000000", (F_Limit(5, .@i, 40, 60) ? "^FF0000" : "^009900"), .mission_name$[5]));
 				switch(.@j) {
 					case 1:
 						setarray .@mobhunt[0], 1002, 33, 1113, 44, 1031, 55;
-						setarray .@reward[0], 1000000, 3;
-						setarray .@limit[0], 70, 600;
+						setarray .@reward[0], 5000, 3;
+						setarray .@limit[0], 10, 600;
 						.@desc$ = "Slain different kinds of Porings!";
 						break;
 
 					case 2:
 						setarray .@mobhunt[0], 1243, 300;
-						setarray .@reward[0], 1000000, 3;
-						setarray .@limit[0], 99, 3600;
+						setarray .@reward[0], 10000, 3;
+						setarray .@limit[0], 40, 3600;
 						.@desc$ = "Kill some Sasquach at the Christmas Field!";
 						break;
 
 					case 3:
 						setarray .@itmhunt[0], 914, 100, 949, 100, 705, 100;
-						setarray .@reward[0], 1000000, 3;
-						setarray .@limit[0], 99, 3600;
+						setarray .@reward[0], 10000, 3;
+						setarray .@limit[0], 10, 3600;
 						.@desc$ = "Collect the required loots and deliver!";
 						break;
 
 					case 4:
 						setarray .@mobhunt[0], 1007, 200;
-						setarray .@reward[0], 1000000, 3;
-						setarray .@limit[0], 99, 300, Job_Archer, Job_Rogue;
+						setarray .@reward[0], 5000, 3;
+						setarray .@limit[0], 1, 300, Job_Archer, Job_Rogue;
 						.@limit$ = "[Base] Archer, Rogue";
 						.@desc$ = "Complete the quest in 5 minutes!";
 						break;
 
 					case 5:
 						setarray .@mobhunt[0], 1196, 300, 1197, 300;
-						setarray .@reward[0], 1000000, 3;
-						setarray .@limit[0], 99, 3600;
+						setarray .@reward[0], 10000, 3;
+						setarray .@limit[0], 40, 3600;
 						.@desc$ = "Hunt and deliver requirements and get rewarded!";
-						break;
-
-					case 6:
-						setarray .@mobhunt[0], 1115, 5, 1059, 5, 1150, 5, 1147, 5;
-						setarray .@reward[0], 5000000, 5;
-						setarray .@limit[0], 255, 3600;
-						.@desc$ = "Slain some MVP monsters in Alpha MVP Arena.";
-						break;
-
-					case 7:
-						setarray .@mobhunt[0], 1159, 5, 1312, 5, 1087, 5, 1190, 5;
-						setarray .@reward[0], 5000000, 5;
-						setarray .@limit[0], 255, 3600;
-						.@desc$ = "Slain some MVP monsters in Beta MVP Arena.";
-						break;
-
-					case 8:
-						setarray .@mobhunt[0], 1112, 5, 1038, 5, 1046, 5, 1373, 5;
-						setarray .@reward[0], 5000000, 5;
-						setarray .@limit[0], 255, 3600;
-						.@desc$ = "Slain some MVP monsters in Theta MVP Arena.";
-						break;
-
-					case 9:
-						setarray .@mobhunt[0], 1492, 5, 1157, 5, 1272, 5, 1039, 5;
-						setarray .@reward[0], 5000000, 5;
-						setarray .@limit[0], 255, 3600;
-						.@desc$ = "Slain some MVP monsters in Epsilon MVP Arena.";
 						break;
 
 					default:
@@ -541,11 +509,7 @@ OnInit:
 								"The White Bear Killah",
 								"The Daily Lootbucks",
 								"The Speed Limit",
-								"The Prisoners' Delivery",
-								"Rookie MVP - Alpha",
-								"Rookie MVP - Beta",
-								"Rookie MVP - Theta",
-								"Rookie MVP - Epsilon";
+								"The Prisoners' Delivery";
 
 	questinfo(QTYPE_QUEST);
 	if ($MISSION_DATE != atoi(gettimestr("%Y%m%d", 10)))
@@ -667,11 +631,7 @@ OnInit:
 								"The White Bear Killah",
 								"The Daily Lootbucks",
 								"The Speed Limit",
-								"The Prisoners' Delivery",
-								"Rookie MVP - Alpha",
-								"Rookie MVP - Beta",
-								"Rookie MVP - Theta",
-								"Rookie MVP - Epsilon";
+								"The Prisoners' Delivery";
 	end;
 
 OnExecute:
