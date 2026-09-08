@@ -168,6 +168,9 @@ OnTimer30000: // refresh every 30 seconds. Note the `char` table is unrealiable,
 
 //	script start.
 OnPCKillEvent:
+	// WoE kills are tracked separately by ladder_woe.txt (DOTAWOE) -
+	// skip here so a WoE kill is not also counted as a PvP kill.
+	if (agitcheck() || agitcheck2()) end;
 	if (getgmlevel() >= .gmnokill) end;
 	.@map$ = strcharinfo(3);
 	if (.maptrigger$ != "all") {
