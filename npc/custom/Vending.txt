@@ -12,8 +12,8 @@
 //= Vendors only vend on certain coordinate, looks tidy :P
 //===== Additional Comments: ===============================
 //= Fixed deprecated UNITTYPE_* constants to BL_* constants
-//= Moved vending line to maintown, single row y=248,
-//= x=50..130 in steps of 4
+//= Vending grid on maintown: x=50..130 step 5, y rows 248/243/238/233
+//= (5 cells apart so vendors/sprites don't overlap)
 //==========================================================
 
 maintown,228,215,4	script	Vending Board Info	858,{
@@ -58,8 +58,8 @@ maintown,228,215,4	script	Vending Board Info	858,{
 OnInit:
 //	======================= Configuration HERE =============================
 	.map$ = "maintown"; // map
-	setarray .@x, 50,54,58,62,66,70,74,78,82,86,90,94,98,102,106,110,114,118,122,126,130; // x coordinates, 4 cells apart, 50 -> 130
-	setarray .@y, 248,245,241,237; // four rows
+	setarray .@x, 50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130; // x coordinates, 5 cells apart, 50 -> 130 (17)
+	setarray .@y, 248,243,238,233; // four rows, 5 cells apart
 	.slotperpage = 10; // display how many slots per page (prevent making the menu too long)
 
 	freeloop true;
