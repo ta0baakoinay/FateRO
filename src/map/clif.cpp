@@ -10655,6 +10655,33 @@ void clif_viewequip_ack( map_session_data& sd, map_session_data& tsd ){
 }
 
 
+/// Extended Check Stats: reuse the client "Auto Spell" skill-icon window as a
+/// small 2-choice menu (Equipment Info / PvP-WoE Stats) shown on player
+/// right-click. The reply is handled in clif_parse_AutoSpell().
+void clif_checkstats_menu( map_session_data& sd, uint32 target_aid ){
+#if PACKETVER_MAIN_NUM >= 20181128 || PACKETVER_RE_NUM >= 20181031
+	PACKET_ZC_AUTOSPELLLIST* p = reinterpret_cast<PACKET_ZC_AUTOSPELLLIST*>( packet_buffer );
+
+	p->packetType = HEADER_ZC_AUTOSPELLLIST;
+	p->packetLength = sizeof( *p );
+
+	p->skills[0] = EM_SPELL_ENCHANTING; // -> choice 1: Equipment Info
+	p->packetLength += static_cast<decltype(p->packetLength)>( sizeof( p->skills[0] ) );
+	p->skills[1] = NW_ONLY_ONE_BULLET;  // -> choice 2: PvP / WoE Stats
+	p->packetLength += static_cast<decltype(p->packetLength)>( sizeof( p->skills[0] ) );
+
+	if( pc_get_group_level( &sd ) >= 99 ){
+		p->skills[2] = EM_ACTIVITY_BURN; // -> choice 3: Character Status (GM 99 only)
+		p->packetLength += static_cast<decltype(p->packetLength)>( sizeof( p->skills[0] ) );
+	}
+
+	clif_send( p, p->packetLength, &sd, SELF );
+
+	sd.checkstats_target = static_cast<int32>( target_aid );
+#endif
+}
+
+
 /// Display msgstringtable.txt string.
 /// 0291 <message>.W (ZC_MSG)
 void clif_msg( map_session_data& sd, e_clif_messages msg_id ){
@@ -13820,6 +13847,29 @@ void clif_parse_SelectArrow(int32 fd,map_session_data *sd) {
 /// 01ce <skill id>.L (CZ_SELECTAUTOSPELL)
 void clif_parse_AutoSpell(int32 fd,map_session_data *sd)
 {
+	// Extended Check Stats: our right-click icon menu reuses this window.
+	if( sd->checkstats_target != 0 ){
+		int32 tid = sd->checkstats_target;
+		sd->checkstats_target = 0;
+
+		const PACKET_CZ_SELECTAUTOSPELL* q = reinterpret_cast<PACKET_CZ_SELECTAUTOSPELL*>( RFIFOP( fd, 0 ) );
+		int32 choice = 0;
+
+		if( q->skill_id == EM_SPELL_ENCHANTING )
+			choice = 1; // Equipment Info
+		else if( q->skill_id == NW_ONLY_ONE_BULLET )
+			choice = 2; // PvP / WoE Stats
+		else if( q->skill_id == EM_ACTIVITY_BURN && pc_get_group_level( sd ) >= 99 )
+			choice = 3; // Character Status (GM 99 only)
+
+		if( choice != 0 && npc_event_exists( "CheckStats::OnCheckStats" ) ){
+			pc_setreg( sd, reference_uid( add_str( "@target_gid" ), 0 ), tid );
+			pc_setreg( sd, reference_uid( add_str( "@check_choice" ), 0 ), choice );
+			npc_event( sd, "CheckStats::OnCheckStats", 0 );
+		}
+		return;
+	}
+
 	if (sd->menuskill_id != SA_AUTOSPELL)
 		return;
 	sd->state.workinprogress = WIP_DISABLE_NONE;
@@ -18037,7 +18087,18 @@ void clif_parse_ViewPlayerEquip(int32 fd, map_session_data* sd)
 
 	if (sd->m != tsd->m)
 		return;
-	else if( tsd->status.show_equip || pc_has_permission(sd, PC_PERM_VIEW_EQUIPMENT) )
+
+	// Extended Check Equipment / Player Stats hook.
+	// If the CheckStats NPC is loaded, hand the request over to it (it sets
+	// @target_gid to the target's account id and re-opens the equip window
+	// itself through the showequip script command). Falls back to the
+	// vanilla behaviour when the script is not loaded.
+	if( npc_event_exists( "CheckStats::OnCheckStats" ) ){
+		clif_checkstats_menu( *sd, tsd->status.account_id );
+		return;
+	}
+
+	if( tsd->status.show_equip || pc_has_permission(sd, PC_PERM_VIEW_EQUIPMENT) )
 		clif_viewequip_ack( *sd, *tsd );
 	else
 		clif_msg( *sd, MSI_OPEN_EQUIPEDITEM_REFUSED );

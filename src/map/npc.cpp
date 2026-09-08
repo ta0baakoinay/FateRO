@@ -1835,6 +1835,18 @@ int32 npc_event_sub(map_session_data* sd, struct event_data* ev, const char* eve
 /*==========================================
  * NPC processing event type
  *------------------------------------------*/
+/**
+ * Checks whether a named NPC event label is currently loaded.
+ * @param eventname : full event name, e.g. "CheckStats::OnCheckStats"
+ * @return true if the event exists and has a valid NPC attached
+ */
+bool npc_event_exists(const char* eventname)
+{
+	struct event_data* ev = (struct event_data*)strdb_get(ev_db, eventname);
+
+	return ev != nullptr && ev->nd != nullptr;
+}
+
 int32 npc_event(map_session_data* sd, const char* eventname, int32 ontouch)
 {
 	struct event_data* ev = (struct event_data*)strdb_get(ev_db, eventname);

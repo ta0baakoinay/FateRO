@@ -1208,6 +1208,8 @@ void clif_homunculus_updatestatus(map_session_data& sd, _sp type);
 
 void clif_configuration( map_session_data* sd, enum e_config_type type, bool enabled );
 void clif_viewequip_ack( map_session_data& sd, map_session_data& tsd );
+void clif_checkstats_menu( map_session_data& sd, uint32 target_aid );
+void clif_check(int32 fd, map_session_data* pl_sd);
 void clif_equipcheckbox( map_session_data& sd );
 
 void clif_msg( map_session_data& sd, e_clif_messages msg_id );

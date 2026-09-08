@@ -1,0 +1,161 @@
+//===== rAthena Script =======================================
+//= Extended Check Equipment / Player Stats  (Easycore-style)
+//===== By: ==================================================
+//= FateMMO
+//===== Description: =========================================
+//= Right-click a player -> the client "Auto Spell" icon window
+//= is reused as a 2-choice menu (source hook):
+//=
+//=   [EM_SPELL_ENCHANTING]  Equipment Info
+//=       -> opens the target's gear window via showequip
+//=          (bypasses the target "show equip" toggle)
+//=   [NW_ONLY_ONE_BULLET]   PvP / WoE Stats
+//=       -> prints PvP + WoE stats to the VIEWER's CHAT BOX
+//=          (dispbottom, no dialogue window)
+//=
+//= Flow:
+//=   clif_parse_ViewPlayerEquip -> clif_checkstats_menu()
+//=   clif_parse_AutoSpell       -> sets @target_gid + @check_choice,
+//=                                 fires CheckStats::OnCheckStats
+//=
+//= Requires the source additions shipped with this feature:
+//=   - script command : showequip <account id>;
+//=   - npc helper      : npc_event_exists()
+//=   - pc field        : sd->checkstats_target
+//=   - clif            : clif_checkstats_menu() + AutoSpell/ViewPlayerEquip hooks
+//= See doc/check_stats_feature.md
+//===== Additional Comments: =================================
+//= 1.0  Initial release.
+//= 1.1  Guarded K/D divide (rAthena ?: evaluates both sides).
+//= 1.2  Option menu + chat-box output instead of a mes dialog.
+//= 1.3  Skill-icon menu (src). Output trimmed to PvP + WoE only.
+//===========================================================
+
+-	script	CheckStats	-1,{
+	end;
+
+// ---------------------------------------------------------
+//  Configuration
+// ---------------------------------------------------------
+OnInit:
+	// Group id at/above which a *hidden* GM cannot be inspected
+	// by normal players (set to your lowest staff group).
+	.gm_hide_grp = 2;
+	// Allow same-group-or-higher staff to inspect anyone (1/0).
+	.staff_bypass = 1;
+	end;
+
+// ---------------------------------------------------------
+//  Entry point - RID is the VIEWER
+//  @target_gid   = target ACCOUNT id
+//  @check_choice = 1 (Equipment Info) | 2 (PvP / WoE Stats)
+//                | 3 (Character Status window - GM level 99 only)
+// ---------------------------------------------------------
+OnCheckStats:
+	.@tid    = @target_gid;
+	.@choice = @check_choice;
+	@target_gid = 0;
+	@check_choice = 0;
+
+	if (!.@tid || !.@choice)
+		end;
+	if (.@tid == getcharid(3)) {
+		if (.@choice == 1)
+			showequip .@tid;
+		end;
+	}
+
+	.@viewer = getcharid(3);
+	.@vgrp   = getgroupid();
+
+	// peek at the target (name / group / hidden state)
+	if (attachrid(.@tid) == 0) {
+		attachrid(.@viewer);
+		end;
+	}
+	.@tname$  = strcharinfo(0);
+	.@tcid    = getcharid(0);
+	.@tgrp    = getgroupid();
+	.@thidden = (Option & (OPTION_HIDE|OPTION_CLOAK|OPTION_CHASEWALK)) ? 1 : 0;
+	.@guild$  = strcharinfo(2);
+	.@gid     = getcharid(2);
+
+	// =====================================================
+	//  MAP YOUR VARIABLES HERE  (WoE castle-break counter)
+	//  Read while attached to the TARGET. Emperium breaks come
+	//  from SQL (woe_breaker, below); castle breaks have no
+	//  system yet - point this at your own var if you add one.
+	// =====================================================
+	.@woe_castle = WOE_CASTLE_BREAKS;     // castles taken / defended
+	// =====================================================
+	//  END OF VARIABLE MAP
+	// =====================================================
+
+	attachrid(.@viewer);
+
+	// SQL-backed totals (by char_id):
+	//   pvpladder   -> ladder_pvp.txt   |   woeladder -> ladder_woe.txt
+	//   woe_breaker -> ladder_woe.txt (Emperium breaks)
+	.@pk_kills = 0; .@pk_deaths = 0; .@woe_kills = 0; .@woe_deaths = 0; .@woe_emp = 0;
+	query_sql("SELECT `kills`,`deaths` FROM `pvpladder` WHERE `char_id` = "+ .@tcid, .@pk_kills, .@pk_deaths);
+	query_sql("SELECT `kills`,`deaths` FROM `woeladder` WHERE `char_id` = "+ .@tcid, .@woe_kills, .@woe_deaths);
+	query_sql("SELECT `breaks` FROM `woe_breaker` WHERE `char_id` = "+ .@tcid, .@woe_emp);
+
+	// --- hidden / stealthed GM protection ---
+	if (.@thidden && .@tgrp >= .gm_hide_grp && !(.staff_bypass && .@vgrp >= .@tgrp)) {
+		dispbottom "That player cannot be inspected right now.", 0xFF6060;
+		end;
+	}
+
+	// --- choice 1: equipment window ---
+	// enforce = 1 -> normal players only see it if the target shares their
+	// equipment (Alt+Q "Show Equipment"); VIEW_EQUIPMENT-permission staff and
+	// self always pass. showequip sends its own refusal message otherwise.
+	if (.@choice == 1) {
+		showequip .@tid, 1;
+		end;
+	}
+
+	// --- choice 3: character status window (Alt+A stats) - GM level 99 only ---
+	if (.@choice == 3) {
+		if (getgmlevel() < 99)
+			end;
+		showstatus .@tid;
+		dispbottom "Opened "+ .@tname$ +"'s status window.", 0x00CC66;
+		end;
+	}
+
+	// --- choice 2: PvP / WoE stats -> CHAT BOX ---
+	if (.@guild$ == "")
+		.@guild$ = "None";
+	if (!.@gid)
+		.@gpos$ = "None";
+	else if (.@tname$ == getguildmaster(.@gid))
+		.@gpos$ = "Guild Master";
+	else
+		.@gpos$ = "Member";
+
+	// K/D (2 decimals via *100). rAthena ?: evaluates BOTH
+	// branches -> guard the divide with if().
+	.@pk_kd = .@pk_kills * 100;
+	if (.@pk_deaths > 0)
+		.@pk_kd = .@pk_kills * 100 / .@pk_deaths;
+	.@woe_kd = .@woe_kills * 100;
+	if (.@woe_deaths > 0)
+		.@woe_kd = .@woe_kills * 100 / .@woe_deaths;
+	.@pk_kd$  = callsub(S_Ratio, .@pk_kd);
+	.@woe_kd$ = callsub(S_Ratio, .@woe_kd);
+
+	dispbottom "=============================================", 0x777777;
+	dispbottom .@tname$ +"   -   Guild: "+ .@guild$ +" ["+ .@gpos$ +"]", 0xFFCC00;
+	dispbottom "PvP   Kills "+ .@pk_kills +"   Deaths "+ .@pk_deaths +"   K/D "+ .@pk_kd$, 0xFF6060;
+	dispbottom "WoE   Kills "+ .@woe_kills +"   Deaths "+ .@woe_deaths +"   K/D "+ .@woe_kd$, 0xCC66FF;
+	dispbottom "WoE   Emperium Breaks "+ .@woe_emp +"   Castle Breaks "+ .@woe_castle, 0xCC66FF;
+	dispbottom "=============================================", 0x777777;
+	end;
+
+// helper: value*100 -> "x.xx"
+S_Ratio:
+	.@v = getarg(0);
+	return (.@v / 100) +"."+ sprintf("%02d", .@v % 100);
+}

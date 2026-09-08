@@ -6975,6 +6975,66 @@ BUILDIN_FUNC(cutin)
 }
 
 /*==========================================
+ * Force-opens the equipment (microscope) window of a target player
+ * for the attached player, ignoring the target's "show equip" setting.
+ * showequip <account id>;
+ *------------------------------------------*/
+BUILDIN_FUNC(showequip)
+{
+	map_session_data* sd;
+
+	if( !script_rid2sd( sd ) )
+		return SCRIPT_CMD_SUCCESS;
+
+	map_session_data* tsd = map_id2sd( script_getnum( st, 2 ) );
+
+	if( tsd == nullptr ){
+		ShowWarning( "buildin_showequip: Player with account id '%d' is not online.\n", script_getnum( st, 2 ) );
+		return SCRIPT_CMD_FAILURE;
+	}
+
+	// showequip <account id>{,<enforce>}
+	// enforce != 0 -> respect the target's "Show Equipment" (Alt+Q) toggle:
+	// only open the window if the target shares it, the caller has the
+	// VIEW_EQUIPMENT permission, or the caller is inspecting themselves.
+	if( script_hasdata( st, 3 ) && script_getnum( st, 3 ) != 0
+		&& sd != tsd
+		&& !tsd->status.show_equip
+		&& !pc_has_permission( sd, PC_PERM_VIEW_EQUIPMENT ) ){
+		clif_msg( *sd, MSI_OPEN_EQUIPEDITEM_REFUSED );
+		return SCRIPT_CMD_SUCCESS;
+	}
+
+	clif_viewequip_ack( *sd, *tsd );
+
+	return SCRIPT_CMD_SUCCESS;
+}
+
+/*==========================================
+ * Opens the target player's status window (the /check GM window,
+ * i.e. the Alt+A stats overview) for the attached player.
+ * showstatus <account id>;
+ *------------------------------------------*/
+BUILDIN_FUNC(showstatus)
+{
+	map_session_data* sd;
+
+	if( !script_rid2sd( sd ) )
+		return SCRIPT_CMD_SUCCESS;
+
+	map_session_data* tsd = map_id2sd( script_getnum( st, 2 ) );
+
+	if( tsd == nullptr ){
+		ShowWarning( "buildin_showstatus: Player with account id '%d' is not online.\n", script_getnum( st, 2 ) );
+		return SCRIPT_CMD_FAILURE;
+	}
+
+	clif_check( sd->fd, tsd );
+
+	return SCRIPT_CMD_SUCCESS;
+}
+
+/*==========================================
  *
  *------------------------------------------*/
 BUILDIN_FUNC(viewpoint)
@@ -28474,6 +28534,8 @@ struct script_function buildin_func[] = {
 	BUILDIN_DEF2(enableitemuse,"enable_items",""),
 	BUILDIN_DEF2(disableitemuse,"disable_items",""),
 	BUILDIN_DEF(cutin,"si"),
+	BUILDIN_DEF(showequip,"i?"),
+	BUILDIN_DEF(showstatus,"i"),
 	BUILDIN_DEF(viewpoint,"iiiii?"),
 	BUILDIN_DEF(viewpointmap, "siiiii"),
 	BUILDIN_DEF(heal,"ii?"),

@@ -1608,6 +1608,7 @@ struct view_data* npc_get_viewdata(int32 class_);
 int32 npc_chat_sub(block_list* bl, va_list ap);
 int32 npc_event_dequeue(map_session_data* sd,bool free_script_stack=true);
 int32 npc_event(map_session_data* sd, const char* eventname, int32 ontouch);
+bool npc_event_exists(const char* eventname);
 int32 npc_touch_areanpc(map_session_data* sd, int16 m, int16 x, int16 y, npc_data* nd);
 int32 npc_touch_area_allnpc(map_session_data* sd, int16 m, int16 x, int16 y);
 int32 npc_touch_areanpc2(mob_data *md); // [Skotlex]
