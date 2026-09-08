@@ -1449,6 +1449,9 @@ void clif_pet_evolution_result( map_session_data* sd, e_pet_evolution_result res
 
 void clif_parse_skill_toid( map_session_data* sd, uint16 skill_id, uint16 skill_lv, int32 target_id );
 
+/// Extended Vending system [Lilith / Easycore] - currency selection window
+int32 clif_vend( map_session_data& sd, int32 skill_lv );
+
 void clif_inventory_expansion_info( map_session_data* sd );
 
 // Barter System

@@ -803,6 +803,9 @@ public:
 	int32 vender_id;
 	int32 vend_num;
 	uint16 vend_skill_lv;
+	// Extended Vending system [Lilith / Easycore]
+	t_itemid vend_loot = 0; ///< currency item id for this shop (0 = plain zeny)
+	int32 vend_lvl = 0;     ///< MC_VENDING level captured for the deferred UI open
 	char message[MESSAGE_SIZE];
 	struct s_vending vending[MAX_VENDING];
 

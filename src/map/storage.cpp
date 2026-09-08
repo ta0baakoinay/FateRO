@@ -1179,6 +1179,13 @@ void storage_guild_storage_quit(map_session_data* sd, int32 flag)
 void storage_premiumStorage_open(map_session_data *sd) {
 	nullpo_retv(sd);
 
+	// Extended Vending system [Lilith / Easycore / CreativeSD]:
+	// never pop premium storage on top of an in-progress vend/buy flow.
+	if (sd->state.storage_flag)
+		return;
+	if (sd->state.vending || sd->state.buyingstore || sd->state.prevend || sd->state.autotrade)
+		return;
+
 	if (!sd->state.pc_loaded)
 	{
 		deposit_save(sd, false);

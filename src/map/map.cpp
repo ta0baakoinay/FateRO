@@ -133,7 +133,7 @@ static block_list *bl_list[BL_LIST_MAX];
 static int32 bl_list_count = 0;
 
 #ifndef MAP_MAX_MSG
-	#define MAP_MAX_MSG 1550
+	#define MAP_MAX_MSG 2000
 #endif
 
 struct map_data map[MAX_MAP_PER_SERVER];

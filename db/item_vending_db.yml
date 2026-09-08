@@ -1,0 +1,15 @@
+# Extended Vending system [Lilith / Easycore]
+###########################################################################
+# Item Vending Database
+#   Items listed here can be selected as the *currency* when opening a vend
+#   shop (in addition to Zeny via battle/easycore.conf::item_zeny).
+#
+# - Item   Item AegisName.
+###########################################################################
+
+Header:
+  Type: ITEM_VENDING_DB
+  Version: 1
+
+Body:
+  - Item: Server Coin

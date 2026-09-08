@@ -108,3 +108,16 @@ int32 population_engine_vending_enable;
 /// global in population_engine.cpp. This field signals that a custom pool was configured (1=yes,0=no).
 int32 population_engine_arena_custom_pool;
 int32 population_engine_path_attempts;
+
+
+/**
+ * Extended Vending system [Lilith / Easycore]
+ **/
+int32 extended_vending;
+int32 show_broadcast_info;
+int32 show_item_vending;
+int32 ex_vending_info;
+int32 ex_vending_report;
+int32 ex_buying_bound;
+int32 item_zeny;
+int32 item_cash;

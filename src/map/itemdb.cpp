@@ -32,6 +32,7 @@ using namespace rathena;
 
 ComboDatabase itemdb_combo;
 ItemGroupDatabase itemdb_group;
+ItemVendingDatabase itemdb_vending; // Extended Vending system [Lilith / Easycore]
 
 struct s_roulette_db rd;
 
@@ -4797,6 +4798,37 @@ bool RandomOptionGroupDatabase::option_get_id(std::string name, uint16 &id) {
 }
 
 /**
+ * Extended Vending system [Lilith / Easycore]
+ */
+const std::string ItemVendingDatabase::getDefaultLocation() {
+	return std::string(db_path) + "/item_vending_db.yml";
+}
+
+uint64 ItemVendingDatabase::parseBodyNode(const ryml::NodeRef &node) {
+	std::string item_name;
+
+	if (!this->asString(node, "Item", item_name))
+		return 0;
+
+	std::shared_ptr<item_data> item = item_db.search_aegisname(item_name.c_str());
+
+	if (item == nullptr) {
+		this->invalidWarning(node["Item"], "Unknown Item %s.\n", item_name.c_str());
+		return 0;
+	}
+
+	std::shared_ptr<s_item_vend_db> vendb = this->find(item->nameid);
+
+	if (vendb == nullptr) {
+		vendb = std::make_shared<s_item_vend_db>();
+		vendb->nameid = item->nameid;
+		this->put(item->nameid, vendb);
+	}
+
+	return 1;
+}
+
+/**
 * Read all item-related databases
 */
 static void itemdb_read(void) {
@@ -4841,6 +4873,7 @@ static void itemdb_read(void) {
 	item_reform_db.load();
 	item_enchant_db.load();
 	item_package_db.load();
+	itemdb_vending.load(); // Extended Vending system [Lilith / Easycore]
 
 	if (battle_config.feature_roulette)
 		itemdb_parse_roulette_db();

@@ -20733,11 +20733,54 @@ void skill_identify(map_session_data *sd, int32 idx)
 		}
 	}
 	clif_item_identified( *sd, idx, failure );
-	
+
 	if(!failure) {
 		pc_setreg(sd, add_str("@identify_idx"), idx);
 		npc_script_event( *sd, NPCE_IDENTIFY );
 	}
+}
+
+/**
+ * Extended Vending system [Lilith / Easycore]
+ * Called when the vendor picks a currency from the clif_vend() menu.
+ * Validates the pick, stores it on sd->vend_loot and opens the shop-setup UI.
+ */
+int32 skill_vending( map_session_data& sd, t_itemid nameid ){
+	std::shared_ptr<item_data> item = item_db.find( nameid );
+
+	// the pick must be a configured currency: item_zeny, item_cash, or a
+	// db/item_vending_db.yml entry. Anything else (or cancel = 0) fails.
+	bool valid = ( item != nullptr ) &&
+		( nameid == (t_itemid)battle_config.item_zeny ||
+		  nameid == (t_itemid)battle_config.item_cash ||
+		  itemdb_vending.exists( nameid ) );
+
+	if( !pc_can_give_items( &sd ) || !valid ){
+		sd.state.prevend = 0;
+		sd.vend_loot = 0;
+		sd.state.workinprogress = WIP_DISABLE_NONE;
+		clif_skill_fail( sd, MC_VENDING );
+		return 0;
+	}
+
+	sd.vend_loot = nameid;
+	sd.state.prevend = 1;
+
+	char output[CHAT_SIZE_MAX];
+	safesnprintf( output, sizeof( output ), msg_txt( &sd, 1904 ), item->ename.c_str() ); // "You have selected: %s"
+	clif_messagecolor( &sd, color_table[COLOR_CYAN], output, false, SELF );
+
+	// Same cart-save-then-open flow as skill_vending.cpp
+	int32 i = 0;
+	ARR_FIND( 0, MAX_CART, i, sd.cart.u.items_cart[i].nameid && sd.cart.u.items_cart[i].id == 0 );
+	if( i < MAX_CART ){
+		sd.state.pending_vending_ui = true;
+		intif_storage_save( &sd, &sd.cart );
+	} else {
+		sd.state.pending_vending_ui = false;
+		clif_openvendingreq( sd, 2 + sd.vend_lvl );
+	}
+	return 0;
 }
 
 /*==========================================

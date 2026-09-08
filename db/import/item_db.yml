@@ -2055,6 +2055,23 @@ Body:
     Buy: 100
     Weight: 10
 
+  # Extended Vending: placeholder item that represents the "pay with Zeny"
+  # currency choice in the vend window. Not tradeable / not a real drop.
+  - Id: 30001
+    AegisName: Zeny
+    Name: Zeny
+    Type: Etc
+    Weight: 0
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoSell: true
+      NoCart: true
+      NoStorage: true
+      NoGuildStorage: true
+      NoMail: true
+      NoAuction: true
+
   - Id: 5967
     AegisName: FlyingGalapago
     Name: Flying Galapago

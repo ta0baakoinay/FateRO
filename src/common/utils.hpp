@@ -48,4 +48,7 @@ extern uint32 GetULong(const unsigned char* buf);
 extern int32 GetLong(const unsigned char* buf);
 extern float GetFloat(const unsigned char* buf);
 
+/// Extended Vending [Lilith] - format an unsigned number with locale thousands separators
+char *GetComma(unsigned long n);
+
 #endif /* UTILS_HPP */

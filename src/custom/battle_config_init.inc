@@ -57,3 +57,15 @@
 { "population_engine_vending_enable",&battle_config.population_engine_vending_enable,0,0,1,},
 { "population_engine_arena_custom_pool",&battle_config.population_engine_arena_custom_pool,0,0,1,},
 { "population_engine_path_attempts",&battle_config.population_engine_path_attempts,16,1,256,},
+
+/**
+ * Extended Vending system [Lilith / Easycore]
+ **/
+{ "extended_vending",     &battle_config.extended_vending,     1, 0, 1,          },
+{ "show_broadcast_info",  &battle_config.show_broadcast_info,  1, 0, 1,          },
+{ "show_item_vending",    &battle_config.show_item_vending,    1, 0, 1,          },
+{ "ex_vending_info",      &battle_config.ex_vending_info,      1, 0, 1,          },
+{ "ex_vending_report",    &battle_config.ex_vending_report,    1, 0, 1,          },
+{ "ex_buying_bound",      &battle_config.ex_buying_bound,      0, 0, 1,          },
+{ "item_zeny",            &battle_config.item_zeny,            0, 0, INT32_MAX,  },
+{ "item_cash",            &battle_config.item_cash,            0, 0, INT32_MAX,  },

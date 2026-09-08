@@ -4541,6 +4541,59 @@ void clif_arrow_create_list( map_session_data& sd ){
 }
 
 
+/// Extended Vending system [Lilith / Easycore]
+/// Reuses the MAKINGARROW list window to let the vendor pick a currency
+/// (item_zeny, item_cash, then everything in db/item_vending_db.yml).
+/// The pick comes back via clif_parse_SelectArrow -> skill_vending().
+int32 clif_vend( map_session_data& sd, int32 skill_lv ){
+	if( !session_isActive( sd.fd ) )
+		return 0;
+
+	PACKET_ZC_MAKINGARROW_LIST* p = reinterpret_cast<PACKET_ZC_MAKINGARROW_LIST*>( packet_buffer );
+
+	p->packetType = HEADER_ZC_MAKINGARROW_LIST;
+	p->packetLength = sizeof( *p );
+
+	int32 count = 0;
+
+	if( battle_config.item_zeny && item_db.exists( battle_config.item_zeny ) ){
+		p->items[count].itemId = client_nameid( battle_config.item_zeny );
+		p->packetLength += static_cast<decltype(p->packetLength)>( sizeof( p->items[0] ) );
+		count++;
+	}
+
+	if( battle_config.item_cash && item_db.exists( battle_config.item_cash ) ){
+		p->items[count].itemId = client_nameid( battle_config.item_cash );
+		p->packetLength += static_cast<decltype(p->packetLength)>( sizeof( p->items[0] ) );
+		count++;
+	}
+
+	for( const auto& it : itemdb_vending ){
+		t_itemid nameid = it.first;
+
+		if( !item_db.exists( nameid ) )
+			continue;
+		if( nameid == (t_itemid)battle_config.item_zeny || nameid == (t_itemid)battle_config.item_cash )
+			continue;
+
+		p->items[count].itemId = client_nameid( nameid );
+		p->packetLength += static_cast<decltype(p->packetLength)>( sizeof( p->items[0] ) );
+		count++;
+	}
+
+	clif_send( p, p->packetLength, &sd, SELF );
+
+	if( count > 0 ){
+		sd.menuskill_id = MC_VENDING;
+		sd.menuskill_val = skill_lv;
+		return 1;
+	}
+
+	clif_skill_fail( sd, MC_VENDING );
+	return 0;
+}
+
+
 /// Notifies the client, about the result of an status change request.
 /// 00bc <status id>.W <result>.B <value>.B (ZC_STATUS_CHANGE_ACK)
 /// status id:
@@ -13815,7 +13868,9 @@ void clif_parse_SelectArrow(int32 fd,map_session_data *sd) {
 		return;
 	}
 
-	if (pc_istrading(sd)) {
+	// Extended Vending [Lilith / Easycore]: the currency picker runs while the
+	// vendor is already in the pre-vend (== "trading") state, so exempt it here.
+	if (pc_istrading(sd) && sd->menuskill_id != MC_VENDING) {
 		//Make it fail to avoid shop exploits where you sell something different than you see.
 		clif_skill_fail( *sd, sd->ud.skill_id );
 		clif_menuskill_clear(sd);
@@ -13836,6 +13891,9 @@ void clif_parse_SelectArrow(int32 fd,map_session_data *sd) {
 			break;
 		case NC_MAGICDECOY:
 			skill_magicdecoy(*sd,p->itemId);
+			break;
+		case MC_VENDING: // Extended Vending [Lilith / Easycore]
+			skill_vending(*sd,p->itemId);
 			break;
 	}
 
@@ -14630,6 +14688,20 @@ void clif_parse_OpenVending(int32 fd, map_session_data* sd){
 
 	if( message[0] == '\0' ) // invalid input
 		return;
+
+	// Extended Vending [Lilith / Easycore]: prefix the currency name to the
+	// shop title so buyers see e.g. "[Server Coin] Cheap gear".
+	if( battle_config.extended_vending && battle_config.show_item_vending && sd->vend_loot ){
+		std::shared_ptr<item_data> cur = item_db.find( sd->vend_loot );
+
+		if( cur != nullptr ){
+			char out_msg[MESSAGE_SIZE + NAME_LENGTH + 8];
+
+			safesnprintf( out_msg, sizeof( out_msg ), "[%s] %s", cur->ename.c_str(), message );
+			vending_openvending( *sd, out_msg, data, len / 8, nullptr );
+			return;
+		}
+	}
 
 	vending_openvending(*sd, message, data, len/8, nullptr);
 }
