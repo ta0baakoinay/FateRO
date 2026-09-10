@@ -14,9 +14,8 @@
 //= 1.8 Added option to disable Baby Novice Only but Baby Class can be Enabled [mazvi]
 //= 1.9 Migrate/Integrate to Global Functions Platinum Skills. [mazvi]
 //= 2.0 Added 4th class [Lemongrass]
-//============================================================
-
-prontera,153,193,6	script	Job Master	123,{
+//=========================================================
+maintown,138,122,6	script	Job Master	123,{
 function Get_Job_Equip;
 // Checks if the Player has the required level.
 // closes if not, returns if yes
@@ -137,10 +136,117 @@ function	Job_Options	{
 	}
 }
 
+// SQL-backed Prestige Rebirth menu. All validation and the zeny charge happen
+// inside the rebirth() script command (src/map/rebirth.cpp); this only displays
+// state and asks for confirmation.
+function	Prestige_Rebirth	{
+	.@rc = rebirth_count();
+	.@next = .@rc + 1;
+	.@cost = rebirth_cost();
+
+	setarray .@ms_lvl[0],10,20,30,40,50,60,70,80;
+	setarray .@ms_txt$[0],
+		"+10% EXP gain",
+		"+10% Drop Rate",
+		"+1,000 Max Weight",
+		"+20 ATK / +20 MATK",
+		"+10% Max HP / +10% Max SP",
+		"+10% resistance to ALL statuses",
+		"+5% physical / +5% magical attack",
+		"+5 ASPD";
+
+	mes .NPCName$;
+	mes "^0055FF~ Prestige Rebirth ~^000000";
+	mes "Rebirths completed: ^0055FF" + .@rc + "^000000 / " + .PRebirthMax;
+	if (.@rc >= .PRebirthMax)
+		mes "You have reached the ^0055FFmaximum^000000 number of rebirths.";
+	else {
+		mes "Next rebirth: ^0055FF#" + .@next + "^000000";
+		mes "Requirement: ^bb0000" + .Req_PRebirth[0] + "^000000 Base / ^00bb00" + .Req_PRebirth[1] + "^000000 Job";
+		mes "Cost: ^0055FF" + callfunc("F_InsertComma", .@cost) + "^000000 Zeny";
+	}
+	mes " ";
+
+	.@nextms = 0; .@nextidx = 0;
+	for (.@i = 0; .@i < getarraysize(.@ms_lvl); .@i++) {
+		if (.@rc < .@ms_lvl[.@i]) { .@nextms = .@ms_lvl[.@i]; .@nextidx = .@i; break; }
+	}
+	if (.@nextms)
+		mes "Next milestone: ^0055FF" + .@rc + "^000000 / " + .@nextms + " (" + .@ms_txt$[.@nextidx] + ")";
+	else
+		mes "All milestone bonuses unlocked.";
+
+	mes " ";
+	mes "Milestone bonuses unlocked:";
+	.@any = 0;
+	for (.@i = 0; .@i < getarraysize(.@ms_lvl); .@i++) {
+		if (.@rc >= .@ms_lvl[.@i]) {
+			mes " ^00AA00- [" + .@ms_lvl[.@i] + "] " + .@ms_txt$[.@i] + "^000000";
+			.@any = 1;
+		}
+	}
+	if (!.@any)
+		mes " ^777777(none yet)^000000";
+	next;
+
+	if (.@rc >= .PRebirthMax) {
+		mes .NPCName$;
+		mes "There is nothing more I can do for you.";
+		close;
+	}
+
+	mes .NPCName$;
+	mes "Rebirth now for ^0055FF" + callfunc("F_InsertComma", .@cost) + "^000000 Zeny?";
+	mes "^bb0000This resets your level, job and skills.^000000";
+	mes "Your Zeny, items, storage, guild and party are kept.";
+	if (select(" ~ ^0055FFRebirth now^000000: ~ ^777777Cancel^000000") != 1)
+		close;
+
+	.@res = rebirth();
+	next;
+	mes .NPCName$;
+	if (.@res == -2)
+		mes "You have already reached the maximum number of rebirths.";
+	else if (.@res == -3)
+		mes "You do not meet the level requirement (" + .Req_PRebirth[0] + " Base / " + .Req_PRebirth[1] + " Job).";
+	else if (.@res == -4)
+		mes "You must be a Transcendent 2nd-class character (not yet a 3rd/4th class) to rebirth.";
+	else if (.@res == -5)
+		mes "You do not have enough Zeny for this rebirth.";
+	else if (.@res < 1)
+		mes "Rebirth failed. Please try again later.";
+	else {
+		specialeffect2 EF_ANGEL2;
+		specialeffect2 EF_ELECTRIC;
+		mes "^0055FFRebirth #" + .@res + " complete!^000000";
+		mes "Your progression has been reset. Your milestone bonuses are permanent.";
+	}
+	close;
+}
+
 // Begin of the NPC
 	mes .NPCName$;
 	Check_Riding();
 	Check_SkillPoints();
+
+	// SQL-backed Prestige Rebirth entry point (repeatable rebirth, max 80).
+	// Only shown when the character can actually rebirth right now: not yet at
+	// the cap, meets the base/job level requirement, and is one of the accepted
+	// transcendent 2nd classes (.PRebirth_Jobs - explicit allow-list, nothing
+	// beyond it). This mirrors the authoritative checks in rebirth_perform()
+	// (src/map/rebirth.cpp).
+	if (.PRebirth && rebirth_count() < .PRebirthMax &&
+		BaseLevel >= .Req_PRebirth[0] && JobLevel >= .Req_PRebirth[1] &&
+		inarray(.PRebirth_Jobs, Class) != -1) {
+		mes .NPCName$;
+		mes "How can I help you?";
+		if (select(" ~ ^0055FFPrestige Rebirth^000000: ~ Job change / class services") == 1) {
+			Prestige_Rebirth();
+			close;
+		}
+		next;
+		mes .NPCName$;
+	}
 
 	// initialisation
 	.@eac = eaclass();
@@ -503,10 +609,10 @@ OnInit:
 	.NPCName$ = "[Job Master]";
 	
 	// Settings
-	.FourthClass = true;				// Enable fourth classes?
-	.FourthExpanded = true;				// Enable new expanded fourth classes: Ex. Hyper Novice, Rebellion, Shinkiro/Shiranui?
-	.ThirdClass = true;					// Enable third classes?
-	.RebirthClass = true;				// Enable rebirth classes?
+	.FourthClass = false;				// Enable fourth classes? (disabled: Transcendent 2nd class is the cap, progression continues via Prestige Rebirth)
+	.FourthExpanded = false;			// Enable new expanded fourth classes: Ex. Hyper Novice, Rebellion, Shinkiro/Shiranui?
+	.ThirdClass = false;				// Enable third classes? (disabled: Transcendent 2nd class is the cap, progression continues via Prestige Rebirth)
+	.RebirthClass = true;				// Enable rebirth classes? (native one-time transcend into Lord Knight/High Wizard/... - required before Prestige Rebirth)
 	.SecondExpanded = true;				// Enable new expanded second classes: Ex. Super Novice, Kagerou/Oboro, Rebellion?
 	.BabyNovice = true;					// Enable Baby novice classes? Disable it if you like player must have parent to get job baby.
 	.BabyClass = true;					// Enable Baby classes?
@@ -517,6 +623,24 @@ OnInit:
 	.SkillPointCheck = true;			// Force player to use up all skill points?
 	.Platinum = true;					// Get platinum skills automatically?
 	.GetJobEquip = false;				// Get job equipment (mostly weapons) on job change?
+
+	// --- SQL-backed Prestige Rebirth System -----------------------------
+	// Repeatable rebirth (max 80). Prerequisite: Transcendent 2nd class at
+	// 99/70 (not yet 3rd/4th). Each rebirth reverts the character to High
+	// Novice at base/job level 1. All requirements are validated and all
+	// zeny is charged server-side by the rebirth() script command; the
+	// values below are for DISPLAY ONLY and must match src/map/rebirth.hpp.
+	.PRebirth = true;					// Enable the Prestige Rebirth menu?
+	setarray .Req_PRebirth[0],99,70;	// Display: required base level, job level
+	.PRebirthMax = 80;					// Display: hard cap on rebirths
+	.PRebirthCostStep = 100000;			// Display: zeny added per rebirth (Nth = N * step)
+	// Accepted transcendent 2nd classes - explicit allow-list, must match
+	// rebirth_is_accepted_class() in src/map/rebirth.cpp. Nothing else is offered
+	// (no trans 1st, baby, expanded, 3rd/4th, or mounted alt-sprite ids).
+	setarray .PRebirth_Jobs[0],
+		Job_Lord_Knight, Job_High_Priest, Job_High_Wizard, Job_Whitesmith,
+		Job_Sniper, Job_Assassin_Cross, Job_Paladin, Job_Champion,
+		Job_Professor, Job_Stalker, Job_Creator, Job_Clown, Job_Gypsy;
 
 	// Level Requirements
 	setarray .Req_First[0],1,10; 		// Minimum base level, job level to turn into 1st class

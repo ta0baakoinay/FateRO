@@ -1645,6 +1645,15 @@ ALTER TABLE `acc_reg_num`      ADD INDEX IF NOT EXISTS `key` (`key`);
 -- vends restore their currency on server restart.
 ALTER TABLE `vendings` ADD COLUMN IF NOT EXISTS `extended_vending_item` INT UNSIGNED NOT NULL DEFAULT 0;
 
+-- SQL-backed Rebirth System  (src/map/rebirth.cpp)
+-- No schema change required: the per-character rebirth counter is stored as a
+-- standard permanent character variable in `char_reg_num`
+--   (`key` = 'REBIRTH_TOTAL', `index` = 0, `value` = 0..80),
+-- so it auto-loads on login and auto-saves like any other char registry var.
+-- This index just makes server-wide "top rebirths" style lookups cheap and
+-- mirrors the acc_reg_num.key index above; it is not needed for the feature.
+ALTER TABLE `char_reg_num`     ADD INDEX IF NOT EXISTS `key` (`key`);
+
 
 -- =====================================================================
 --  SECTION 5 : CUSTOM SEED / CONFIGURATION DATA

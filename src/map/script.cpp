@@ -65,6 +65,7 @@
 #include "pet.hpp"
 #include "population_engine.hpp"
 #include "quest.hpp"
+#include "rebirth.hpp"
 #include "storage.hpp"
 
 using namespace rathena;

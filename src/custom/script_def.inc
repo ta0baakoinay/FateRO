@@ -28,3 +28,8 @@ BUILDIN_DEF(setkunai, "?"),
 BUILDIN_DEF(population_arena_start, "si????"),
 BUILDIN_DEF(population_arena_stop,  "s"),
 BUILDIN_DEF(population_arena_jobs,  ""),
+
+// SQL-backed Rebirth System
+BUILDIN_DEF(rebirth,       ""),
+BUILDIN_DEF(rebirth_count, ""),
+BUILDIN_DEF(rebirth_cost,  ""),

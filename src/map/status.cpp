@@ -39,6 +39,7 @@
 #include "pc_groups.hpp"
 #include "pet.hpp"
 #include "population_engine.hpp"
+#include "rebirth.hpp"
 #include "population_engine/runtime/population_engine_combat.hpp"
 #include "script.hpp"
 
@@ -4284,6 +4285,12 @@ if (!sd->deposit.items.empty())
 	}
 
 	pc_bonus_script(sd);
+
+	// Permanent, cumulative SQL-backed Rebirth milestone bonuses (derived from
+	// the stored rebirth count). Placed here so they stack with equipment/card/
+	// bonus_script effects and are consumed by the derived-stat calculations
+	// (max HP/SP, weight, ASPD, MATK) that follow.
+	rebirth_calc_bonus(sd);
 
 	if( sd->pd ) { // Pet Bonus
 		pet_data *pd = sd->pd;

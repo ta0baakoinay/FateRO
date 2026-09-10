@@ -725,3 +725,53 @@ BUILDIN_FUNC(population_arena_jobs)
 	script_pushstrcopy(st, csv.c_str());
 	return SCRIPT_CMD_SUCCESS;
 }
+
+/*==========================================
+ * SQL-backed Rebirth System
+ *------------------------------------------*/
+
+/**
+ * rebirth_count() -> current stored rebirth count for the attached player (0..80).
+ */
+BUILDIN_FUNC(rebirth_count)
+{
+	map_session_data* sd;
+	if (!script_rid2sd(sd)) {
+		script_pushint(st, 0);
+		return SCRIPT_CMD_SUCCESS;
+	}
+	script_pushint(st, rebirth_get_count(sd));
+	return SCRIPT_CMD_SUCCESS;
+}
+
+/**
+ * rebirth_cost() -> zeny cost of the player's NEXT rebirth (0 if already maxed).
+ */
+BUILDIN_FUNC(rebirth_cost)
+{
+	map_session_data* sd;
+	if (!script_rid2sd(sd)) {
+		script_pushint(st, 0);
+		return SCRIPT_CMD_SUCCESS;
+	}
+	int32 count = rebirth_get_count(sd);
+	script_pushint(st, (count >= REBIRTH_MAX_COUNT) ? 0 : (int)rebirth_get_cost(count));
+	return SCRIPT_CMD_SUCCESS;
+}
+
+/**
+ * rebirth() -> performs a fully server-validated rebirth (level/class/cap/zeny
+ * checks, native transcendent-style reset, count increment, stat recalc).
+ * Returns the new rebirth count on success, or a negative e_rebirth_result:
+ *   -1 no player / -2 max reached / -3 level req / -4 class state / -5 not enough zeny
+ */
+BUILDIN_FUNC(rebirth)
+{
+	map_session_data* sd;
+	if (!script_rid2sd(sd)) {
+		script_pushint(st, REBIRTH_ERR_NO_PLAYER);
+		return SCRIPT_CMD_SUCCESS;
+	}
+	script_pushint(st, rebirth_perform(sd));
+	return SCRIPT_CMD_SUCCESS;
+}
