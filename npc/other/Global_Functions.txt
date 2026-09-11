@@ -532,6 +532,12 @@ function	script	F_InsertPlural	{
 //    callfunc("F_InsertArticle","Apple")  // returns "an Apple"
 //    callfunc("F_InsertArticle","dog",1)  // returns "A dog"
 //////////////////////////////////////////////////////////////////////////////////
+// Rewritten without preg_match: this server's build has no PCRE library
+// available (Debian's repos dropped legacy PCRE1, only PCRE2 is packaged,
+// and rAthena's PCRE_SUPPORT build option targets the PCRE1 API), so every
+// preg_match() call here used to be a silent no-op plus a ShowDebug spam
+// line on every job change. Same rule set, implemented with plain
+// charat/strpos/substr instead of regex.
 function	script	F_GetArticle	{
 	set .@str$, strtolower(getarg(0));
 
@@ -539,39 +545,60 @@ function	script	F_GetArticle	{
 	if (!charisalpha(.@str$,0))
 		return "a";
 
+	.@len = getstrlen(.@str$);
+
 	// 1-letter words
-	if (getstrlen(.@str$) == 1) {
+	if (.@len == 1) {
 		if (strpos("aefhilmnorsx",.@str$) > -1)
 			return "an";
 		else
 			return "a";
 	}
 
-	// special cases
-	if (preg_match("(euler|hour(?!i)|heir|honest|hono)",.@str$))
+	// special cases: "euler", "hour" (but not "houri"), "heir", "honest", "hono*"
+	if (strpos(.@str$,"euler") == 0)
 		return "an";
+	if (strpos(.@str$,"hour") == 0 && strpos(.@str$,"houri") != 0)
+		return "an";
+	if (strpos(.@str$,"heir") == 0)
+		return "an";
+	if (strpos(.@str$,"honest") == 0)
+		return "an";
+	if (strpos(.@str$,"hono") == 0)
+		return "an";
+
+	.@c0$ = charat(.@str$,0);
 
 	// consonants
-	if (preg_match("^[^aeiouy]",.@str$))
+	if (strpos("aeiouy",.@c0$) == -1)
 		return "a";
 
-	// special vowel forms
-	if (preg_match("^e[uw]",.@str$) || preg_match("^onc?e\b",.@str$) || preg_match("^uni([^nmd]|mo)",.@str$) || preg_match("^u[bcfhjkqrst][aeiou]",.@str$))
+	// special vowel forms that still take 'a'
+	.@c1$ = (.@len > 1) ? charat(.@str$,1) : "";
+	.@c2$ = (.@len > 2) ? charat(.@str$,2) : "";
+	if (.@c0$ == "e" && (.@c1$ == "u" || .@c1$ == "w"))
 		return "a";
-	if (preg_match("^ut[th]",.@str$))
-		return "an";
-
-	// special capitals (rare)
-	//if (preg_match("^U[NK][AIEO]?",getarg(0)))
-	//	return "a";
+	if (strpos(.@str$,"once") == 0 && (.@len == 4 || !charisalpha(.@str$,4)))
+		return "a";
+	if (strpos(.@str$,"one") == 0 && (.@len == 3 || !charisalpha(.@str$,3)))
+		return "a";
+	if (.@c0$ == "u") {
+		if (strpos(.@str$,"uni") == 0 && .@len > 3) {
+			.@c3$ = charat(.@str$,3);
+			if (strpos("nmd",.@c3$) == -1)
+				return "a";
+			if (.@c3$ == "m" && .@len > 4 && charat(.@str$,4) == "o")
+				return "a";
+		}
+		if (strpos("bcfhjkqrst",.@c1$) > -1 && strpos("aeiou",.@c2$) > -1)
+			return "a";
+		if (.@c1$ == "t" && (.@c2$ == "t" || .@c2$ == "h"))
+			return "an";
+	}
 
 	// vowels
-	if (preg_match("^[aeiou]",.@str$))
+	if (strpos("aeiou",.@c0$) > -1)
 		return "an";
-
-	// y... (rare)
-	//if (preg_match("^(y(b[lor]|cl[ea]|fere|gg|p[ios]|rou|tt))",.@str$))
-	//	return "an";
 
 	return "a";
 }
@@ -758,4 +785,45 @@ function	script	F_GetPlatinumSkills	{
 function	script	F_IsCharm	{
 	.@id = getarg(0);
 	return ((.@id >= 4700 && .@id <= 4999) || (.@id >= 29000 && .@id <= 29689) || (.@id >= 310000 && .@id <= 311091 ));
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// Shared Prestige Rebirth milestone table (rebirth-count thresholds + perk text).
+// Lives here (always-loaded core script) rather than in npc/custom/rebirth_ranking.txt
+// so Job Master's Prestige_Rebirth() menu keeps working even if the ranking board
+// npc is ever disabled/removed from scripts_custom.conf.
+// getarg(0)/(1) are the CALLER's array variables, passed by reference the same way
+// Job_Options() in jobmaster.txt does. Keep in sync with rebirth_calc_bonus() in
+// src/map/rebirth.cpp if the milestones/bonuses are retuned.
+//////////////////////////////////////////////////////////////////////////////////
+function	script	F_RebirthMilestones	{
+	setarray getelementofarray(getarg(0),0),10,20,30,40,50,60,70,80;
+	setarray getelementofarray(getarg(1),0),
+		"+10% EXP gain",
+		"+10% Drop Rate",
+		"+1,000 Max Weight",
+		"+20 ATK / +20 MATK",
+		"+10% Max HP / +10% Max SP",
+		"+10% resistance to ALL statuses",
+		"+5% physical / +5% magical attack",
+		"+5 ASPD";
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// Comma-joined perk summary for a given rebirth count, e.g.
+// "+10% EXP gain, +10% Drop Rate". Empty string if count < 10.
+// -- callfunc "F_RebirthPerkSummary",<rebirth count>
+//////////////////////////////////////////////////////////////////////////////////
+function	script	F_RebirthPerkSummary	{
+	.@rc = getarg(0);
+
+	callfunc("F_RebirthMilestones", .@ms_lvl, .@ms_txt$);
+
+	.@out$ = "";
+	for (.@i = 0; .@i < getarraysize(.@ms_lvl); .@i++) {
+		if (.@rc >= .@ms_lvl[.@i])
+			.@out$ += (.@out$ == "" ? "" : ", ") + .@ms_txt$[.@i];
+	}
+
+	return .@out$;
 }

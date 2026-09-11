@@ -1,0 +1,60 @@
+//===== FateMMO Custom Script ================================
+//= Rebirth Hall of Fame (SQL-backed ranking board)
+//===== Description: =========================================
+//= Read-only leaderboard for the Prestige Rebirth system
+//= (src/map/rebirth.cpp). Queries the same `char_reg_num`
+//= (key REBIRTH_TOTAL) row rebirth_perform() writes to, so
+//= there is nothing to keep in sync here - the display is
+//= always exactly what's in the database.
+//=
+//= F_RebirthMilestones / F_RebirthPerkSummary are the single
+//= shared source of the milestone table (level thresholds +
+//= perk text), used by both this board and Job Master's
+//= Prestige_Rebirth() menu, so the two can never drift out of
+//= sync with each other. They now live in
+//= npc/other/Global_Functions.txt (an always-loaded core
+//= script) so this board can be disabled/removed without
+//= breaking the Job Master rebirth menu.
+//= (They can still drift from rebirth_calc_bonus() in
+//= src/map/rebirth.cpp if you retune the bonuses there -
+//= update the array in Global_Functions.txt to match.)
+//=============================================================
+
+prontera,155,181,4	script	Rebirth Hall of Fame#board	4_F_KAFRA1,{
+	mes .NPCName$;
+	mes "^0055FF~ Rebirth Hall of Fame ~^000000";
+	mes " ";
+
+	// Live query against the same table/key rebirth_perform() writes to
+	// (src/map/rebirth.cpp -> pc_setregistry(sd, REBIRTH_TOTAL, ...)).
+	// LIMIT is bound directly since .RankingTop is our own int, never
+	// player-controlled input.
+	.@rows = query_sql(
+		"SELECT c.name, r.value FROM char_reg_num r " +
+		"INNER JOIN `char` c ON c.char_id = r.char_id " +
+		"WHERE r.`key` = 'REBIRTH_TOTAL' AND r.value > 0 " +
+		"ORDER BY r.value DESC, c.char_id ASC LIMIT " + .RankingTop,
+		.@name$, .@count);
+
+	if (.@rows <= 0) {
+		mes "No one has rebirthed yet.";
+		close;
+	}
+
+	for (.@i = 0; .@i < .@rows; .@i++) {
+		.@rc = .@count[.@i];
+		.@perks$ = callfunc("F_RebirthPerkSummary", .@rc);
+
+		mes "^FFB100#" + (.@i + 1) + "^000000  " + .@name$[.@i] + "  -  ^0055FF" + .@rc + "^000000 rebirth" + ((.@rc == 1) ? "" : "s");
+		mes "     ^777777" + ((.@perks$ == "") ? "(no perks yet)" : .@perks$) + "^000000";
+	}
+
+	close;
+
+OnInit:
+	.NPCName$ = "[^0055FFRebirth Hall of Fame^000000]";
+	// How many players to show. This is the configuration point for this
+	// board - edit and @reloadscript (or @reloadnpc if scoped) to apply.
+	.RankingTop = 10;
+	end;
+}

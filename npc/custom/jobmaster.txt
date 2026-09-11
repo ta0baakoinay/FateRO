@@ -144,16 +144,11 @@ function	Prestige_Rebirth	{
 	.@next = .@rc + 1;
 	.@cost = rebirth_cost();
 
-	setarray .@ms_lvl[0],10,20,30,40,50,60,70,80;
-	setarray .@ms_txt$[0],
-		"+10% EXP gain",
-		"+10% Drop Rate",
-		"+1,000 Max Weight",
-		"+20 ATK / +20 MATK",
-		"+10% Max HP / +10% Max SP",
-		"+10% resistance to ALL statuses",
-		"+5% physical / +5% magical attack",
-		"+5 ASPD";
+	// Shared with the Rebirth Hall of Fame ranking board
+	// (npc/custom/rebirth_ranking.txt) so the two displays can never
+	// drift apart from each other. Keep in sync with the actual bonus
+	// logic in rebirth_calc_bonus() (src/map/rebirth.cpp) if retuned.
+	callfunc("F_RebirthMilestones", .@ms_lvl, .@ms_txt$);
 
 	mes .NPCName$;
 	mes "^0055FF~ Prestige Rebirth ~^000000";
