@@ -2434,8 +2434,9 @@ Body:
     View: 842
     Script: |
       bonus2 bAddItemHealRate,504,100;
-      bonus2 bAddItemHealRate,11501,100;
+      bonus2 bAddItemHealRate,101501,100;
       bonus2 bAddItemHealRate,547,100;
+      bonus2 bDropAddClass,Class_All,10000;
 
   - Id: 15015
     AegisName: Upg_Adv_Suit
