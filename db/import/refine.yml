@@ -45,6 +45,329 @@ Header:
   Type: REFINE_DB
   Version: 2
 
+Body:
+# FateMMO: attach the weighted Random Option groups to a SUCCESSFUL refine.
+# Active only when feature.random_options_mode = 2. The rarity weighting
+# lives in the group (db/import/item_randomopt_group.yml) and is therefore
+# identical to the monster-drop and NPC paths.
+# Refine only distinguishes Armor vs Weapon (Shield/Garment/Shoes = Armor type).
+# Only the Group/Level/RefineLevel/Type keys below are touched - rates,
+# prices and materials from pre-re/refine.yml are left untouched.
+  - Group: Armor
+    Levels:
+      - Level: 1
+        RefineLevels:
+          - Level: 1
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_ARMOR
+              - Type: Enriched
+                RandomOptionGroup: FATE_ARMOR
+          - Level: 2
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_ARMOR
+              - Type: Enriched
+                RandomOptionGroup: FATE_ARMOR
+          - Level: 3
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_ARMOR
+              - Type: Enriched
+                RandomOptionGroup: FATE_ARMOR
+          - Level: 4
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_ARMOR
+              - Type: Enriched
+                RandomOptionGroup: FATE_ARMOR
+          - Level: 5
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_ARMOR
+              - Type: Enriched
+                RandomOptionGroup: FATE_ARMOR
+          - Level: 6
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_ARMOR
+              - Type: Enriched
+                RandomOptionGroup: FATE_ARMOR
+          - Level: 7
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_ARMOR
+              - Type: Enriched
+                RandomOptionGroup: FATE_ARMOR
+          - Level: 8
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_ARMOR
+              - Type: Enriched
+                RandomOptionGroup: FATE_ARMOR
+          - Level: 9
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_ARMOR
+              - Type: Enriched
+                RandomOptionGroup: FATE_ARMOR
+          - Level: 10
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_ARMOR
+              - Type: Enriched
+                RandomOptionGroup: FATE_ARMOR
+  - Group: Weapon
+    Levels:
+      - Level: 1
+        RefineLevels:
+          - Level: 1
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 2
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 3
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 4
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 5
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 6
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 7
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 8
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 9
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 10
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+      - Level: 2
+        RefineLevels:
+          - Level: 1
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 2
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 3
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 4
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 5
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 6
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 7
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 8
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 9
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 10
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+      - Level: 3
+        RefineLevels:
+          - Level: 1
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 2
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 3
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 4
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 5
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 6
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 7
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 8
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 9
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 10
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+      - Level: 4
+        RefineLevels:
+          - Level: 1
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 2
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 3
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 4
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 5
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 6
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 7
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 8
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 9
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+          - Level: 10
+            Chances:
+              - Type: Normal
+                RandomOptionGroup: FATE_WEAPON
+              - Type: Enriched
+                RandomOptionGroup: FATE_WEAPON
+
 ###########################################################################
 # Event Refine Rates
 ###########################################################################

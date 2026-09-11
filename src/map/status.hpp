@@ -96,6 +96,7 @@ struct s_refine_cost{
 	uint32 zeny;
 	uint16 breaking_rate;
 	uint16 downgrade_amount;
+	uint16 randomopt_group; // FateMMO: Random Option Group applied on successful refine (0 = none)
 };
 
 struct s_refine_level_info{
@@ -137,6 +138,13 @@ public:
 };
 
 extern RefineDatabase refine_db;
+
+// FateMMO: roll a Random Option Group onto an item after a successful refine
+// (any path: RefineUI, WS_WEAPONREFINE ore refine, script successrefitem).
+// No-op unless feature.random_options_mode == 2. group_hint is the group from
+// the matched refine cost, or 0 to resolve it from refine.yml / the per-type
+// feature.random_options_group_* fallbacks.
+void refine_apply_randomopt_group( struct item& item, const struct item_data* id, uint16 group_hint );
 
 /// Weapon attack modification for size
 struct s_sizefix_db {

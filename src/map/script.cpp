@@ -9819,6 +9819,8 @@ BUILDIN_FUNC(successrefitem) {
 
 		sd->inventory.u.items_inventory[i].refine += up;
 		sd->inventory.u.items_inventory[i].refine = cap_value( sd->inventory.u.items_inventory[i].refine, 0, MAX_REFINE);
+		// FateMMO: roll a Random Option Group on the script refine path (mode 2 only)
+		refine_apply_randomopt_group( sd->inventory.u.items_inventory[i], sd->inventory_data[i], 0 );
 		pc_unequipitem(sd,i,2); // status calc will happen in pc_equipitem() below
 
 		clif_refine( *sd, i, ITEMREFINING_SUCCESS );

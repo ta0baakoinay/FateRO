@@ -1591,3 +1591,31 @@ Body:
 #      - Item: Zombie_Master_Card
 #        Rate: 1
 #        StealProtected: true
+
+###########################################################################
+# FateMMO - Random Options on monster drops
+###########################################################################
+# The rarity weighting is defined in the Random Option GROUP
+# (db/import/item_randomopt_group.yml) and is applied by the same engine
+# call used by refine and the NPC - so +1 / value-1 stays common and
+# +3 / value-5 stays rare on every path automatically.
+#
+# To roll options on a dropped equipment, add `RandomOptionGroup:` to that
+# drop line in mob_db. Re-declaring a mob Id here REPLACES its whole Drops
+# list, so copy the mob's full Drops block from db/(pre-re/)mob_db.yml first,
+# then add the key only to the equipment lines. Example:
+#
+#  - Id: 1002            # PORING
+#    Drops:
+#      - Item: Jellopy
+#        Rate: 7000
+#      - Item: Knife_
+#        Rate: 100
+#        RandomOptionGroup: FATE_WEAPON
+#      - Item: Sword_
+#        Rate: 40
+#        RandomOptionGroup: FATE_WEAPON
+#
+# Group names: FATE_ARMOR / FATE_SHIELD / FATE_GARMENT / FATE_BOOTS / FATE_WEAPON
+# Monster-drop rolls only occur while feature.random_options_mode = 1.
+###########################################################################

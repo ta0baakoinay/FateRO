@@ -2483,10 +2483,68 @@ static TIMER_FUNC(mob_ai_hard){
  * @author [Cydh]
  **/
 void mob_setdropitem_option( item& item, const std::shared_ptr<s_mob_drop>& mobdrop ){
-	std::shared_ptr<s_random_opt_group> group = random_option_group.find( mobdrop->randomopt_group );
+	// FateMMO: Random Options from monster drops only when mode 1 is selected
+	// (modes 2/refine and 3/NPC are mutually exclusive with monster drops).
+	if( battle_config.feature_random_options_mode != 1 ){
+		return;
+	}
 
-	if (group != nullptr) {
-		group->apply( item );
+	uint16 group_id = mobdrop->randomopt_group;
+
+	// FateMMO: with drop_all enabled, every dropped equipment that has no
+	// explicit RandomOptionGroup in mob_db gets a type-appropriate default.
+	if( group_id == 0 && battle_config.feature_random_options_drop_all ){
+		std::shared_ptr<item_data> id = item_db.find( item.nameid );
+
+		if( id != nullptr ){
+			if( id->type == IT_WEAPON ){
+				group_id = static_cast<uint16>( battle_config.feature_random_options_group_weapon );
+			}else if( id->type == IT_ARMOR ){
+				if( id->equip & EQP_HAND_L ){
+					group_id = static_cast<uint16>( battle_config.feature_random_options_group_shield );
+				}else if( id->equip & EQP_GARMENT ){
+					group_id = static_cast<uint16>( battle_config.feature_random_options_group_garment );
+				}else if( id->equip & EQP_SHOES ){
+					group_id = static_cast<uint16>( battle_config.feature_random_options_group_boots );
+				}else if( id->equip & EQP_ARMOR ){
+					group_id = static_cast<uint16>( battle_config.feature_random_options_group_armor );
+				}
+				// headgear / accessory / costume / shadow gear: left unrolled
+			}
+		}
+	}
+
+	if( group_id == 0 ){
+		return;
+	}
+
+	std::shared_ptr<s_random_opt_group> group = random_option_group.find( group_id );
+
+	if( group == nullptr ){
+		return;
+	}
+
+	group->apply( item );
+
+	// FateMMO: weighted number of options a monster-dropped item keeps.
+	// One roll against descending thresholds -> Option 1/2/3 rarity curve.
+	int32 roll = rnd() % 100;
+	int32 keep = 0;
+
+	if( roll < battle_config.feature_random_options_drop_opt1 ){
+		keep = 1;
+	}
+	if( roll < battle_config.feature_random_options_drop_opt2 ){
+		keep = 2;
+	}
+	if( roll < battle_config.feature_random_options_drop_opt3 ){
+		keep = 3;
+	}
+
+	for( int32 i = keep; i < MAX_ITEM_RDM_OPT; i++ ){
+		item.option[i].id = 0;
+		item.option[i].value = 0;
+		item.option[i].param = 0;
 	}
 }
 

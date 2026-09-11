@@ -44,3 +44,590 @@
 Header:
   Type: RANDOM_OPTION_GROUP
   Version: 1
+
+Body:
+# ===========================================================================
+# FateMMO sample Random Option groups (Vanilla MMO spec)
+#   900 FATE_ARMOR  901 FATE_SHIELD  902 FATE_GARMENT  903 FATE_BOOTS  904 FATE_WEAPON
+#
+# Slots 1-3 are all guaranteed so apply() always produces 3 weighted options.
+# HOW MANY of those an item actually keeps is decided per acquisition path:
+#   - monster drop : feature.random_options_drop_opt1/opt2/opt3 (conf/battle/feature.conf)
+#   - refine / NPC : all 3 kept (NPC only ever reads/replaces one slot)
+#
+# Value rarity tiers inside each slot:
+#   basic stats : +1 = 9000 , +2 = 500 , +3 = 200
+#   1-5 values  :  1 = 9000 , 2 = 3000 , 3 = 1000 , 4 = 500 , 5 = 200
+# ===========================================================================
+  - Id: 900
+    Group: FATE_ARMOR
+    Slots:
+      - Slot: 1
+        Options:
+          - { Option: VAR_STRAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_STRAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_STRAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_DEXAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_DEXAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_DEXAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: BODY_ATTR_FIRE, Chance: 10000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 5, MaxValue: 5, Chance: 200 }
+      - Slot: 2
+        Options:
+          - { Option: VAR_STRAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_STRAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_STRAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_DEXAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_DEXAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_DEXAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: BODY_ATTR_FIRE, Chance: 10000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 5, MaxValue: 5, Chance: 200 }
+      - Slot: 3
+        Options:
+          - { Option: VAR_STRAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_STRAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_STRAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_DEXAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_DEXAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_DEXAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: BODY_ATTR_FIRE, Chance: 10000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_WATER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_WIND, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_GROUND, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 5, MaxValue: 5, Chance: 200 }
+    MaxRandom: 0
+  - Id: 901
+    Group: FATE_SHIELD
+    Slots:
+      - Slot: 1
+        Options:
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_MDEFPOWER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_MDEFPOWER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_MDEFPOWER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_MDEFPOWER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_MDEFPOWER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 5, MaxValue: 5, Chance: 200 }
+      - Slot: 2
+        Options:
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_MDEFPOWER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_MDEFPOWER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_MDEFPOWER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_MDEFPOWER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_MDEFPOWER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 5, MaxValue: 5, Chance: 200 }
+      - Slot: 3
+        Options:
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_ITEMDEFPOWER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_MDEFPOWER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_MDEFPOWER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_MDEFPOWER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_MDEFPOWER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_MDEFPOWER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ATTR_TOLERACE_FIRE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DAMAGE_SIZE_SMALL_USER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DAMAGE_SIZE_MIDIUM_USER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DAMAGE_SIZE_LARGE_USER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 5, MaxValue: 5, Chance: 200 }
+    MaxRandom: 0
+  - Id: 902
+    Group: FATE_GARMENT
+    Slots:
+      - Slot: 1
+        Options:
+          - { Option: VAR_AGIAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_AGIAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_AGIAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_VITAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_VITAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_VITAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 5, MaxValue: 5, Chance: 200 }
+      - Slot: 2
+        Options:
+          - { Option: VAR_AGIAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_AGIAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_AGIAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_VITAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_VITAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_VITAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 5, MaxValue: 5, Chance: 200 }
+      - Slot: 3
+        Options:
+          - { Option: VAR_AGIAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_AGIAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_AGIAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_VITAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_VITAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_VITAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_AVOIDSUCCESSVALUE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_HITSUCCESSVALUE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DEC_SP_CONSUMPTION, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 5, MaxValue: 5, Chance: 200 }
+    MaxRandom: 0
+  - Id: 903
+    Group: FATE_BOOTS
+    Slots:
+      - Slot: 1
+        Options:
+          - { Option: VAR_INTAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_INTAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_INTAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_LUKAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_LUKAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_LUKAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_HPACCELERATION, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_HPACCELERATION, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_HPACCELERATION, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_HPACCELERATION, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_HPACCELERATION, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_SPACCELERATION, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_SPACCELERATION, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_SPACCELERATION, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_SPACCELERATION, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_SPACCELERATION, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 5, MaxValue: 5, Chance: 200 }
+      - Slot: 2
+        Options:
+          - { Option: VAR_INTAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_INTAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_INTAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_LUKAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_LUKAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_LUKAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_HPACCELERATION, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_HPACCELERATION, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_HPACCELERATION, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_HPACCELERATION, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_HPACCELERATION, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_SPACCELERATION, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_SPACCELERATION, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_SPACCELERATION, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_SPACCELERATION, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_SPACCELERATION, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 5, MaxValue: 5, Chance: 200 }
+      - Slot: 3
+        Options:
+          - { Option: VAR_INTAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_INTAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_INTAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_LUKAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_LUKAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_LUKAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_MAXHPPERCENT, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_MAXSPPERCENT, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DEC_SPELL_CAST_TIME, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_HPACCELERATION, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_HPACCELERATION, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_HPACCELERATION, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_HPACCELERATION, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_HPACCELERATION, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_SPACCELERATION, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_SPACCELERATION, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_SPACCELERATION, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_SPACCELERATION, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_SPACCELERATION, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: ADDEXPPERCENT_KILLRACE_ALL, MinValue: 5, MaxValue: 5, Chance: 200 }
+    MaxRandom: 0
+  - Id: 904
+    Group: FATE_WEAPON
+    Slots:
+      - Slot: 1
+        Options:
+          - { Option: WEAPON_ATTR_FIRE, Chance: 10000 }
+          - { Option: WEAPON_ATTR_WATER, Chance: 10000 }
+          - { Option: VAR_STRAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_STRAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_STRAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_ATTPOWER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_ATTPOWER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_ATTPOWER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_ATTPOWER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_ATTPOWER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_ATTMPOWER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_ATTMPOWER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_ATTMPOWER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_ATTMPOWER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_ATTMPOWER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_ATKPERCENT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_ATKPERCENT, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_ATKPERCENT, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_ATKPERCENT, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_ATKPERCENT, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_PLUSASPD, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_PLUSASPD, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_PLUSASPD, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_PLUSASPD, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_PLUSASPD, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 5, MaxValue: 5, Chance: 200 }
+      - Slot: 2
+        Options:
+          - { Option: WEAPON_ATTR_FIRE, Chance: 10000 }
+          - { Option: WEAPON_ATTR_WATER, Chance: 10000 }
+          - { Option: VAR_STRAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_STRAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_STRAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_ATTPOWER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_ATTPOWER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_ATTPOWER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_ATTPOWER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_ATTPOWER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_ATTMPOWER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_ATTMPOWER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_ATTMPOWER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_ATTMPOWER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_ATTMPOWER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_ATKPERCENT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_ATKPERCENT, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_ATKPERCENT, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_ATKPERCENT, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_ATKPERCENT, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_PLUSASPD, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_PLUSASPD, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_PLUSASPD, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_PLUSASPD, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_PLUSASPD, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 5, MaxValue: 5, Chance: 200 }
+      - Slot: 3
+        Options:
+          - { Option: WEAPON_ATTR_FIRE, Chance: 10000 }
+          - { Option: WEAPON_ATTR_WATER, Chance: 10000 }
+          - { Option: VAR_STRAMOUNT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_STRAMOUNT, MinValue: 2, MaxValue: 2, Chance: 500 }
+          - { Option: VAR_STRAMOUNT, MinValue: 3, MaxValue: 3, Chance: 200 }
+          - { Option: VAR_ATTPOWER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_ATTPOWER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_ATTPOWER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_ATTPOWER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_ATTPOWER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_ATTMPOWER, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_ATTMPOWER, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_ATTMPOWER, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_ATTMPOWER, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_ATTMPOWER, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_ATKPERCENT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_ATKPERCENT, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_ATKPERCENT, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_ATKPERCENT, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_ATKPERCENT, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_MAGICATKPERCENT, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_PLUSASPD, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_PLUSASPD, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_PLUSASPD, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_PLUSASPD, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_PLUSASPD, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: VAR_CRITICALSUCCESSVALUE, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: DAMAGE_CRI_TARGET, MinValue: 5, MaxValue: 5, Chance: 200 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 1, MaxValue: 1, Chance: 9000 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 2, MaxValue: 2, Chance: 3000 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 3, MaxValue: 3, Chance: 1000 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 4, MaxValue: 4, Chance: 500 }
+          - { Option: RANGE_ATTACK_DAMAGE_TARGET, MinValue: 5, MaxValue: 5, Chance: 200 }
+    MaxRandom: 0

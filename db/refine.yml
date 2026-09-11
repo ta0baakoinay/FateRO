@@ -39,6 +39,7 @@
 #               Material                Ore item required to refine. (Default: 0)
 #               BreakingRate            Chance of item breaking out of 0~10000. (Default: 0)
 #               DowngradeAmount         Number of refine levels reduced on failure. (Default: 0)
+#               RandomOptionGroup       Random Option Group applied to the item on a successful refine. (Default: None)
 ###########################################################################
 
 Header:

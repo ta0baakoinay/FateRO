@@ -23233,6 +23233,20 @@ void clif_parse_refineui_refine( int32 fd, map_session_data* sd ){
 		log_pick_pc( sd, LOG_TYPE_OTHER, -1, item );
 		// Success
 		item->refine = cap_value( item->refine + 1, 0, MAX_REFINE );
+
+		// FateMMO: roll a Random Option Group on a successful refine (mode 2 only).
+		// Shared with the ore refine (WS_WEAPONREFINE) and script successrefitem paths.
+		{
+			struct item options_before = *item;
+
+			refine_apply_randomopt_group( *item, id, cost->randomopt_group );
+
+			if( memcmp( item->option, options_before.option, sizeof( item->option ) ) != 0 ){
+				clif_delitem( *sd, index, 1, 3 );
+				clif_additem( sd, index, 1, 0 );
+			}
+		}
+
 		log_pick_pc( sd, LOG_TYPE_OTHER, 1, item );
 		clif_misceffect( *sd, NOTIFYEFFECT_REFINE_SUCCESS );
 		clif_refine( *sd, index, ITEMREFINING_SUCCESS );

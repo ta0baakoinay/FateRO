@@ -1,0 +1,193 @@
+//===== rAthena Script (FateMMO) =============================
+//= Random Options NPC  -  acquisition mode 3 (NPC + Zeny)
+//===== Description: =========================================
+//= Pays zeny to (re-)roll ONE random option slot on a currently
+//= equipped Armor / Shield / Garment / Shoes / Weapon.
+//= Player chooses the piece, then which slot to re-roll:
+//=   Re-roll Option 1 / Option 2 / Option 3  -  1,000,000z each.
+//= The new option is always random (native randomoptgroup) and
+//= uses the weighted rarity tiers from the group's slot-1 pool.
+//= Headgear and accessories are intentionally not supported.
+//=
+//= Gated by conf/battle/feature.conf -> feature.random_options_mode
+//=   must be 3 for this NPC to operate. Modes 1 (monster drop) and
+//=   2 (refine) disable it. Checked live (@reloadbattleconf, no restart).
+//=
+//= Uses only native script commands; no source changes.
+//= All tunables are in OnInit below (@reloadscript).
+//===========================================================
+prontera,158,185,4	script	Random Options	4_F_KAFRA1,{
+	if (getbattleflag("feature.random_options_mode") != 3) {
+		mes "[Random Options]";
+		mes "This service is currently disabled.";
+		close;
+	}
+	if (@ro_busy) end;	// re-entrancy guard (double-click / packet spam)
+
+	mes "[Random Options]";
+	mes "I can re-roll a single random option slot on one piece of your equipment.";
+	mes "Cost: ^0055FF" + callfunc("F_InsertComma", .cost) + "^000000 zeny per re-roll.";
+	next;
+
+	// supported slots only - NO headgear / accessories
+	setarray .@slot[0],  EQI_ARMOR,  EQI_HAND_L, EQI_HAND_R, EQI_GARMENT, EQI_SHOES;
+	setarray .@grp[0],   .g_armor,   .g_shield,  .g_weapon,  .g_garment,  .g_boots;
+	setarray .@name$[0], "Armor",    "Shield",   "Weapon",   "Garment",   "Shoes";
+
+	// menu of only the entries that are actually usable, mapped back to real index
+	.@menu$ = "";
+	.@n = 0;
+	for (.@i = 0; .@i < getarraysize(.@slot); ++.@i) {
+		if (.@grp[.@i] > 0 && getequipisequiped(.@slot[.@i])) {
+			.@menu$ += .@name$[.@i] + " - " + getequipname(.@slot[.@i]) + ":";
+			.@map[.@n] = .@i;
+			.@n++;
+		}
+	}
+	if (.@n == 0) {
+		mes "[Random Options]";
+		mes "You are not wearing anything I can work on.";
+		close;
+	}
+	.@pick  = .@map[ select(.@menu$) - 1 ];
+	.@eslot = .@slot[.@pick];
+	.@gid   = .@grp[.@pick];
+
+	if (!getequipisequiped(.@eslot)) {
+		mes "[Random Options]";
+		mes "You are not wearing anything there.";
+		close;
+	}
+	.@preid = getequipid(.@eslot);	// remember exactly which item this is
+
+	// show current options and let the player choose which slot to re-roll
+	mes "[Random Options]";
+	mes "Current options on your " + .@name$[.@pick] + ":";
+	for (.@i = 0; .@i < 3; ++.@i) {
+		.@cur[.@i] = getequiprandomoption(.@eslot, .@i, ROA_ID);
+		if (.@cur[.@i] > 0)
+			mes " Option " + (.@i+1) + ": ^006400" + callfunc("F_RO_Desc", .@cur[.@i], getequiprandomoption(.@eslot, .@i, ROA_VALUE)) + "^000000";
+		else
+			mes " Option " + (.@i+1) + ": ^777777empty^000000";
+	}
+	next;
+	.@zc$ = callfunc("F_InsertComma", .cost);
+	.@target = select(
+		((.@cur[0] > 0) ? "Re-roll" : "Roll") + " Option 1 (" + .@zc$ + "z)",
+		((.@cur[1] > 0) ? "Re-roll" : "Roll") + " Option 2 (" + .@zc$ + "z)",
+		((.@cur[2] > 0) ? "Re-roll" : "Roll") + " Option 3 (" + .@zc$ + "z)",
+		"Cancel") - 1;
+	if (.@target < 0 || .@target > 2) close;
+	.@verb$ = (.@cur[.@target] > 0) ? "Re-roll" : "Roll";
+
+	// --- validation phase (nothing is charged / changed yet) --------------
+	if (Zeny < .cost) {
+		mes "[Random Options]";
+		mes "You do not have enough zeny.";
+		close;
+	}
+
+	mes "[Random Options]";
+	mes .@verb$ + " ^0055FFOption " + (.@target+1) + "^000000 on your " + .@name$[.@pick] + "?";
+	mes ((.@cur[.@target] > 0) ? "That slot will be replaced with a new random option." : "A new random option will be added to that slot.");
+	next;
+	if (select("Yes, do it:Cancel") == 2) close;
+
+	// --- transaction phase ----------------------------------------------
+	@ro_busy = 1;
+
+	// re-validate everything after the dialog delay
+	if (getbattleflag("feature.random_options_mode") != 3 ||
+	    !getequipisequiped(.@eslot) ||
+	    getequipid(.@eslot) != .@preid ||
+	    Zeny < .cost) {
+		@ro_busy = 0;
+		mes "[Random Options]";
+		mes "The transaction could not be completed. You were not charged.";
+		close;
+	}
+
+	// roll first, so a misconfigured / missing group id cannot cost the player.
+	// Every group in db/import/item_randomopt_group.yml guarantees slot 1.
+	randomoptgroup .@gid;	// fills .@opt_id[] / .@opt_value[] / .@opt_param[]
+	if (.@opt_id[0] <= 0) {
+		@ro_busy = 0;
+		mes "[Random Options]";
+		mes "This service is misconfigured. You were not charged.";
+		close;
+	}
+
+	Zeny -= .cost;	// atomic from here: the new option is ready, apply cannot fail
+	setrandomoption(.@eslot, .@target, .@opt_id[0], .@opt_value[0], .@opt_param[0]);
+
+	@ro_busy = 0;
+	mes "[Random Options]";
+	mes "Done. Option " + (.@target+1) + " is now:";
+	mes " ^006400" + callfunc("F_RO_Desc", .@opt_id[0], .@opt_value[0]) + "^000000";
+	close;
+
+OnInit:
+	// ---- CONFIG -------------------------------------------------------
+	.cost = 1000000;	// zeny per single-slot re-roll (clamped >= 0; engine caps at MAX_ZENY)
+
+	// Random Option Group IDs (see db/import/item_randomopt_group.yml).
+	// Set any to 0 to disable that equipment type on this NPC.
+	.g_armor   = 900;	// FATE_ARMOR
+	.g_shield  = 901;	// FATE_SHIELD
+	.g_garment = 902;	// FATE_GARMENT
+	.g_boots   = 903;	// FATE_BOOTS
+	.g_weapon  = 904;	// FATE_WEAPON
+	// ----------------------------------------------------------------
+	if (.cost < 0) .cost = 0;
+	end;
+}
+
+
+//===========================================================
+//= F_RO_Desc(<option id>, <value>)  ->  human-readable string
+//= Covers every option the FATE_* groups can roll; anything
+//= else falls back to "Option #<id> +<value>".
+//===========================================================
+function	script	F_RO_Desc	{
+	.@id = getarg(0);
+	.@v  = getarg(1);
+
+	switch (.@id) {
+		case 3:   return "Increase STR +" + .@v;
+		case 4:   return "Increase AGI +" + .@v;
+		case 5:   return "Increase VIT +" + .@v;
+		case 6:   return "Increase INT +" + .@v;
+		case 7:   return "Increase DEX +" + .@v;
+		case 8:   return "Increase LUK +" + .@v;
+		case 9:   return "Increase Max HP +" + .@v + "%";
+		case 10:  return "Increase Max SP +" + .@v + "%";
+		case 11:  return "HP Recovery +" + .@v + "%";
+		case 12:  return "SP Recovery +" + .@v + "%";
+		case 13:  return "Increase ATK +" + .@v;
+		case 14:  return "Increase MATK +" + .@v + "%";
+		case 15:  return "Increase ASPD +" + .@v;
+		case 17:  return "Increase ATK +" + .@v;
+		case 18:  return "Increase HIT +" + .@v;
+		case 19:  return "Increase MATK +" + .@v;
+		case 20:  return "Increase DEF +" + .@v;
+		case 21:  return "Increase MDEF +" + .@v;
+		case 22:  return "Increase FLEE +" + .@v;
+		case 24:  return "Increase CRI +" + .@v;
+		case 26:  return "Water Resistance +" + .@v + "%";
+		case 27:  return "Earth Resistance +" + .@v + "%";
+		case 28:  return "Fire Resistance +" + .@v + "%";
+		case 29:  return "Wind Resistance +" + .@v + "%";
+		case 79:  return "Armor Element: Fire";
+		case 160: return "Damage taken from Small enemies -" + .@v + "%";
+		case 161: return "Damage taken from Medium enemies -" + .@v + "%";
+		case 162: return "Damage taken from Large enemies -" + .@v + "%";
+		case 164: return "Critical Damage +" + .@v + "%";
+		case 166: return "Ranged Damage +" + .@v + "%";
+		case 170: return "Variable Cast Time -" + .@v + "%";
+		case 172: return "SP Consumption -" + .@v + "%";
+		case 176: return "Weapon Element: Water";
+		case 178: return "Weapon Element: Fire";
+		case 242: return "EXP Gain +" + .@v + "%";
+		default:  return "Option #" + .@id + " +" + .@v;
+	}
+}

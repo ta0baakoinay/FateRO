@@ -20850,6 +20850,8 @@ void skill_weaponrefine( map_session_data& sd, int32 idx ){
 				int32 ep=0;
 				log_pick_pc(&sd, LOG_TYPE_OTHER, -1, item);
 				item->refine++;
+				// FateMMO: roll a Random Option Group on the ore refine path (mode 2 only)
+				refine_apply_randomopt_group( *item, ditem, cost->randomopt_group );
 				log_pick_pc(&sd, LOG_TYPE_OTHER,  1, item);
 				if(item->equip) {
 					ep = item->equip;

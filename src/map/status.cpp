@@ -394,6 +394,28 @@ uint64 RefineDatabase::parseBodyNode( const ryml::NodeRef& node ){
 								}
 							}
 
+							// FateMMO: optional Random Option Group applied on a successful refine
+							if( this->nodeExists( chanceNode, "RandomOptionGroup" ) ){
+								std::string group_name;
+
+								if( !this->asString( chanceNode, "RandomOptionGroup", group_name ) ){
+									return 0;
+								}
+
+								uint16 randomopt_id;
+
+								if( !random_option_group.option_get_id( group_name, randomopt_id ) ){
+									this->invalidWarning( chanceNode["RandomOptionGroup"], "Unknown random option group %s, skipping.\n", group_name.c_str() );
+									return 0;
+								}
+
+								cost->randomopt_group = randomopt_id;
+							}else{
+								if( !cost_exists ){
+									cost->randomopt_group = 0;
+								}
+							}
+
 							if( !cost_exists ){
 								level_info->costs[index] = cost;
 							}
@@ -495,6 +517,56 @@ bool RefineDatabase::calculate_refine_info( const struct item_data& data, e_refi
 }
 
 RefineDatabase refine_db;
+
+// FateMMO: apply a Random Option Group after a successful refine (any path).
+void refine_apply_randomopt_group( struct item& item, const struct item_data* id, uint16 group_hint ){
+	if( battle_config.feature_random_options_mode != 2 ){
+		return;
+	}
+
+	uint16 gid = group_hint;
+
+	// 1) group taken from any refine.yml cost entry for the item's new level
+	if( gid == 0 && id != nullptr ){
+		std::shared_ptr<s_refine_level_info> li = refine_db.findLevelInfo( *id, item );
+
+		if( li != nullptr ){
+			for( const auto& pair : li->costs ){
+				if( pair.second->randomopt_group != 0 ){
+					gid = pair.second->randomopt_group;
+					break;
+				}
+			}
+		}
+	}
+
+	// 2) per-equipment-type fallback (same groups the monster-drop path uses)
+	if( gid == 0 && id != nullptr ){
+		if( id->type == IT_WEAPON ){
+			gid = static_cast<uint16>( battle_config.feature_random_options_group_weapon );
+		}else if( id->type == IT_ARMOR ){
+			if( id->equip & EQP_HAND_L ){
+				gid = static_cast<uint16>( battle_config.feature_random_options_group_shield );
+			}else if( id->equip & EQP_GARMENT ){
+				gid = static_cast<uint16>( battle_config.feature_random_options_group_garment );
+			}else if( id->equip & EQP_SHOES ){
+				gid = static_cast<uint16>( battle_config.feature_random_options_group_boots );
+			}else if( id->equip & EQP_ARMOR ){
+				gid = static_cast<uint16>( battle_config.feature_random_options_group_armor );
+			}
+		}
+	}
+
+	if( gid == 0 ){
+		return;
+	}
+
+	std::shared_ptr<s_random_opt_group> group = random_option_group.find( gid );
+
+	if( group != nullptr ){
+		group->apply( item );
+	}
+}
 
 const std::string SizeFixDatabase::getDefaultLocation() {
 	return std::string(db_path) + "/size_fix.yml";

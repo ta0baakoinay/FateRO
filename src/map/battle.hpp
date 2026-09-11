@@ -754,6 +754,22 @@ struct Battle_Config
 	int32 idletime_mer_option;
 	int32 feature_refineui;
 	int32 rndopt_drop_pillar;
+	// FateMMO Random Options acquisition mode (mutually exclusive):
+	//   0 = disabled, 1 = Monster Drop, 2 = Refine, 3 = NPC + Zeny
+	int32 feature_random_options_mode;
+	// When mode 1: also roll on EVERY dropped equipment that has no explicit
+	// RandomOptionGroup in mob_db, using the per-type default groups below.
+	int32 feature_random_options_drop_all;
+	int32 feature_random_options_group_armor;
+	int32 feature_random_options_group_shield;
+	int32 feature_random_options_group_garment;
+	int32 feature_random_options_group_boots;
+	int32 feature_random_options_group_weapon;
+	// Monster-drop only: percent chance a dropped item keeps at least 1 / 2 / 3
+	// options (must be descending). 0 for opt1 means the item can drop with none.
+	int32 feature_random_options_drop_opt1;
+	int32 feature_random_options_drop_opt2;
+	int32 feature_random_options_drop_opt3;
 	int32 pet_legacy_formula;
 	int32 pet_distance_check;
 	int32 pet_hide_check;
