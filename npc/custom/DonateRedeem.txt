@@ -16,6 +16,20 @@
 //= or strip those calls.
 //=============================================================
 
+/*
+CREATE TABLE IF NOT EXISTS `cp_donation_requests` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `account_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `fate_coins` int(11) NOT NULL DEFAULT '0',
+  `status` varchar(20) NOT NULL DEFAULT 'pending',
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `account_id` (`account_id`),
+  KEY `status` (`status`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+*/
+
 maintown,159,182,4	script	Donor Rewards Redeemer	117,{
 
 	.@redeemTable$ = "cp_redeemlog";
@@ -111,7 +125,6 @@ function	script	ShowDonationRankings	{
 		mes " ";
 		mes "^888888No approved donations found yet.^000000";
 		next;
-		close2;
 		return;
 	}
 

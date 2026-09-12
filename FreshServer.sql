@@ -1660,6 +1660,22 @@ ALTER TABLE `char_reg_num`     ADD INDEX IF NOT EXISTS `key` (`key`);
 -- =====================================================================
 INSERT IGNORE INTO `cp_population_stats` (`id`, `active_count`) VALUES (1, 0);
 
+-- cp_donation_requests: minimal schema covering the columns queried by
+-- npc/custom/DonateRedeem.txt (Donation Rankings). FluxCP's own installer
+-- normally creates a fuller version of this table; this is just enough for
+-- the ranking query and redeem flow to work on a server without FluxCP.
+CREATE TABLE IF NOT EXISTS `cp_donation_requests` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `account_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `fate_coins` int(11) NOT NULL DEFAULT '0',
+  `status` varchar(20) NOT NULL DEFAULT 'pending',
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `account_id` (`account_id`),
+  KEY `status` (`status`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
 
 -- =====================================================================
 --  SECTION 6 : OPTIONAL / AMBIGUOUS  (commented out by default)
@@ -1691,9 +1707,10 @@ INSERT IGNORE INTO `cp_population_stats` (`id`, `active_count`) VALUES (1, 0);
 --   * fateshield_block / fateshield_block_log / fateshield_report_log and
 --     login.last_unique_id / login.blocked_unique_id  -> FateShield/Gepard,
 --     not present in the current source tree (feature lives on a branch).
---   * cp_* FluxCP control-panel tables  -> created by the FluxCP installer.
---   * cp_donation_requests  -> external FluxCP donation module (referenced
---     by DonateRedeem.txt "Donation Rankings"; no schema in this repo).
+--   * cp_* FluxCP control-panel tables  -> created by the FluxCP installer
+--     (cp_donation_requests is the exception: a minimal version is now
+--     created above so DonateRedeem.txt's Donation Rankings works without
+--     a full FluxCP install; a real FluxCP install's version supersedes it).
 --   * item_db_re / item_db2_re / mob_db_re / mob_db2_re  -> stock rAthena
 --     SQL data, optional (conf use_sql_db=no). Import separately if needed:
 --       mysql ragnarok_main < sql-files/item_db_re.sql
