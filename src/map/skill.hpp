@@ -2845,6 +2845,11 @@ void skill_poisoningweapon( map_session_data& sd, t_itemid nameid );
  **/
 void skill_select_menu( map_session_data& sd, uint16 skill_id );
 
+/**
+ * Active Plagiarism (Rogue)
+ **/
+void skill_plagiarism_select( map_session_data& sd, uint16 skill_id );
+
 int32 skill_elementalanalysis( map_session_data& sd, int32 n, uint16 skill_lv, uint16 *item_list ); // Sorcerer Four Elemental Analisys.
 int32 skill_changematerial(map_session_data *sd, int32 n, uint16 *item_list);	// Genetic Change Material.
 int32 skill_get_elemental_type(uint16 skill_id, uint16 skill_lv);

@@ -1343,6 +1343,7 @@ void clif_magicdecoy_list( map_session_data& sd, uint16 skill_lv, int16 x, int16
 void clif_poison_list( map_session_data& sd, uint16 skill_lv );
 
 void clif_autoshadowspell_list( map_session_data& sd );
+void clif_plagiarism_list( map_session_data& sd, const std::vector<uint16>& skill_ids );
 
 int32 clif_skill_itemlistwindow( map_session_data *sd, uint16 skill_id, uint16 skill_lv );
 void clif_elemental_info(map_session_data *sd);

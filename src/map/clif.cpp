@@ -20300,7 +20300,36 @@ int32 clif_skill_itemlistwindow( map_session_data *sd, uint16 skill_id, uint16 s
 }
 
 /*==========================================
- * Select a skill into a given list (used by SA_AUTOSPELL/SC_AUTOSHADOWSPELL)
+ * Skill selection menu for active Plagiarism (cast like Memorize/Autospell: no
+ * target needed, lists every skill currently eligible to be copied).
+ * 0442 <flag>.L <skill id>.W* (ZC_SKILL_SELECT_REQUEST)
+ *------------------------------------------*/
+void clif_plagiarism_list( map_session_data& sd, const std::vector<uint16>& skill_ids ){
+#if PACKETVER >= 20081210
+	if( skill_ids.empty() )
+		return;
+
+	PACKET_ZC_SKILL_SELECT_REQUEST* p = reinterpret_cast<PACKET_ZC_SKILL_SELECT_REQUEST*>( packet_buffer );
+
+	p->packetType = HEADER_ZC_SKILL_SELECT_REQUEST;
+	p->packetLength = sizeof( *p );
+	p->flag = 1; // Reuses the Auto Shadow Spell menu flag - the client only echoes it back, unused server-side.
+
+	size_t count = 0;
+	for( uint16 skill_id : skill_ids ){
+		p->skillIds[count] = skill_id;
+		p->packetLength += static_cast<decltype(p->packetLength)>( sizeof( p->skillIds[0] ) );
+		count++;
+	}
+
+	clif_send( p, p->packetLength, &sd, SELF );
+
+	sd.menuskill_id = RG_PLAGIARISM;
+#endif
+}
+
+/*==========================================
+ * Select a skill into a given list (used by SA_AUTOSPELL/SC_AUTOSHADOWSPELL/RG_PLAGIARISM)
  * 0443 <type>.L <skill_id>.W (CZ_SKILL_SELECT_RESPONSE)
  *------------------------------------------*/
 void clif_parse_SkillSelectMenu(int32 fd, map_session_data *sd) {
@@ -20322,6 +20351,8 @@ void clif_parse_SkillSelectMenu(int32 fd, map_session_data *sd) {
 		}
 
 		skill_select_menu(*sd, p->selectedSkillId);
+	} else if (sd->menuskill_id == RG_PLAGIARISM) {
+		skill_plagiarism_select(*sd, p->selectedSkillId);
 	} else
 		return;
 

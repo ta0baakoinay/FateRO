@@ -823,6 +823,55 @@ int8 skill_isCopyable(map_session_data *sd, uint16 skill_id) {
 }
 
 /**
+ * Curated whitelist of skills active Plagiarism may offer to copy, each capped to a
+ * maximum level. This is a fixed operator-defined set (not derived from skill_db's
+ * CopyFlags.Skill.Plagiarism) [skill_id, max_lv].
+ */
+static const std::vector<std::pair<uint16,uint16>> plagiarism_skill_list = {
+	{ 263, 10 }, { 13, 10 }, { 7, 10 }, { 14, 10 }, { 19, 10 }, { 20, 10 }, { 21, 10 },
+	{ 83, 10 }, { 84, 10 }, { 85, 10 }, { 86, 10 }, { 89, 10 }, { 90, 10 }, { 91, 5 },
+	{ 421, 7 }, { 534, 10 }, { 536, 5 }, { 537, 10 }, { 540, 19 }, { 542, 5 },
+	{ 62, 10 } // KN_BOWLINGBASH - Bowling Bash (Knight)
+};
+
+/**
+ * Builds the list of skills currently eligible to be copied by the caster's active
+ * Plagiarism cast, from the fixed plagiarism_skill_list whitelist. Skills the caster
+ * already permanently knows are excluded; each offered level is capped to the
+ * caster's own RG_PLAGIARISM skill level.
+ * @param sd: The would-be copier (caster of RG_PLAGIARISM)
+ * @return List of (skill_id, skill_lv) pairs the caster may currently choose to copy
+ */
+static std::vector<std::pair<uint16,uint16>> skill_get_plagiarism_list(map_session_data* sd)
+{
+	std::vector<std::pair<uint16,uint16>> list;
+
+	if (sd == nullptr)
+		return list;
+
+	uint16 plagiarism_lv = pc_checkskill(sd, RG_PLAGIARISM);
+
+	if (plagiarism_lv == 0 || sd->sc.getSCE(SC_PRESERVE))
+		return list;
+
+	for (const auto& entry : plagiarism_skill_list) {
+		uint16 skill_id = entry.first;
+		uint16 idx = skill_get_index(skill_id);
+
+		if (!idx)
+			continue;
+
+		// Skip skills the caster already permanently knows.
+		if (sd->status.skill[idx].id != 0 && sd->status.skill[idx].flag != SKILL_FLAG_PLAGIARIZED)
+			continue;
+
+		list.emplace_back(skill_id, u16min(entry.second, plagiarism_lv));
+	}
+
+	return list;
+}
+
+/**
  * Check if the skill is ok to cast and when.
  * Done before skill_check_condition_castbegin, requirement
  * @param skill_id: Skill ID that casted
@@ -3421,21 +3470,8 @@ static void skill_do_copy(block_list* src,block_list *bl, uint16 skill_id, uint1
 			return;
 
 		switch ( skill_isCopyable(tsd, skill_id) ) {
-			case 1: //Copied by Plagiarism
-				//Delete reproduced skill when the plagiarized skill id is the same
-				if ( tsd->reproduceskill_idx && tsd->status.skill[tsd->reproduceskill_idx].flag == SKILL_FLAG_PLAGIARIZED && tsd->status.skill[tsd->reproduceskill_idx].id == skill_id ) {
-					pc_skill_plagiarism_reset(*tsd, 2);
-				}
-
-				pc_skill_plagiarism_reset(*tsd, 1);
-
-				//Cap level to RG_PLAGIARISM level
-				lv = min(skill_lv, pc_checkskill(tsd, RG_PLAGIARISM));
-
-				tsd->cloneskill_idx = idx;
-				pc_setglobalreg(tsd, add_str(SKILL_VAR_PLAGIARISM), skill_id);
-				pc_setglobalreg(tsd, add_str(SKILL_VAR_PLAGIARISM_LV), lv);
-				break;
+			case 1: //Plagiarism is now an active, manually-cast skill (see skill_castend_nodamage_id/RG_PLAGIARISM) - being hit no longer copies anything.
+				return;
 
 			case 2: //Copied by Reproduce
 				//Delete plagiarized skill when the reproduced skill id is the same
@@ -7828,6 +7864,28 @@ int32 skill_castend_nodamage_id (block_list *src, block_list *bl, uint16 skill_i
 	FreeBlockLock freeLock;
 	switch(skill_id)
 	{
+	case RG_PLAGIARISM:
+		{
+			if (sd == nullptr)
+				break;
+
+			std::vector<std::pair<uint16,uint16>> candidates = skill_get_plagiarism_list(sd);
+
+			if (candidates.empty()) {
+				clif_skill_fail( *sd, RG_PLAGIARISM, USESKILL_FAIL_IMITATION_SKILL_NONE );
+				break;
+			}
+
+			std::vector<uint16> skill_ids;
+
+			skill_ids.reserve(candidates.size());
+			for (const auto& candidate : candidates)
+				skill_ids.push_back(candidate.first);
+
+			clif_plagiarism_list(*sd, skill_ids);
+		}
+		break;
+
 	case HLIF_HEAL:	//[orn]
 	case AB_HIGHNESSHEAL:
 		{
@@ -23997,6 +24055,23 @@ void skill_select_menu( map_session_data& sd, uint16 skill_id ){
 	lv = min(lv,sd.status.skill[sk_idx].lv);
 	prob = (aslvl >= 10) ? 15 : (30 - 2 * aslvl); // Probability at level 10 was increased to 15.
 	sc_start4(&sd,&sd,SC__AUTOSHADOWSPELL,100,id,lv,prob,(aslvl*5),skill_get_time(SC_AUTOSHADOWSPELL,aslvl));
+}
+
+/**
+ * Handles the client's skill selection response for an active Plagiarism cast.
+ * Re-derives the eligible skill list server-side so the chosen skill_id can't be forged.
+ * @param sd: Player who casted RG_PLAGIARISM
+ * @param skill_id: Skill the player chose to copy
+ */
+void skill_plagiarism_select( map_session_data& sd, uint16 skill_id ){
+	for (const auto& candidate : skill_get_plagiarism_list(&sd)) {
+		if (candidate.first == skill_id) {
+			pc_skill_plagiarism(sd, candidate.first, candidate.second);
+			return;
+		}
+	}
+
+	clif_skill_fail( sd, RG_PLAGIARISM, USESKILL_FAIL_IMITATION_SKILL_NONE );
 }
 
 int32 skill_elementalanalysis( map_session_data& sd, int32 n, uint16 skill_lv, uint16* item_list ){

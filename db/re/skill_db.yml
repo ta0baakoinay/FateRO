@@ -6496,6 +6496,13 @@ Body:
     Name: RG_PLAGIARISM
     Description: Intimidate
     MaxLevel: 10
+    TargetType: Self
+    Range: 1
+    Hit: Single
+    HitCount: 1
+    CastTime: 1000
+    Requires:
+      SpCost: 10
   - Id: 226
     Name: AM_AXEMASTERY
     Description: Axe Mastery
