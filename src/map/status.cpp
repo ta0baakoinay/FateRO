@@ -5092,6 +5092,22 @@ if (!sd->deposit.items.empty())
 			sd->indexed_bonus.subele[ELE_POISON] += 100;
 			sd->indexed_bonus.subele[ELE_HOLY] -= 30;
 		}
+
+		// Midgard's Blessing bonuses
+		if (sc->getSCE(SC_AFFINITY)) {
+			// ATK +5%
+			sd->patk_rate += 5;
+
+			// MATK +5%
+			sd->matk_rate += 5;
+
+			// Max HP +5%
+			sd->hprate += 5;
+
+			// Max SP +5%
+			sd->sprate += 5;
+		}
+
 		if (pc_checkskill(sd, SU_POWEROFLAND) > 0 && pc_checkskill_summoner(sd, SUMMONER_POWER_LAND) >= 20)
 			pc_bonus(sd, SP_MATK_RATE, 20);
 		if (sc->getSCE(SC_SHRIMP)) {
@@ -8356,6 +8372,8 @@ static uint16 status_calc_speed(block_list *bl, status_change *sc, int32 speed)
 		}
 		if( sc->getSCE(SC_WILD_WALK) != nullptr )
 			val = max( val, sc->getSCE(SC_WILD_WALK)->val2 );
+		if( sc->getSCE(SC_AFFINITY) ) // Midgard's Blessing: Movement Speed +10%
+			val = max( val, 10 );
 
 		// !FIXME: official items use a single bonus for this [ultramage]
 		if( sd && sd->bonus.speed_rate + sd->bonus.speed_add_rate < 0 ) // Permanent item-based speedup

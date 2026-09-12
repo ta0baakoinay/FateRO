@@ -1453,6 +1453,7 @@ enum sc_type : int16 {
 	SC_AUTOCOMBAT = 1673, // [jsn] Auto Combat
 	SC_AUTOBUFF = 1674,
 	SC_VIPSTATE = 1675,
+	SC_AFFINITY = 1676, // Midgard's Blessing
 	SC_MAX, //Automatically updated max, used in for's to check we are within bounds.
 };
 
@@ -2948,6 +2949,7 @@ enum efst_type : int16{
 	EFST_AUTOCOMBAT = 1673, // [jsn] Auto Combat
 	EFST_AUTOBUFF = 1674,
 	EFST_VIPSTATE = 1675,
+	EFST_AFFINITY = 1676, // Midgard's Blessing (matches client-side EFST_VALKYRIEAFFINITY = 1676)
 	EFST_MAX,
 };
 

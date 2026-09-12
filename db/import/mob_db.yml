@@ -527,6 +527,34 @@ Body:
     AttackMotion: 864
     ClientAttackMotion: 576
     DamageMotion: 480
+
+  - Id: 21887
+    AegisName: HEROS_OUT_ORB
+    Name: Jewel
+    Level: 250
+    Hp: 300
+    Attack: 1
+    Attack2: 1
+    AttackRange: 1
+    SkillRange: 0
+    ChaseRange: 0
+    Size: Small
+    Race: Formless
+    Element: Neutral
+    ElementLevel: 1
+    WalkSpeed: 300
+    AttackDelay: 1000
+    AttackMotion: 1000
+    #DamageMotion: -1
+    #Ai:
+    Class: Battlefield
+    Modes:
+      FixedItemDrop: true
+      IgnoreMagic: true
+      IgnoreMelee: true
+      IgnoreMisc: true
+      IgnoreRanged: true
+      KnockBackImmune: true    
 #Body:
 # eAthena Dev Team
 #=============================================================

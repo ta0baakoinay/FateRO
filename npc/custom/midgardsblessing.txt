@@ -1,0 +1,334 @@
+//===== rAthena Script =======================================
+//= Midgard's Blessing
+//===== By: ==================================================
+//= IceBear (original concept), adapted for FateMMO trunk
+//===== Current Version: =====================================
+//= 1.0
+//===== Compatible With: =====================================
+//= rAthena Project
+//===== Description: =========================================
+//= An npc that grants a special buff to all players
+//= in exchange of Zeny contributions.
+//= Uses the native EFST_AFFINITY status that persists through death.
+//===== Additional Comments: =================================
+//= 1.0 First version, adapted from the Valkyrie's Affinity WIP.
+//============================================================
+maintown,131,124,4	script	Midgard's Blessing#god	21887,{
+
+function F_Ret_Rem_Time;
+function F_Affinity_All;
+function F_Affinity_Solo;
+function F_Ret_Display;
+function F_Apply_Buffs;
+function F_Remove_Buffs;
+function F_Remove_All_Buffs;
+disable_items;
+disable_command;
+
+	mes .npcname$;
+	mes "Hello! ^FF0000"+strcharinfo(0)+"^000000";
+	mes "Your contributions unlock's";
+	mes "^FF0000Midgard's Blessing^000000";
+	mes "granting ^FF0000global buffs to all players^000000";
+	mes "for ^FF000060 minute(s).^000000";
+	next;
+
+	// Check if affinity is currently active
+	if($S_MBAffinity > gettimetick(2)){
+		F_Ret_Display();
+		next;
+	} else {
+		mes .npcname$;
+		mes "^FF0000Current Contribution Pool:^000000";
+		mes "^FF0000Required:^000000 "+callfunc("F_InsertComma",.MaxZCont)+"z";
+		mes "^FF0000Current:^000000 "+callfunc("F_InsertComma",$S_MBContriZeny)+"z";
+		mes " ";
+		mes "^FF0000We still need more contributions^000000";
+		next;
+	}
+
+	switch(select(
+		"^1755b3^000000 ^0000FFContribution Zeny^000000",
+		"^1755b3^000000 ^008000Affinity Information^000000",
+		"^1755b3^000000 ^FF0000Contribution Ranking^000000",
+		"^1755b3^000000 ^A020F0My Contribution^000000")) {
+
+		case 1:
+		clear;
+		// Check if affinity is currently active
+		if($S_MBAffinity > gettimetick(2)){
+			mes .npcname$;
+			mes "^FF0000Midgard's Blessing^000000 is currently active!";
+			mes "You cannot contribute while the affinity is active.";
+			mes "Please wait for it to expire.";
+			close;
+		}
+		mes .npcname$;
+		mes "How much ^FF0000Zeny^000000 would you like to contribute?.";
+		mes "^FF0000Min:^000000 "+callfunc("F_InsertComma",.MinZCont)+"z";
+		mes "^FF0000Max:^000000 "+callfunc("F_InsertComma",.MaxZCont)+"z";
+		mes "^FF0000Input [0]^000000 to cancel.";
+		input .@input,0,.MaxZCont;
+		clear;
+		if (.@input == 0) {
+			mes .npcname$;
+			mes "Thanks for stopping by...";
+			close;
+		}
+		if(.@input < .MinZCont){
+			mes .npcname$;
+			mes "^FF0000Min Contribution:^000000 "+callfunc("F_InsertComma",.MinZCont)+"z";
+			mes "Please try again..";
+			close;
+		}
+		if(.@input > (.MaxZCont - $S_MBContriZeny)){
+			mes .npcname$;
+			mes "^FF0000Remaining Contribution:^000000 "+callfunc("F_InsertComma",(.MaxZCont - $S_MBContriZeny))+"z";
+			mes "Please try again..";
+			close;
+		}
+		// Check if player has enough Zeny
+		if(Zeny < .@input){
+			mes .npcname$;
+			mes "^FF0000Insufficient Zeny!^000000";
+			mes "^FF0000Required:^000000 "+callfunc("F_InsertComma",.@input)+"z";
+			mes "^FF0000You have:^000000 "+callfunc("F_InsertComma",Zeny)+"z";
+			close;
+		}
+		$S_MBContriZeny = $S_MBContriZeny + .@input;
+		query_sql "insert into `midgard_blessing` value ( "+ getcharid(0) +", '"+ escape_sql( strcharinfo(0) ) +"', "+.@input+" ) on duplicate key update `points` = `points` + "+.@input+"";
+		set Zeny,Zeny - .@input;
+		mes .npcname$;
+		mes "So far you've contributed a total of";
+		mes "^FF0000"+callfunc("F_InsertComma",.@input)+" Zeny^000000";
+		next;
+		if($S_MBContriZeny >= .MaxZCont){
+			clear;
+			mes .npcname$;
+			mes "Wow, enough Contributions have been made to trigger ^FF0000Midgard's Blessing^000000";
+			mes "Thank you for your contribution!";
+			mes "The blessing will be activated shortly!";
+			close2;
+			F_Affinity_All(.@input);
+			end;
+		} else {
+			mes .npcname$;
+			mes "Thank you for your contribution!";
+			mes "We still need ^FF0000"+callfunc("F_InsertComma",(.MaxZCont - $S_MBContriZeny))+"^000000 more zeny.";
+		}
+		close;
+		break;
+
+		case 2:
+		mes .npcname$;
+		mes "^FF0000Affinity Effect^000000:";
+		mes "- ATK +5%";
+		mes "- MATK +5%";
+		mes "- Max HP +5%";
+		mes "- Max SP +5%";
+		mes "- Movement Speed +10%";
+		mes "- Base EXP +10%";
+		mes "- Job EXP +10%";
+		mes "- Drop Rate +10%";
+		mes "- Duration : ^FF000060^000000 minute(s).";
+		mes "- ^FF0000Persists through death^000000";
+		close;
+		break;
+
+		case 3:
+		clear;
+		mes .npcname$;
+		mes "Hello! ^FF0000"+strcharinfo(0)+"^000000";
+		set .@size, query_sql( "select name, points from midgard_blessing where points > 0 order by points desc limit "+ .topcont, .@name$, .@points );
+		mes "[^FF0000Contribution ^0000FFRank ^996600Top ^FF0000" + .topcont +"^000000]";
+		for (set .@c, 0; .@c < .@size; set .@c, .@c + 1)
+			mes "Top ^FF0000" +(.@c + 1) +"^000000 ^0000FF" + .@name$[.@c] +"^000000 with ^FF0000" + callfunc("F_InsertComma",.@points[.@c]) +"^000000z.";
+		close;
+		break;
+
+		case 4:
+		clear;
+		mes .npcname$;
+		mes "Hello! ^FF0000"+strcharinfo(0)+"^000000";
+		query_sql( "select points from midgard_blessing where name = '"+strcharinfo(0)+"'", .@points );
+		mes "^FF0000Your Total Contributions^000000:";
+		mes ""+((.@points)?"^0055FF"+callfunc("F_InsertComma",.@points):"0")+"^000000 Contribution"+((.@points == 1)?".":"^000000 Zeny.");
+		close;
+	}
+end;
+
+OnPCLoginEvent:
+F_Affinity_Solo();
+end;
+
+OnPCDieEvent:
+// Reapply buffs after death if affinity is still active
+if($S_MBAffinity > gettimetick(2)) {
+	sleep2 1000; // Wait 1 second after respawn
+	F_Apply_Buffs();
+}
+end;
+
+OnPCLoadMapEvent:
+// Reapply buffs when changing maps if affinity is still active
+if($S_MBAffinity > gettimetick(2)) {
+	F_Apply_Buffs();
+}
+end;
+
+OnTableReset:
+query_sql("TRUNCATE TABLE `midgard_blessing`");
+announce("["+strnpcinfo(1)+"] : Midgard's Blessing Ranking Resetted.", bc_self, 0x39FF14);
+end;
+
+OnSelfReset:
+query_sql("DELETE FROM `midgard_blessing` WHERE `name` = '"+strcharinfo(0)+"'");
+announce("["+strnpcinfo(1)+"] : Your Midgard's Blessing Ranking Record Removed.", bc_self, 0x39FF14);
+end;
+
+OnTimeReset:
+$S_MBAffinity = 0;
+$S_MBContriZeny = 0;
+F_Remove_All_Buffs();
+announce("["+strnpcinfo(1)+"] : Blessing has been deactivated.", bc_all, 0x39FF14);
+stopnpctimer;
+end;
+
+// Timer event to check and remove expired buffs every 10 seconds
+OnTimer10000:
+	if($S_MBAffinity > 0 && $S_MBAffinity <= gettimetick(2)) {
+		$S_MBAffinity = 0;
+		$S_MBContriZeny = 0;
+		F_Remove_All_Buffs();
+		announce("["+strnpcinfo(1)+"] : Midgard's Blessing has expired.", bc_all, 0x39FF14);
+		stopnpctimer;
+	} else {
+		initnpctimer; // Restart timer for next check
+	}
+end;
+
+OnInit:
+	.topcont = 5;
+	.MinZCont = 10000;
+	.MaxZCont = 1000000;
+	.npcname$ = "[^FF0000 "+strnpcinfo(1)+" ^000000]";
+	query_sql "CREATE TABLE IF NOT EXISTS `midgard_blessing` (`char_id` int(11) not null auto_increment, `name` varchar(24) not null, `points` int(11) unsigned NOT NULL default '0', PRIMARY KEY (`char_id`)) ENGINE=MyISAM";
+	bindatcmd("mbrreset", strnpcinfo(0)+"::OnTableReset", 99, 99);
+	bindatcmd("mbsreset", strnpcinfo(0)+"::OnSelfReset", 99, 99);
+	bindatcmd("mbtreset", strnpcinfo(0)+"::OnTimeReset", 99, 99);
+
+	// Check if affinity should still be active after server restart
+	if($S_MBAffinity > gettimetick(2)) {
+		initnpctimer; // Start timer if affinity is active
+	}
+
+	while(1){
+		showscript("Midgard's Blessing");
+		sleep(500);
+	}
+end;
+
+function	F_Ret_Display	{
+	if($S_MBAffinity <= gettimetick(2)) {
+		mes .npcname$;
+		mes "^FF0000Midgard's Blessing^000000 is currently inactive.";
+		mes "You can contribute to activate it again.";
+		return;
+	}
+
+	set .@last,$S_MBAffinity - gettimetick(2);
+	set .@hour, .@last / 3600;
+	set .@min,  (.@last % 3600) / 60;
+	set .@sec,  .@last % 60;
+	mes .npcname$;
+	mes "^FF0000Midgard's Blessing^000000 is active until.";
+	mes "[^FF0000"+.@hour+"^000000] - Hr(s) [^FF0000"+.@min+"^000000] - Min(s) [^FF0000"+.@sec+"^000000] - secs.";
+}
+
+function F_Ret_Rem_Time {
+	set .@Time_Left, getarg(0) - gettimetick(2);
+	set .@Hours, .@Time_Left / 3600;
+	set .@Time_Left, .@Time_Left - (.@Hours * 3600);
+	set .@Minutes, .@Time_Left / 60;
+	set .@Time_Left, .@Time_Left - (.@Minutes * 60);
+	set .@Seconds, .@Time_Left % 60;
+	set .@Time_Left, .@Time_Left - (.@Seconds % 60);
+	set .@Rem_Sec,((.@Minutes * 60) + .@Seconds) * 1000;
+	return .@Rem_Sec;
+}
+
+function F_Apply_Buffs {
+	if($S_MBAffinity <= gettimetick(2)) return;
+
+	set .@remaining_time, F_Ret_Rem_Time($S_MBAffinity);
+	if(.@remaining_time <= 1) return;
+
+	// Try to use the native Affinity status effect first, with fallback
+	set .@result, sc_start(SC_AFFINITY, .@remaining_time, 1);
+
+	if(.@result == 0) {
+		// Fallback: Use individual status effects if the status fails to apply
+		sc_start SC_INCATKRATE, .@remaining_time, 5;
+		sc_start SC_INCMATKRATE, .@remaining_time, 5;
+		sc_start SC_INCMHPRATE, .@remaining_time, 5;
+		sc_start SC_INCMSPRATE, .@remaining_time, 5;
+	}
+
+	set @midgard_blessing_active, 1;
+	return;
+}
+
+function F_Remove_Buffs {
+	sc_end SC_AFFINITY;
+	sc_end SC_INCATKRATE;
+	sc_end SC_INCMATKRATE;
+	sc_end SC_INCMHPRATE;
+	sc_end SC_INCMSPRATE;
+	sc_end SC_CASH_PLUSEXP;
+	sc_end SC_CASH_RECEIVEITEM;
+	set @midgard_blessing_active, 0;
+	return;
+}
+
+function F_Affinity_Solo {
+	if($S_MBAffinity > gettimetick(2)) {
+		F_Apply_Buffs();
+		dispbottom "You have received Midgard's Blessing.";
+	}
+	return;
+}
+
+function F_Remove_All_Buffs {
+	freeloop(1);
+	query_sql("SELECT `account_id` FROM `char` WHERE `online` = '1'",.@account_id);
+	for(.@i=0; .@i<getarraysize(.@account_id); .@i++){
+		attachrid .@account_id[.@i];
+		F_Remove_Buffs();
+	}
+	freeloop(0);
+	return;
+}
+
+function F_Affinity_All {
+	freeloop(1);
+	$S_MBAffinity = (gettimetick(2) + (60 * 60));
+	announce("["+strnpcinfo(1)+"] : Thank you ["+strcharinfo(0)+"] for donating "+callfunc("F_InsertComma",getarg(0))+" Zeny! Midgard's Blessing will be activated shortly!", bc_all|bc_npc, 0xFFFF00);
+	sleep 1500;
+	announce("["+strnpcinfo(1)+"] : Blessing has been activated! All players are now under the effect of Midgard's Blessing for 60 minute(s).", bc_all|bc_npc, 0x39FF14);
+
+	$S_MBContriZeny = 0;
+
+	// Start the timer to check for expiration
+	initnpctimer;
+
+	// Apply buffs to all online players
+	query_sql("SELECT `account_id`,`name` FROM `char` WHERE `online` = '1'",.@account_id,.@char_name$);
+	for(.@i=0; .@i<getarraysize(.@account_id); .@i++){
+		attachrid .@account_id[.@i];
+		F_Apply_Buffs();
+		dispbottom "You have received Midgard's Blessing.";
+	}
+	freeloop(0);
+	return;
+}
+}

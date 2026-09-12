@@ -8596,6 +8596,12 @@ void pc_gainexp(map_session_data *sd, block_list *src, t_exp base_exp, t_exp job
 		job_exp = job_exp * battle_config.feature_autobuff_job_exp_penalty / 100;
 	}
 
+	// Apply Midgard's Blessing EXP bonus
+	if (sd->sc.getSCE(SC_AFFINITY)) {
+		base_exp = base_exp * 110 / 100; // +10% Base EXP
+		job_exp = job_exp * 110 / 100;   // +10% Job EXP
+	}
+
 
 
 
