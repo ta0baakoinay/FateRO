@@ -428,7 +428,7 @@ maintown,158,150,4	script	WoE-StatsViewer	20385,{
 		mes "Hello "+ strcharinfo(0) +"...";
 		mes "If you want to I can show you your WoE stats.";
 		next;
-		switch (select("Most Kills","Highest Streak","Longest Ownage","Own Information","Explanation","Emperium Breakers")) {
+		switch (select("Most Kills","Highest Streak","Longest Ownage","Own Information","Explanation","Emperium Breakers"+((getgmlevel() >= 99)?":^FF0000Reset Ladder - GM Lv.99^000000":""))) {
 		mes "["+ .@npcname$ +"]";
 		case 1:
 			.@nb = query_sql("select name, kills, deaths from woeladder order by kills desc limit "+ getvariableofnpc(.showtotal, "DOTAWOE"), .@name$, .@kills, .@deaths);
@@ -619,6 +619,21 @@ maintown,158,150,4	script	WoE-StatsViewer	20385,{
 			query_sql("SELECT `breaks` FROM `woe_breaker` WHERE `char_id` = "+ getcharid(0), .@mb);
 			mes "You have broken the Emperium ^AA00AA"+ .@mb +"^000000 time(s).";
 			next;
+			break;
+
+		case 7:
+			if (getgmlevel() < 99) end;
+			mes "["+ .@npcname$ +"]";
+			mes "Are you sure you want to reset the WoE Ladder? This cannot be undone.";
+			next;
+			if (select("Yes, reset it:Cancel") == 1) {
+				query_sql("TRUNCATE TABLE woeladder");
+				query_sql("TRUNCATE TABLE ownwoeladder");
+				query_sql("TRUNCATE TABLE woe_breaker");
+				query_sql("TRUNCATE TABLE woe_breaker_guild");
+				mes "["+ .@npcname$ +"]";
+				mes "The WoE Ladder has been reset.";
+			}
 			break;
 		}
 	}

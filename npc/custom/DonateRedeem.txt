@@ -3,32 +3,23 @@
 //===== Description: =========================================
 //= Main menu:
 //=   1) Redeem unclaimed rewards - reads/updates cp_redeemlog,
-//=      populated by FluxCP's Flux_Athena::awardItem() on
-//=      donation approval.
-//=   2) View Donation Rankings - ranks accounts by total
-//=      approved Fate Coin from cp_donation_requests.
+//=      populated by FluxCP's stock item shop checkout
+//=      (modules/purchase/checkout.php) whenever a player spends
+//=      credits on an item. This is FluxCP's real, already-working
+//=      pipeline - no custom FluxCP code needed for this part.
+//=   2) View Donation Rankings - ranks accounts by total credits
+//=      ever received via completed PayPal/IPN transactions,
+//=      read directly from cp_txnlog (FluxCP's real donation
+//=      ledger, populated by Flux_PaymentNotifyRequest on every
+//=      successful donation). This replaces the earlier design
+//=      that read from cp_donation_requests, a table nothing in
+//=      FluxCP (live site or backups) ever actually wrote to.
 //=
 //= NOTE: ShowDonationRankings/DisplayDonationRankingsPaginated
 //= call callfunc("CalcDialogHeight", ...) and
-//= callfunc("FormatNumber", ...) — these are assumed to already
-//= exist on this server (used by the existing Zeny Ranking /
-//= Transparency Checker NPC). If they don't, add simple versions
-//= or strip those calls.
+//= callfunc("FormatNumber", ...) — these already exist on this
+//= server (Searcher.txt).
 //=============================================================
-
-/*
-CREATE TABLE IF NOT EXISTS `cp_donation_requests` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) NOT NULL,
-  `amount` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `fate_coins` int(11) NOT NULL DEFAULT '0',
-  `status` varchar(20) NOT NULL DEFAULT 'pending',
-  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `account_id` (`account_id`),
-  KEY `status` (`status`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-*/
 
 maintown,159,182,4	script	Donor Rewards Redeemer	117,{
 
@@ -99,22 +90,24 @@ maintown,159,182,4	script	Donor Rewards Redeemer	117,{
 }
 
 // =============================================================
-// Donation Rankings — ranks accounts by total approved Fate Coin
-// (cp_donation_requests.status = 'approved'), one row per
-// account via the MIN(char_id)-per-account join trick.
+// Donation Rankings — ranks accounts by total credits received
+// from completed PayPal/IPN transactions (cp_txnlog.payment_status
+// = 'Completed'), FluxCP's real donation ledger populated by
+// Flux_PaymentNotifyRequest on every successful donation. One row
+// per account via the MIN(char_id)-per-account join trick.
 // =============================================================
 
 function	script	ShowDonationRankings	{
 	.@limit = getarg(0, 50); // top 50 donors
 
 	.@size = query_sql(
-		"SELECT IFNULL(c.name, CONCAT('Account #', dr.account_id)), SUM(dr.fate_coins), SUM(dr.amount) " +
-		"FROM cp_donation_requests dr " +
-		"LEFT JOIN (SELECT account_id, MIN(char_id) AS char_id FROM `char` GROUP BY account_id) mc ON mc.account_id = dr.account_id " +
+		"SELECT IFNULL(c.name, CONCAT('Account #', tl.account_id)), SUM(tl.credits), SUM(CAST(tl.mc_gross AS DECIMAL(10,2))) " +
+		"FROM cp_txnlog tl " +
+		"LEFT JOIN (SELECT account_id, MIN(char_id) AS char_id FROM `char` GROUP BY account_id) mc ON mc.account_id = tl.account_id " +
 		"LEFT JOIN `char` c ON c.char_id = mc.char_id " +
-		"WHERE dr.status = 'approved' " +
-		"GROUP BY dr.account_id " +
-		"ORDER BY SUM(dr.fate_coins) DESC " +
+		"WHERE tl.payment_status = 'Completed' " +
+		"GROUP BY tl.account_id " +
+		"ORDER BY SUM(tl.credits) DESC " +
 		"LIMIT " + .@limit,
 		$@donor_names$, $@donor_coins, $@donor_php);
 
@@ -123,7 +116,7 @@ function	script	ShowDonationRankings	{
 		setdialogalign(DIALOG_ALIGN_CENTER);
 		setdialogsize(500, callfunc("CalcDialogHeight", 2));
 		mes " ";
-		mes "^888888No approved donations found yet.^000000";
+		mes "^888888No completed donations found yet.^000000";
 		next;
 		return;
 	}
@@ -155,7 +148,7 @@ function	script	DisplayDonationRankingsPaginated	{
 		mes " ";
 
 		for(.@i = .@start; .@i < .@end; .@i++) {
-			mes "^888888#" + (.@i + 1) + "^000000 ^0000FF" + $@donor_names$[.@i] + "^000000 - ^008000" + $@donor_coins[.@i] + " Fate Coin(s)^000000 ^888888(P" + callfunc("FormatNumber", $@donor_php[.@i]) + " donated)^000000";
+			mes "^888888#" + (.@i + 1) + "^000000 ^0000FF" + $@donor_names$[.@i] + "^000000 - ^008000" + $@donor_coins[.@i] + " Fate Coin(s)^000000 ^888888($" + callfunc("FormatNumber", $@donor_php[.@i]) + " USD donated)^000000";
 		}
 
 		.@nav$ = "";

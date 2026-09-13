@@ -138,7 +138,7 @@ maintown,135,140,3	script	MVP Ladder	20222,{
 		mes "Hello "+ strcharinfo(0) +"...";
 		mes "If you want to I can show you your MVP stats.";
 		next;
-		switch (select("Most MVP killer list","Most MVP killed list","Own Information")) {
+		switch (select("Most MVP killer list","Most MVP killed list","Own Information"+((getgmlevel() >= 99)?":^FF0000Reset Ladder - GM Lv.99^000000":""))) {
 		case 1:
 			mes "["+ .@npcname$ +"]";
 			.@queryKillerList$ = "SELECT t1.char_id, SUM(t1.kills) as `orderKills`, t2.name " +
@@ -202,6 +202,18 @@ maintown,135,140,3	script	MVP Ladder	20222,{
 				next;
 			}
 			mes "^996600==> ^006699Total Own MvP Kills [^FF0000" + .@totalKillCount + " ^00AA00kills]^000000";
+			break;
+
+		case 4:
+			if (getgmlevel() < 99) end;
+			mes "["+ .@npcname$ +"]";
+			mes "Are you sure you want to reset the MVP Ladder? This cannot be undone.";
+			next;
+			if (select("Yes, reset it:Cancel") == 1) {
+				query_sql("TRUNCATE TABLE mvpladder");
+				mes "["+ .@npcname$ +"]";
+				mes "The MVP Ladder has been reset.";
+			}
 			break;
 		}
 	}

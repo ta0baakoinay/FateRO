@@ -397,7 +397,7 @@ maintown,182,140,4	script	PvP-StatsViewer	20385,{
 		mes "Hello "+ strcharinfo(0) +"...";
 		mes "If you want to I can show you your PVP stats.";
 		next;
-		switch (select("Most Kills","Highest Streak","Longest Ownage","Own Information","Explanation")) {
+		switch (select("Most Kills","Highest Streak","Longest Ownage","Own Information","Explanation"+((getgmlevel() >= 99)?":^FF0000Reset Ladder - GM Lv.99^000000":""))) {
 		mes "["+ .@npcname$ +"]";
 		case 1:
 			.@nb = query_sql("select name, kills, deaths from pvpladder order by kills desc limit "+ getvariableofnpc(.showtotal, "DOTAPVP"), .@name$, .@kills, .@deaths);
@@ -559,6 +559,19 @@ maintown,182,140,4	script	PvP-StatsViewer	20385,{
 					mes "In other words, if your base level is 99, the player you killed must be at least level "+(99 - getvariableofnpc(.minlvlrange,"DOTAPVP"))+" then only you will get the announcement and in the ladder.";
 				mes "Higher base level kills lower level gets nothing, however lower level player kills higher level will get the announcement.";
 				next;
+			}
+			break;
+
+		case 6:
+			if (getgmlevel() < 99) end;
+			mes "["+ .@npcname$ +"]";
+			mes "Are you sure you want to reset the PvP Ladder? This cannot be undone.";
+			next;
+			if (select("Yes, reset it:Cancel") == 1) {
+				query_sql("TRUNCATE TABLE pvpladder");
+				query_sql("TRUNCATE TABLE ownpvpladder");
+				mes "["+ .@npcname$ +"]";
+				mes "The PvP Ladder has been reset.";
 			}
 			break;
 		}
