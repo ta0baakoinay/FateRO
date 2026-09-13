@@ -1660,21 +1660,30 @@ ALTER TABLE `char_reg_num`     ADD INDEX IF NOT EXISTS `key` (`key`);
 -- =====================================================================
 INSERT IGNORE INTO `cp_population_stats` (`id`, `active_count`) VALUES (1, 0);
 
--- cp_donation_requests: minimal schema covering the columns queried by
--- npc/custom/DonateRedeem.txt (Donation Rankings). FluxCP's own installer
--- normally creates a fuller version of this table; this is just enough for
--- the ranking query and redeem flow to work on a server without FluxCP.
+-- cp_donation_requests: manual GCash/PayPal donation approval queue.
+-- Populated by FluxCP modules/donate/index.php (player submits amount +
+-- reference number + receipt screenshot -> status='pending'), and closed
+-- out by modules/donate/approve.php (ADMIN-only: Approve credits Fate
+-- Coin via cp_redeemlog + logs the donation to cp_txnlog for Donation
+-- Rankings; Reject just marks the row). Rate: 1 Fate Coin = 1 USD.
+-- Receipts themselves are stored on disk under data/donation_receipts/,
+-- outside the web root; only `receipt_path` (the filename) lives here.
 CREATE TABLE IF NOT EXISTS `cp_donation_requests` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` int(11) NOT NULL,
+  `method` varchar(20) NOT NULL DEFAULT 'paypal',
   `amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `fate_coins` int(11) NOT NULL DEFAULT '0',
+  `reference_no` varchar(100) NOT NULL DEFAULT '',
+  `receipt_path` varchar(255) NOT NULL DEFAULT '',
   `status` varchar(20) NOT NULL DEFAULT 'pending',
-  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `approved_by` int(11) unsigned DEFAULT NULL,
+  `approved_date` datetime DEFAULT NULL,
+  `submitted_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `account_id` (`account_id`),
   KEY `status` (`status`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 -- =====================================================================
@@ -1708,9 +1717,17 @@ CREATE TABLE IF NOT EXISTS `cp_donation_requests` (
 --     login.last_unique_id / login.blocked_unique_id  -> FateShield/Gepard,
 --     not present in the current source tree (feature lives on a branch).
 --   * cp_* FluxCP control-panel tables  -> created by the FluxCP installer
---     (cp_donation_requests is the exception: a minimal version is now
---     created above so DonateRedeem.txt's Donation Rankings works without
---     a full FluxCP install; a real FluxCP install's version supersedes it).
+--     (cp_donation_requests is the exception, created above: it's the
+--     manual GCash/PayPal donation approval queue used by FluxCP's
+--     modules/donate/index.php + modules/donate/approve.php. NOTE: the
+--     NPC's Donation Rankings menu reads FluxCP's own `cp_txnlog` table
+--     instead (payment_status='Completed'), so a full FluxCP install is
+--     still required for that specific feature to show data).
+--   * cp_cmspages (FluxCP CMS pages, incl. the 46-page native wiki that
+--     replaced the old GitBook) -> also created by the FluxCP installer.
+--     After installing FluxCP, seed the wiki content with:
+--       php sql-files/fluxcp_wiki_seed.php
+--     (edit the DB connection details at the top of that script first).
 --   * item_db_re / item_db2_re / mob_db_re / mob_db2_re  -> stock rAthena
 --     SQL data, optional (conf use_sql_db=no). Import separately if needed:
 --       mysql ragnarok_main < sql-files/item_db_re.sql
